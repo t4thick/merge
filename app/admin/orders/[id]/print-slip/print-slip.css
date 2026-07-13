@@ -1,0 +1,48 @@
+@media print {
+  .admin-shell > header,
+  .admin-order-notifier,
+  .print-slip-toolbar {
+    display: none !important;
+  }
+
+  .admin-content {
+    padding: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .admin-shell {
+    background: white !important;
+    min-height: auto !important;
+  }
+
+  .print-slip-page {
+    padding: 0 !important;
+  }
+
+  .print-slip-doc {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 0.5in;
+    size: letter portrait;
+  }
+}
+
+/* Cleaner slip page on screen — hide admin nav while viewing slip */
+body.admin-print-slip-page .admin-shell > header,
+body.admin-print-slip-page .admin-order-notifier {
+  display: none;
+}
+
+body.admin-print-slip-page .admin-content {
+  max-width: 42rem;
+  margin-inline: auto;
+  padding-top: 1.5rem;
+}
