@@ -64,7 +64,7 @@ export function LoginForm() {
   }
 
   return (
-    <AuthShell title="Sign in" subtitle="Welcome back to Lovely Queen Market">
+    <AuthShell title="Sign in" subtitle="Welcome back to Kintampo African Market">
       {err === 'auth' && (
         <p className="error mb-4">
           That link expired or was already used. Sign in below or reset your password.

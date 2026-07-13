@@ -46,4 +46,4 @@ if (error) {
 }
 
 console.log('Created:', data)
-console.log(`https://lovely-queen-market.vercel.app/products/${data.id}`)
+console.log(`/products/${data.id} (open on your deployed domain)`)

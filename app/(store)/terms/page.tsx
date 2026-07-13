@@ -22,7 +22,7 @@ export default function TermsPage() {
             <p>
               {STORE.name} (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is an African and Caribbean grocery store located at{' '}
               {STORE.address}, Columbus, Ohio 43229. We operate the website{' '}
-              lovelyqueenafricanmarket.com and ship products across the United States.
+              this website and ship products across the United States.
             </p>
           </section>
 

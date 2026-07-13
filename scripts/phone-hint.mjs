@@ -27,7 +27,7 @@ if (ips.length === 0) {
 console.log('')
 console.log('  If the page loads but styles/JS look broken:')
 console.log('  1. Copy the IP you used (e.g. 192.168.1.105)')
-console.log('  2. In lovely-queen-market/.env.local add:')
+console.log('  2. In the project .env.local add:')
 console.log('     DEV_PHONE_HOSTS=' + (ips[0] ?? '192.168.x.x'))
 console.log('  3. Restart this dev server (Ctrl+C, then npm run dev:phone)')
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')

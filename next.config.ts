@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
       `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://js.stripe.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://asafointernational.com https://lovelyqueenmart.com https://www.lovelyqueenmart.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://lovelyqueenmart.com https://www.lovelyqueenmart.com",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://r.stripe.com",
       "frame-src https://js.stripe.com https://hooks.stripe.com",
       "frame-ancestors 'none'",
@@ -56,11 +56,7 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'asafointernational.com',
-        pathname: '/**',
-      },
+      // Product photos in the imported catalog still point at this host.
       {
         protocol: 'https',
         hostname: 'lovelyqueenmart.com',

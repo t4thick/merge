@@ -6,7 +6,7 @@ test.describe('Homepage', () => {
   })
 
   test('sets document title', async ({ page }) => {
-    await expect(page).toHaveTitle(/Lovely Queen/i)
+    await expect(page).toHaveTitle(/Kintampo/i)
   })
 
   test('shows hero heading', async ({ page }) => {

@@ -15,9 +15,9 @@ export function getFeedbackInbox(): string {
 }
 
 export const STORE = {
-  name: 'Lovely Queen African Market',
-  shortName: 'Lovely Queen Market',
-  tagline: 'African & Caribbean groceries, delivered fast.',
+  name: 'Kintampo African Market',
+  shortName: 'Kintampo Market',
+  tagline: 'Groceries from Ghana & the Caribbean.',
   supportEmail: DEFAULT_SUPPORT_EMAIL,
   address: '1668 E Dublin Granville Rd, Columbus, OH 43229',
   /** Ship-from for packing slips. Env vars override these. */

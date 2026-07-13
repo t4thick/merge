@@ -15,7 +15,7 @@ if (!key) {
 const stripe = new Stripe(key, { typescript: false })
 
 const domains = [
-  'lovely-queen-market.vercel.app',
+  // Add your production Vercel domain(s) here, e.g. 'kintampo-market.vercel.app',
   'chuck-and-rich.vercel.app',
 ]
 

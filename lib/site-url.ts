@@ -1,5 +1,5 @@
 /** Production domain — used when NEXT_PUBLIC_SITE_URL is unset on Vercel (sitemap, robots, JSON-LD). */
-export const CANONICAL_SITE_URL = 'https://lovelyqueenafricanmarket.com'
+export const CANONICAL_SITE_URL = 'https://kintampoafricanmarket.com'
 
 /** Canonical public URL for redirects and emails (no trailing slash). */
 export function getPublicSiteUrl(): string {

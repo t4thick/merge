@@ -64,7 +64,7 @@ export async function sendOrderSmsToMerchant(input: OrderSmsInput): Promise<void
     : input.city
       ? ` to ${input.city}`
       : ''
-  const body = `${tag}[Lovely Queen] New order ${friendly} — ${formatMoney(input.totalAmount)} from ${input.customerName}${fulfillmentClause}. Open admin to confirm.`
+  const body = `${tag}[Kintampo] New order ${friendly} — ${formatMoney(input.totalAmount)} from ${input.customerName}${fulfillmentClause}. Open admin to confirm.`
 
   const url = `https://api.twilio.com/${TWILIO_API_VERSION}/Accounts/${encodeURIComponent(accountSid)}/Messages.json`
   const params = new URLSearchParams({

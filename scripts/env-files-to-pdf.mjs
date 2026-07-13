@@ -26,7 +26,7 @@ const doc = new PDFDocument({ margin: 50, size: 'LETTER' })
 const stream = createWriteStream(outPdf)
 doc.pipe(stream)
 
-doc.fontSize(16).fillColor('#006b3e').text('Lovely Queen Market — Environment Variables', { underline: false })
+doc.fontSize(16).fillColor('#006b3e').text('Kintampo African Market — Environment Variables', { underline: false })
 doc.moveDown(0.3)
 doc.fontSize(9).fillColor('#525250').font('Helvetica')
 doc.text(`Generated ${generated} (America/New_York)`)

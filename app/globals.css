@@ -3,18 +3,18 @@
 @theme {
   --font-sans: var(--font-montserrat), system-ui, sans-serif;
 
-  /* Brand green */
-  --color-brand-50: #f0f7f3;
-  --color-brand-100: #d8e8de;
-  --color-brand-200: #b3d4be;
-  --color-brand-300: #7fb896;
-  --color-brand-400: #4a9a6a;
-  --color-brand-500: #22824f;
-  --color-brand-600: #007a45;
-  --color-brand-700: #006b3e;
-  --color-brand-800: #005a34;
-  --color-brand-900: #00482a;
-  --color-brand-950: #002916;
+  /* Brand green — Kintampo forest green */
+  --color-brand-50: #eff6f4;
+  --color-brand-100: #d7e9e4;
+  --color-brand-200: #b0d3ca;
+  --color-brand-300: #7db5a8;
+  --color-brand-400: #4d9484;
+  --color-brand-500: #2a7867;
+  --color-brand-600: #176a58;
+  --color-brand-700: #0f5c4c;
+  --color-brand-800: #0c4a3e;
+  --color-brand-900: #0a3c32;
+  --color-brand-950: #05211c;
 
   /* Accent orange — reserved for sale / hot states only */
   --color-accent-50: #fff5f2;
@@ -45,10 +45,6 @@
   --color-gold-400: #d4b04a;
   --color-gold-500: #c9a227;
   --color-gold-600: #a8841f;
-
-  /* Official sign / social brand (logo mark) */
-  --color-queen-red: #cc1f26;
-  --color-queen-black: #121212;
 
   --color-cream: #ffffff;
   --color-cream-dark: #fafaf9;

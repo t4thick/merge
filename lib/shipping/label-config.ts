@@ -57,7 +57,7 @@ export function getShipFromAddress(): ShipFromAddress | null {
     email:
       trim(process.env.SHIP_FROM_EMAIL) ||
       trim(process.env.MERCHANT_ORDER_EMAIL) ||
-      'orders@lovelyqueenmarket.com',
+      'orders@kintampoafricanmarket.com',
   }
 }
 

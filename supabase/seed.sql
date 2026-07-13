@@ -1,5 +1,5 @@
 -- ============================================================
--- Lovely Queen African Market – Products Table
+-- Kintampo African Market – Products Table
 -- Run this in your Supabase project: SQL Editor → New Query
 -- ============================================================
 

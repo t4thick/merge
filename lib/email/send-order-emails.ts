@@ -12,7 +12,7 @@ import { getPublicSiteUrl } from '@/lib/site-url'
 import { SHIPPING_METHOD_LABEL, type ShippingMethod } from '@/lib/shipping'
 import { formatOrderNumber } from '@/lib/orders/order-number'
 
-const STORE_NAME = 'Lovely Queen African Market'
+const STORE_NAME = 'Kintampo African Market'
 
 export type OrderRowForEmail = {
   id: string

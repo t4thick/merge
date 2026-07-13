@@ -1,8 +1,8 @@
-# Lovely Queen Market — Project Documentation
+# Kintampo African Market — Project Documentation
 
 ## 1. Overview
 
-Lovely Queen African Market is a full-stack grocery e-commerce application. Customers browse 170+ products across 14 departments, check out with Stripe, and receive order updates by email. Staff manage catalog, orders, customers, and fulfillment through a password-protected admin dashboard.
+Kintampo African Market is a full-stack grocery e-commerce application. Customers browse products across departments, check out with Stripe, and receive order updates by email. Staff manage catalog, orders, customers, and fulfillment through a password-protected admin dashboard.
 
 Design direction: **utility-first premium commerce** — fast pages, clear typography, no decorative clutter. See `AGENTS.md` for UI standards.
 
@@ -153,14 +153,14 @@ Key tables: `products`, `orders`, `order_items`, `profiles`, `addresses`, `check
 ### Vercel
 
 1. Connect GitHub repo `t4thick/chuck-and-rich`
-2. Root directory: `lovely-queen-market` (if monorepo) or project root
+2. Root directory: project root
 3. Set all production env vars
 4. Deploy from `main`
 
 ### Stripe webhook (live)
 
 - **Developers → Webhooks → Add destination**
-- URL: `https://lovely-queen-market.vercel.app/api/stripe/webhook`
+- URL: `https://YOUR-DOMAIN/api/stripe/webhook`
 - Events: `checkout.session.completed`, `payment_intent.succeeded`
 - Copy signing secret → `STRIPE_WEBHOOK_SECRET`
 
@@ -180,7 +180,7 @@ Key tables: `products`, `orders`, `order_items`, `profiles`, `addresses`, `check
 | Ship an order | Admin → order → print slip or USPS label → update tracking → status `shipped` |
 | Refund | Admin → order → Refund (Stripe orders only) |
 | Export sales | Admin → Dashboard → date range → Export CSV |
-| Product import | `npm run import:lovelyqueen` (requires service role in `.env.local`) |
+| Product import | `npm run import:products` (requires service role in `.env.local`) |
 | Category cleanup | `npm run categories:reclassify:dry` then `:apply` |
 
 ---

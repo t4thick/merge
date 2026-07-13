@@ -6,7 +6,7 @@ import { getSupportEmail } from '@/lib/constants/store'
 
 export const metadata: Metadata = {
   title: 'Feedback',
-  description: 'Suggest improvements for the Lovely Queen Market website.',
+  description: 'Suggest improvements for the Kintampo African Market website.',
   robots: { index: true, follow: true },
 }
 
@@ -27,7 +27,7 @@ export default function FeedbackPage() {
         <p className="mt-8 text-center text-sm text-earth-500">
           Prefer email?{' '}
           <a
-            href={`mailto:${supportEmail}?subject=${encodeURIComponent('Lovely Queen website feedback')}`}
+            href={`mailto:${supportEmail}?subject=${encodeURIComponent('Kintampo African Market website feedback')}`}
             className="font-medium text-brand-700 no-underline hover:text-brand-800"
           >
             {supportEmail}

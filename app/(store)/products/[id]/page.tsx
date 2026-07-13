@@ -52,7 +52,7 @@ export async function generateMetadata({
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? ''
   const productUrl = `${siteUrl}/products/${product.id}`
-  const description = product.description ?? `${product.name} — ${product.category} from Lovely Queen Market, Columbus OH.`
+  const description = product.description ?? `${product.name} — ${product.category} from Kintampo African Market, Columbus OH.`
 
   return {
     title: product.name,
@@ -62,7 +62,7 @@ export async function generateMetadata({
       url: productUrl,
       title: product.name,
       description,
-      siteName: 'Lovely Queen Market',
+      siteName: 'Kintampo African Market',
       ...(product.image_url ? { images: [{ url: product.image_url, alt: product.name }] } : {}),
     },
     twitter: {
@@ -148,7 +148,7 @@ export default async function ProductPage({
         : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'LocalBusiness',
-        name: 'Lovely Queen Market',
+        name: 'Kintampo African Market',
         address: {
           '@type': 'PostalAddress',
           streetAddress: '1668 E Dublin Granville Rd',

@@ -2,6 +2,7 @@ import { SOCIAL_LINKS } from '@/lib/constants/social'
 import { cn } from '@/lib/utils'
 
 export function SocialLinks({ className }: { className?: string }) {
+  if (SOCIAL_LINKS.length === 0) return null
   return (
     <ul className={cn('flex flex-wrap gap-2', className)}>
       {SOCIAL_LINKS.map((link) => (

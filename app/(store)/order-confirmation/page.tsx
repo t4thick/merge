@@ -71,7 +71,7 @@ export default async function OrderConfirmationPage({
       <PageHeader
         eyebrow="Order confirmed"
         title="Thank you for your order"
-        subtitle="Lovely Queen African Market — we'll take it from here."
+        subtitle="Kintampo African Market — we'll take it from here."
         centered
       />
 

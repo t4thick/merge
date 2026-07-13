@@ -56,7 +56,7 @@ export function AdminSidebar() {
           {/* Left: logo + desktop nav */}
           <div className="flex items-center gap-4">
             <span className="text-sm font-bold tracking-tight text-earth-900">
-              Lovely Queen <span className="text-brand-700">Admin</span>
+              Kintampo <span className="text-brand-700">Admin</span>
             </span>
 
             {/* Desktop nav — hidden on mobile */}
@@ -146,7 +146,7 @@ export function AdminSidebar() {
             {/* Drawer header */}
             <div className="flex h-14 shrink-0 items-center justify-between border-b border-earth-100 px-4">
               <span className="text-sm font-bold text-earth-900">
-                Lovely Queen <span className="text-brand-700">Admin</span>
+                Kintampo <span className="text-brand-700">Admin</span>
               </span>
               <button
                 type="button"

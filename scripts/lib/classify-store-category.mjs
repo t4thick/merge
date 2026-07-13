@@ -1,6 +1,6 @@
 /**
  * Rule-based store category classifier (name + optional source categories).
- * Shared by reclassify-product-categories.mjs and classify-lovelyqueen-catalog.mjs
+ * Shared by reclassify-product-categories.mjs
  */
 
 export const STORE_CATEGORIES = [

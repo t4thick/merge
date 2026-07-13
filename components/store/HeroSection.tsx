@@ -35,7 +35,7 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
   const stats = heroStats(inStockCount)
 
   return (
-    <section className="overflow-hidden border-b border-earth-200" aria-label="Welcome to Lovely Queen Market">
+    <section className="overflow-hidden border-b border-earth-200" aria-label="Welcome to Kintampo African Market">
 
       {/* ── MOBILE ─────────────────────────────────────────────────────────── */}
       <div className="sm:hidden">
@@ -71,8 +71,7 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
             <StoreLogo variant="mark" linked={false} className="mx-auto" />
           </div>
           <h1 className="mt-2 text-balance text-[2rem] font-bold leading-[1.1] tracking-tight text-earth-900">
-            African &amp; Caribbean groceries,{' '}
-            <span className="text-brand-700">delivered fast.</span>
+            Groceries from Ghana &amp; the Caribbean
           </h1>
           <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-earth-600">
             {heroSubtitle(inStockCount)}
@@ -145,9 +144,7 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
               <StoreLogo variant="mark" linked={false} />
             </div>
             <h1 className="mt-4 text-balance text-5xl font-bold tracking-tight text-earth-900 lg:text-[3.5rem] lg:leading-[1.08]">
-              African &amp; Caribbean groceries,
-              <br />
-              <span className="text-brand-700">delivered fast.</span>
+              Groceries from Ghana &amp; the Caribbean
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-earth-600 sm:text-lg">
               {heroSubtitleDesktop(inStockCount)}

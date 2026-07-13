@@ -55,7 +55,7 @@ export function StoreIntegratedShippingPanel({
       <div className="border-b border-earth-200 bg-white px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-base font-semibold text-earth-950">Lovely Queen shipping desk</p>
+            <p className="text-base font-semibold text-earth-950">Kintampo shipping desk</p>
             <p className="mt-1 text-sm text-earth-600">
               Print {mailClass.replace(/_/g, ' ')} labels here — no Click-N-Ship tab, tracking saved
               automatically.

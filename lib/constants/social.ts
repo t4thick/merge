@@ -8,26 +8,28 @@ function socialUrl(envKey: string, fallback: string): string {
   return process.env[envKey]?.trim() || fallback
 }
 
-/** Official Lovely Queen social profiles (override via NEXT_PUBLIC_SOCIAL_*). */
-export const SOCIAL_LINKS: SocialLink[] = [
+/**
+ * Official store social profiles. Set the real Kintampo profiles via
+ * NEXT_PUBLIC_SOCIAL_* env vars; links with empty fallbacks are hidden.
+ */
+const ALL_LINKS: SocialLink[] = [
   {
     id: 'tiktok',
     label: 'TikTok',
-    href: socialUrl('NEXT_PUBLIC_SOCIAL_TIKTOK_URL', 'https://www.tiktok.com/@lovelyqueen8855'),
+    href: socialUrl('NEXT_PUBLIC_SOCIAL_TIKTOK_URL', ''),
   },
   {
     id: 'facebook',
     label: 'Facebook',
-    href: socialUrl('NEXT_PUBLIC_SOCIAL_FACEBOOK_URL', 'https://www.facebook.com/100057288706241/'),
+    href: socialUrl('NEXT_PUBLIC_SOCIAL_FACEBOOK_URL', ''),
   },
   {
     id: 'instagram',
     label: 'Instagram',
-    href: socialUrl(
-      'NEXT_PUBLIC_SOCIAL_INSTAGRAM_URL',
-      'https://www.instagram.com/lovelyqueenafricanmarket/'
-    ),
+    href: socialUrl('NEXT_PUBLIC_SOCIAL_INSTAGRAM_URL', ''),
   },
 ]
+
+export const SOCIAL_LINKS: SocialLink[] = ALL_LINKS.filter((link) => link.href !== '')
 
 export const SOCIAL_SAME_AS = SOCIAL_LINKS.map((link) => link.href)

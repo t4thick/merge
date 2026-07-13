@@ -1,5 +1,5 @@
 # Run ONCE as Administrator: right-click PowerShell -> Run as administrator, then:
-#   cd "path\to\lovely-queen-market"
+#   cd "path\to\project"
 #   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 #   .\scripts\open-firewall-dev.ps1
 #
@@ -8,8 +8,8 @@
 $ErrorActionPreference = 'Stop'
 
 $rules = @(
-    @{ Port = 3000; Name = 'Lovely Queen Next.js dev TCP 3000' }
-    @{ Port = 3002; Name = 'Lovely Queen Next.js dev TCP 3002 (e2e)' }
+    @{ Port = 3000; Name = 'Kintampo Next.js dev TCP 3000' }
+    @{ Port = 3002; Name = 'Kintampo Next.js dev TCP 3002 (e2e)' }
 )
 
 foreach ($r in $rules) {

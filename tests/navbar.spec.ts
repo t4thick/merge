@@ -8,7 +8,7 @@ test.describe('Navbar', () => {
   })
 
   test('shows brand and links to home', async ({ page }) => {
-    const logo = page.getByRole('link', { name: /Lovely Queen/i }).first()
+    const logo = page.getByRole('link', { name: /Kintampo/i }).first()
     await expect(logo).toBeVisible()
     await expect(logo).toHaveAttribute('href', '/')
   })

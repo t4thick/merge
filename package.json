@@ -1,13 +1,12 @@
 {
-  "name": "lovely-queen-market",
+  "name": "kintampo-african-market",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "node scripts/next-dist-dir.cjs dev && next dev",
     "dev:lan": "node scripts/next-dist-dir.cjs dev && next dev -H 0.0.0.0",
     "dev:phone": "node scripts/phone-hint.mjs && node scripts/next-dist-dir.cjs dev && next dev -H 0.0.0.0 -p 3000",
-    "import:asafo": "node --env-file=.env.local scripts/import-asafo-to-supabase.mjs",
-    "import:lovelyqueen": "node --env-file=.env.local scripts/import-lovelyqueen-to-supabase.mjs",
+    "import:products": "node scripts/import-products-export.mjs",
     "categories:reclassify": "node --env-file=.env.local scripts/reclassify-product-categories.mjs --apply",
     "categories:reclassify:dry": "node --env-file=.env.local scripts/reclassify-product-categories.mjs",
     "categories:reclassify:prod": "node --env-file=.env.vercel.tmp scripts/reclassify-product-categories.mjs --apply",

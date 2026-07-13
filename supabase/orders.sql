@@ -1,5 +1,5 @@
 -- ============================================================
--- Lovely Queen African Market – Orders Tables
+-- Kintampo African Market – Orders Tables
 -- Run this in Supabase: SQL Editor → New Query
 -- ============================================================
 

@@ -1,4 +1,4 @@
-# Admin Guide — Lovely Queen Market
+# Admin Guide — Kintampo African Market
 
 Staff dashboard for order fulfillment, catalog management, and reporting.
 

@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-lg font-semibold text-earth-900">1. Who we are</h2>
             <p>
-              {STORE.name} operates lovelyqueenafricanmarket.com. We are located at {STORE.address}.
+              {STORE.name} operates this website. We are located at {STORE.address}.
               This Privacy Policy explains how we collect, use, and protect your personal information
               when you use our website or place an order.
             </p>

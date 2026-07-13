@@ -71,7 +71,7 @@ const checks = [
         key: 'NEXT_PUBLIC_SITE_URL (https, no trailing slash)',
         ok: set('NEXT_PUBLIC_SITE_URL') && process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https://'),
         required: isProd,
-        hint: 'e.g. https://lovelyqueenmart.com',
+        hint: 'e.g. https://kintampoafricanmarket.com',
       },
       {
         key: 'STRIPE live keys (sk_live_ / pk_live_)',
@@ -111,7 +111,7 @@ const checks = [
 
 let missingRequired = 0
 
-console.log(`\nLovely Queen Market — env check${isProd ? ' (production mode)' : ''}\n`)
+console.log(`\nKintampo African Market — env check${isProd ? ' (production mode)' : ''}\n`)
 
 for (const group of checks) {
   console.log(group.phase)
