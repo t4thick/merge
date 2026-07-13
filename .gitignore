@@ -41,6 +41,9 @@ yarn-error.log*
 # env files (secrets — never commit)
 .env*
 !.env.example
+
+# Local product dump from Chuck and Rich (do not commit)
+/data/products-export.json
 Lovely-Queen-env-reference.pdf
 .env-export-temp.html
 
