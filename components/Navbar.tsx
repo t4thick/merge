@@ -76,10 +76,10 @@ export function Navbar() {
                     key={href}
                     href={href}
                     className={cn(
-                      'px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] no-underline transition-colors duration-150',
+                      'rounded-md px-3 py-1.5 text-sm font-semibold no-underline transition-colors duration-150',
                       active
-                        ? 'text-earth-950 underline underline-offset-8 decoration-2'
-                        : 'text-earth-500 hover:text-earth-950'
+                        ? 'bg-brand-50 text-brand-700'
+                        : 'text-earth-600 hover:bg-earth-50 hover:text-earth-900'
                     )}
                   >
                     {label}
@@ -98,7 +98,7 @@ export function Navbar() {
                 {totalItems > 0 && (
                   <span
                     key={badgeKey}
-                    className="animate-pop flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-bold leading-none text-earth-950"
+                    className="animate-pop flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-300 px-1 text-[11px] font-bold leading-none text-earth-950"
                   >
                     {totalItems > 99 ? '99+' : totalItems}
                   </span>
@@ -120,7 +120,7 @@ export function Navbar() {
                 {totalItems > 0 && (
                   <span
                     key={badgeKey}
-                    className="animate-pop absolute right-1 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-earth-950 px-0.5 text-[10px] font-semibold leading-none text-white"
+                    className="animate-pop absolute right-1 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-0.5 text-[10px] font-semibold leading-none text-white"
                   >
                     {totalItems > 99 ? '99+' : totalItems}
                   </span>
@@ -184,7 +184,7 @@ export function Navbar() {
                     className={cn(
                       'flex h-12 items-center rounded-lg px-4 text-[15px] font-medium no-underline transition-colors duration-150',
                       active
-                        ? 'bg-earth-100 text-earth-950'
+                        ? 'bg-brand-50 text-brand-700'
                         : 'text-earth-700 hover:bg-earth-50 hover:text-earth-900'
                     )}
                   >

@@ -21,7 +21,7 @@ This site is **NOT** a themed cultural marketplace. It is a **premium high-perfo
 5. **Display font for marketing only.** Body, navigation, product, cart, forms, tables, headings → all sans (`--font-sans` Montserrat). The display font is reserved for at most a single H1 per landing surface.
 6. **Shadows: minimal.** One soft shadow on cards, one slightly deeper on hover. No glow shadows, no colored shadows, no inset stacks.
 7. **Spacing: consistent rhythm.** Use the existing tokens. Page sections use `py-12 sm:py-16 lg:py-20` — not more.
-8. **Color: restrained.** Brand-green is for primary actions, links, and small accents. Surfaces stay white/`--color-earth-50`/`--color-earth-100`. Never tint large areas with brand color.
+8. **Color: warm market palette (owner-approved 2026-07).** Brand red (`--color-brand-600` #CE1126) for primary actions, prices, links, active states. Marigold gold (`--color-accent-*`) for badges, deal tags, and dark-footer accents. Surfaces stay white/warm stone; large tinted areas limited to soft `accent-50` washes and the dark footer. Reference: makolastores.us energy with cleaner execution.
 
 ## Inspiration
 

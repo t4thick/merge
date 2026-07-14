@@ -58,7 +58,7 @@ export function ProductCard({ product, priority }: { product: Product; priority?
           <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-earth-400">
             {product.category}
           </p>
-          <h3 className="mt-1.5 line-clamp-2 text-[14px] font-medium leading-snug text-earth-900 underline-offset-4 transition-colors duration-150 group-hover:underline sm:text-[15px]">
+          <h3 className="mt-1.5 line-clamp-2 text-[14px] font-medium leading-snug text-earth-900 transition-colors duration-150 group-hover:text-brand-700 sm:text-[15px]">
             {product.name}
           </h3>
           {product.description && (
@@ -74,7 +74,7 @@ export function ProductCard({ product, priority }: { product: Product; priority?
               )}
             </div>
           )}
-          <p className="mt-auto pt-2.5 text-[17px] font-semibold tabular-nums tracking-tight text-earth-900">
+          <p className="mt-auto pt-2.5 text-[17px] font-bold tabular-nums tracking-tight text-brand-700">
             {formatMoney(product.price)}
           </p>
         </div>
@@ -137,7 +137,7 @@ export function ProductCardMini({ product }: { product: Product }) {
       />
       <div>
         <p className="line-clamp-2 text-sm font-medium text-earth-900">{product.name}</p>
-        <p className="text-sm font-semibold text-earth-900">{formatMoney(product.price)}</p>
+        <p className="text-sm font-bold text-brand-700">{formatMoney(product.price)}</p>
       </div>
     </Link>
   )

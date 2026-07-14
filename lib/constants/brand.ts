@@ -1,9 +1,10 @@
-/** Kintampo African Market — monochrome brand. Color lives in product photos. */
+/** Kintampo African Market — warm market brand. Red primary, gold accent. */
 export const BRAND = {
-  black: '#111111',
-  blackSoft: '#171717',
+  red: '#CE1126',
+  redDark: '#AD0E20',
+  gold: '#F59E0B',
+  goldBright: '#FCD116',
+  black: '#1C1917',
   white: '#FFFFFF',
-  gray: '#737373',
-  grayLight: '#A3A3A3',
   tagline: 'Groceries from Ghana & the Caribbean.',
 } as const

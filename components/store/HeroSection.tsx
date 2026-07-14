@@ -1,67 +1,74 @@
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
-import { formatInStockCount } from '@/lib/catalog-stats'
+import { ArrowRight, MapPin, Package, ShoppingBasket, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SearchAutocomplete } from '@/components/store/SearchAutocomplete'
 
-function heroStats(inStockCount: number) {
-  return [
-    formatInStockCount(inStockCount),
-    'Store pickup · Columbus OH',
-    'Ships in the US within 24h',
-  ] as const
-}
+const QUICK_LINKS = [
+  { href: '/shop', label: 'Shop all', sub: 'Full catalog', icon: ShoppingBasket },
+  { href: '/shop#categories', label: 'Categories', sub: '14 departments', icon: Package },
+  { href: '/track-order', label: 'Track order', sub: 'Live status', icon: Truck },
+  { href: '/feedback', label: 'Request item', sub: "Can't find it?", icon: MapPin },
+] as const
 
 export function HeroSection({ inStockCount }: { inStockCount: number }) {
-  const stats = heroStats(inStockCount)
-
   return (
-    <section className="border-b border-earth-200 bg-white" aria-label="Welcome to Kintampo African Market">
-      <div className="store-container py-12 sm:py-16 lg:py-20">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-earth-500 sm:text-xs">
-            Columbus, OH · Pickup &amp; US shipping
-          </p>
+    <section aria-label="Welcome to Kintampo African Market">
+      {/* Warm banner */}
+      <div className="bg-gradient-to-b from-accent-50 to-white">
+        <div className="store-container py-10 sm:py-14 lg:py-16">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white">
+              Marketplace for African &amp; Caribbean food
+            </p>
 
-          <h1 className="mt-4 text-center text-[2.5rem] font-extrabold uppercase leading-[0.98] tracking-[-0.02em] text-earth-950 sm:text-6xl lg:text-[4.5rem]">
-            African &amp; Caribbean
-            <br />
-            groceries
-          </h1>
+            <h1 className="mt-5 text-balance text-4xl font-extrabold leading-[1.05] tracking-tight text-earth-900 sm:text-5xl lg:text-6xl">
+              Everything from the{' '}
+              <span className="text-brand-600">Makola market</span>,
+              <br className="hidden sm:block" /> delivered to your door
+            </h1>
 
-          <p className="mx-auto mt-5 max-w-md text-center text-sm leading-relaxed text-earth-600 sm:mt-6 sm:max-w-xl sm:text-base">
-            {inStockCount > 0
-              ? `${inStockCount.toLocaleString()} products — fufu, palm oil, spices, drinks & more. `
-              : 'Fufu, palm oil, spices, drinks & more. '}
-            Pickup in Columbus or shipped nationwide.
-          </p>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-earth-600 sm:text-base">
+              {inStockCount > 0 ? `${inStockCount.toLocaleString()} products in stock — ` : ''}
+              fufu, palm oil, egusi, spices, drinks &amp; more. Pickup in Columbus or shipped
+              nationwide within 24h.
+            </p>
 
-          <div className="mx-auto mt-7 max-w-xl sm:mt-8">
-            <SearchAutocomplete placeholder="Search jollof rice, palm oil, plantain…" />
-          </div>
+            <div className="mx-auto mt-6 max-w-xl">
+              <SearchAutocomplete placeholder="Search jollof rice, palm oil, plantain…" />
+            </div>
 
-          <div className="mt-5 flex flex-col items-center gap-3 sm:mt-6 sm:flex-row sm:justify-center">
-            <Link href="/shop" className="w-full no-underline sm:w-auto">
-              <Button size="lg" className="h-12 w-full px-8 text-[15px] sm:w-auto sm:min-w-[220px]">
-                Shop all products
-              </Button>
-            </Link>
-            <Link
-              href="/shop#categories"
-              className="inline-flex h-11 items-center gap-1 text-sm font-semibold text-earth-900 no-underline underline-offset-4 hover:underline"
-            >
-              Browse categories
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-          </div>
-
-          <ul className="mx-auto mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:mt-10">
-            {stats.map((label) => (
-              <li
-                key={label}
-                className="inline-flex items-center rounded-full border border-earth-200 px-3.5 py-1.5 text-xs font-medium text-earth-600"
+            <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/shop" className="w-full no-underline sm:w-auto">
+                <Button size="lg" className="h-12 w-full px-8 text-[15px] sm:w-auto sm:min-w-[210px]">
+                  Shop all products
+                </Button>
+              </Link>
+              <Link
+                href="/shop#categories"
+                className="inline-flex h-11 items-center gap-1 text-sm font-bold text-brand-700 no-underline hover:text-brand-800"
               >
-                {label}
+                Browse categories
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
+          </div>
+
+          {/* Quick-access tiles */}
+          <ul className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-2.5 sm:mt-10 sm:grid-cols-4 sm:gap-3">
+            {QUICK_LINKS.map(({ href, label, sub, icon: Icon }) => (
+              <li key={label}>
+                <Link
+                  href={href}
+                  className="group flex items-center gap-3 rounded-xl border border-earth-200 bg-white p-3 no-underline shadow-[var(--shadow-card)] transition-all duration-150 hover:border-brand-300 hover:shadow-[var(--shadow-card-hover)] sm:p-3.5"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors duration-150 group-hover:bg-brand-600 group-hover:text-white">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-bold text-earth-900">{label}</span>
+                    <span className="block truncate text-xs text-earth-500">{sub}</span>
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
