@@ -18,7 +18,12 @@ export function CategoryBrowse({ displayCategories, categoryCount }: CategoryBro
           <div>
             <h2 className="section-title">Shop by category</h2>
             <p className="section-subtitle">
-              {PRODUCT_CATEGORIES.length} departments. {Object.values(categoryCount).reduce((a, b) => a + b, 0)} products in stock.
+              {(() => {
+                const total = Object.values(categoryCount).reduce((a, b) => a + b, 0)
+                return total > 0
+                  ? `${PRODUCT_CATEGORIES.length} departments · ${total.toLocaleString()} products in stock`
+                  : `${PRODUCT_CATEGORIES.length} departments`
+              })()}
             </p>
           </div>
           <Link

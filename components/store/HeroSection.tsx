@@ -20,18 +20,20 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
       <div className="store-container py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-4xl">
           <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-earth-500 sm:text-xs">
-            African &amp; Caribbean grocery
+            Columbus, OH · Pickup &amp; US shipping
           </p>
 
-          <h1 className="mt-4 text-center text-[2.6rem] font-extrabold uppercase leading-[0.95] tracking-[-0.02em] text-earth-950 sm:text-6xl lg:text-7xl">
-            Ghana to
+          <h1 className="mt-4 text-center text-[2.5rem] font-extrabold uppercase leading-[0.98] tracking-[-0.02em] text-earth-950 sm:text-6xl lg:text-[4.5rem]">
+            African &amp; Caribbean
             <br />
-            <span className="text-outline">your kitchen</span>
+            groceries
           </h1>
 
           <p className="mx-auto mt-5 max-w-md text-center text-sm leading-relaxed text-earth-600 sm:mt-6 sm:max-w-xl sm:text-base">
-            {inStockCount > 0 ? `${inStockCount.toLocaleString()} products` : 'Products'} — fufu,
-            palm oil, spices, drinks &amp; more. Pickup in Columbus or shipped nationwide.
+            {inStockCount > 0
+              ? `${inStockCount.toLocaleString()} products — fufu, palm oil, spices, drinks & more. `
+              : 'Fufu, palm oil, spices, drinks & more. '}
+            Pickup in Columbus or shipped nationwide.
           </p>
 
           <div className="mx-auto mt-7 max-w-xl sm:mt-8">
