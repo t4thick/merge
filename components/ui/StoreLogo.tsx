@@ -10,42 +10,27 @@ type StoreLogoProps = {
 }
 
 /**
- * Vector brand lockup — renders as SVG + live text, so it is pixel-crisp at
- * every size, needs no image download, and sits on any background.
+ * Type-led wordmark — KINTAMPO set tight with a solid square full stop,
+ * "AFRICAN MARKET" letterspaced beneath. Monochrome, editorial, crisp at
+ * any size. No image request, no icon box.
  */
-function KMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
-      <rect width="48" height="48" rx="10" fill="var(--color-brand-700)" />
-      <path
-        d="M13 9h7.5v13.4L32.3 9h9.2L28.4 24l13.1 15h-9.2L20.5 25.6V39H13Z"
-        fill="#F0D56A"
-      />
-      <path d="M13 9h3.4v30H13Z" fill="#C9A227" />
-    </svg>
-  )
-}
-
 const SIZES = {
   nav: {
-    mark: 'h-9 w-9 sm:h-10 sm:w-10',
-    name: 'text-[15px] sm:text-[17px]',
-    sub: 'text-[8px] tracking-[0.24em] sm:text-[9px]',
-    gap: 'gap-2.5',
+    name: 'text-[17px] sm:text-[19px]',
+    dot: 'h-[5px] w-[5px] sm:h-[6px] sm:w-[6px]',
+    sub: 'text-[7.5px] tracking-[0.32em] sm:text-[8.5px]',
     tagline: false,
   },
   mark: {
-    mark: 'h-10 w-10 sm:h-11 sm:w-11',
-    name: 'text-[17px] sm:text-[19px]',
-    sub: 'text-[9px] tracking-[0.24em] sm:text-[10px]',
-    gap: 'gap-3',
+    name: 'text-[20px] sm:text-[22px]',
+    dot: 'h-[6px] w-[6px] sm:h-[7px] sm:w-[7px]',
+    sub: 'text-[8.5px] tracking-[0.32em] sm:text-[9.5px]',
     tagline: false,
   },
   footer: {
-    mark: 'h-11 w-11',
-    name: 'text-[19px]',
-    sub: 'text-[10px] tracking-[0.24em]',
-    gap: 'gap-3',
+    name: 'text-[22px]',
+    dot: 'h-[7px] w-[7px]',
+    sub: 'text-[9.5px] tracking-[0.32em]',
     tagline: true,
   },
 } as const
@@ -53,21 +38,31 @@ const SIZES = {
 function Lockup({ variant }: { variant: keyof typeof SIZES }) {
   const s = SIZES[variant]
   return (
-    <span className={cn('inline-flex items-center', s.gap)}>
-      <KMark className={cn('shrink-0', s.mark)} />
-      <span className="flex flex-col justify-center">
-        <span className={cn('font-bold uppercase leading-none tracking-tight text-earth-900', s.name)}>
+    <span className="inline-flex flex-col">
+      <span className="inline-flex items-baseline gap-[3px]">
+        <span
+          className={cn(
+            'font-extrabold uppercase leading-none tracking-[-0.02em] text-earth-950',
+            s.name
+          )}
+        >
           Kintampo
         </span>
-        <span className={cn('mt-1 font-semibold uppercase leading-none text-gold-600', s.sub)}>
-          African Market
-        </span>
-        {s.tagline && (
-          <span className="mt-1.5 text-[11px] font-medium leading-none text-earth-500">
-            {STORE.tagline}
-          </span>
-        )}
+        <span className={cn('inline-block shrink-0 bg-earth-950', s.dot)} aria-hidden />
       </span>
+      <span
+        className={cn(
+          'mt-[5px] font-semibold uppercase leading-none text-earth-500',
+          s.sub
+        )}
+      >
+        African Market
+      </span>
+      {s.tagline && (
+        <span className="mt-2 max-w-[15rem] text-[11px] font-medium leading-snug normal-case tracking-normal text-earth-500">
+          {STORE.tagline}
+        </span>
+      )}
     </span>
   )
 }
@@ -83,7 +78,7 @@ export function StoreLogo({ className, variant = 'nav', linked = true }: StoreLo
     <Link
       href="/"
       className={cn(
-        'inline-flex shrink-0 no-underline transition-opacity duration-150 hover:opacity-85',
+        'inline-flex shrink-0 no-underline transition-opacity duration-150 hover:opacity-80',
         className
       )}
       aria-label={`${STORE.name} — home`}

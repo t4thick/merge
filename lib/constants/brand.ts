@@ -1,12 +1,9 @@
-/** Official Kintampo African Market brand colors. */
+/** Kintampo African Market — monochrome brand. Color lives in product photos. */
 export const BRAND = {
-  red: '#B33A2B',
-  redDark: '#8F2E22',
-  black: '#121212',
-  green: '#0F5C4C',
-  greenDark: '#0A4036',
-  goldLight: '#F0D56A',
-  gold: '#C9A227',
-  goldDark: '#9A7510',
+  black: '#111111',
+  blackSoft: '#171717',
+  white: '#FFFFFF',
+  gray: '#737373',
+  grayLight: '#A3A3A3',
   tagline: 'Groceries from Ghana & the Caribbean.',
 } as const

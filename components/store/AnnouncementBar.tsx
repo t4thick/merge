@@ -5,7 +5,7 @@ import { X } from 'lucide-react'
 import { STORE } from '@/lib/constants/store'
 import { FREE_STANDARD_SHIPPING_SUBTOTAL } from '@/lib/shipping'
 
-const DISMISS_KEY = 'lq_bar_v1'
+const DISMISS_KEY = 'kam_bar_v1'
 
 const MESSAGES = [
   'Columbus? Free store pickup — send Uber with your order #',

@@ -10,12 +10,12 @@ const buttonVariants = cva(
         default:
           'bg-brand-700 text-white shadow-[var(--shadow-elev)] hover:bg-brand-800 hover:shadow-[var(--shadow-card-hover)]',
         accent:
-          'bg-accent-500 text-white shadow-[0_8px_24px_rgb(244_113_75_/_0.28)] hover:bg-accent-600 hover:shadow-[0_12px_32px_rgb(244_113_75_/_0.32)]',
+          'bg-earth-900 text-white hover:bg-earth-950',
         outline:
-          'border border-earth-300 bg-white text-earth-800 hover:border-brand-500 hover:bg-sand hover:shadow-[var(--shadow-soft)]',
+          'border border-earth-300 bg-white text-earth-800 hover:border-earth-900 hover:bg-earth-50',
         ghost: 'text-earth-700 hover:bg-earth-100 hover:text-earth-900',
         destructive: 'bg-red-600 text-white hover:bg-red-700',
-        link: 'text-brand-700 underline-offset-4 hover:underline',
+        link: 'text-earth-900 underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-10 px-4 py-2',

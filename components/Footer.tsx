@@ -39,8 +39,7 @@ export function Footer() {
           <div className="lg:col-span-1">
             <StoreLogo variant="footer" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-earth-600">
-              Columbus, Ohio&apos;s home for authentic African &amp; Caribbean groceries — store
-              pickup and nationwide shipping.
+              African &amp; Caribbean groceries. Store pickup and US shipping.
             </p>
             <div className="mt-5 flex flex-wrap gap-3 text-xs font-medium text-earth-500">
               <span className="inline-flex items-center gap-1.5">

@@ -43,20 +43,22 @@ export function ProductCard({ product, priority }: { product: Product; priority?
               Out of stock
             </span>
           )}
-          <ProductImage
-            src={product.image_url}
-            alt={product.name}
-            className="rounded-none"
-            sizes="(max-width:640px) 50vw, 25vw"
-            priority={priority}
-            showPlaceholderHint
-          />
+          <div className="h-full w-full transition-transform duration-200 ease-out group-hover:scale-[1.03]">
+            <ProductImage
+              src={product.image_url}
+              alt={product.name}
+              className="rounded-none"
+              sizes="(max-width:640px) 50vw, 25vw"
+              priority={priority}
+              showPlaceholderHint
+            />
+          </div>
         </div>
         <div className="flex flex-1 flex-col p-3 sm:p-3.5">
-          <p className="line-clamp-1 text-[11px] font-medium uppercase tracking-wider text-earth-500">
+          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-earth-400">
             {product.category}
           </p>
-          <h3 className="mt-1.5 line-clamp-2 text-[14px] font-medium leading-snug text-earth-900 transition-colors duration-150 group-hover:text-brand-700 sm:text-[15px]">
+          <h3 className="mt-1.5 line-clamp-2 text-[14px] font-medium leading-snug text-earth-900 underline-offset-4 transition-colors duration-150 group-hover:underline sm:text-[15px]">
             {product.name}
           </h3>
           {product.description && (
