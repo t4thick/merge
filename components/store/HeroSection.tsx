@@ -21,7 +21,7 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
               Marketplace for African &amp; Caribbean food
             </p>
 
-            <h1 className="mt-5 text-balance text-4xl font-extrabold leading-[1.05] tracking-tight text-earth-900 sm:text-5xl lg:text-6xl">
+            <h1 className="wordmark mt-5 text-balance text-4xl leading-[1.02] text-earth-900 sm:text-5xl lg:text-[3.9rem]">
               Everything from the{' '}
               <span className="text-brand-600">Makola market</span>,
               <br className="hidden sm:block" /> delivered to your door

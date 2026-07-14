@@ -2,6 +2,7 @@
 
 @theme {
   --font-sans: var(--font-montserrat), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
 
   /* Brand — market red (Ghana flag red at 600). Primary actions, prices, accents. */
   --color-brand-50: #fef2f3;
@@ -119,6 +120,14 @@
 @layer components {
   .store-container {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Brand wordmark — fat high-contrast italic serif (9924-style script energy). */
+  .wordmark {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 900;
+    letter-spacing: -0.045em;
   }
 
   .page-section {
