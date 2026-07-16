@@ -28,23 +28,23 @@ export function CategoryBrowse({ displayCategories, categoryCount }: CategoryBro
           </div>
           <Link
             href="/shop"
-            className="group inline-flex shrink-0 items-center gap-1 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
+            className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
           >
             View all
             <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" />
           </Link>
         </div>
 
-        <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
+        <ul className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-5">
           {displayCategories.map((cat) => {
             const imageUrl = getCategoryImage(cat)
             const count = categoryCount[cat] ?? 0
 
             return (
-              <li key={cat}>
+              <li key={cat} className="min-w-0">
                 <Link
                   href={`/shop?category=${encodeURIComponent(cat)}`}
-                  className="category-tile group block no-underline"
+                  className="category-tile group block min-w-0 no-underline"
                 >
                   <div className="relative aspect-square overflow-hidden bg-earth-50">
                     {imageUrl ? (
@@ -55,7 +55,7 @@ export function CategoryBrowse({ displayCategories, categoryCount }: CategoryBro
                         quality={90}
                         unoptimized={imageUrl.startsWith('/images/categories/')}
                         priority={cat === 'Beverages' || cat === 'Bread'}
-                        className="object-cover object-center transition-opacity duration-150 group-hover:opacity-95"
+                        className="object-cover object-center transition-transform duration-200 group-hover:scale-[1.02]"
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px"
                       />
                     ) : (
@@ -64,9 +64,9 @@ export function CategoryBrowse({ displayCategories, categoryCount }: CategoryBro
                       </span>
                     )}
                   </div>
-                  <div className="border-t border-earth-100 p-3">
+                  <div className="border-t border-earth-100 p-4">
                     <h3 className="line-clamp-1 text-sm font-medium text-earth-900">{cat}</h3>
-                    <p className="mt-0.5 text-xs text-earth-500">
+                    <p className="mt-1 text-xs text-earth-500">
                       {count > 0 ? `${count} item${count === 1 ? '' : 's'}` : 'View'}
                     </p>
                   </div>

@@ -45,14 +45,14 @@ export function AnnouncementBar() {
   if (hidden) return null
 
   return (
-    <div className="relative bg-brand-700 py-2.5 text-center text-[13px] font-medium text-white">
+    <div className="relative border-b border-earth-200 bg-white py-2.5 text-center text-xs font-medium text-earth-600">
       <p key={index} className="animate-fade-in px-10">
         {MESSAGES[index]}
       </p>
       <button
         type="button"
         onClick={dismiss}
-        className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md opacity-70 transition-opacity duration-150 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+        className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-earth-500 transition-colors duration-150 hover:bg-earth-100 hover:text-earth-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-earth-300"
         aria-label="Dismiss announcement"
       >
         <X className="h-4 w-4" aria-hidden />

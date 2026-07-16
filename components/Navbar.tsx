@@ -54,10 +54,10 @@ export function Navbar() {
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 border-b transition-colors duration-150',
+          'sticky top-0 z-50 border-b transition-all duration-200',
           scrolled
-            ? 'glass-nav border-earth-200'
-            : 'border-earth-100 bg-white'
+            ? 'glass-nav border-earth-200 shadow-[0_1px_12px_rgb(31_31_31/0.035)]'
+            : 'border-transparent bg-earth-50/95'
         )}
       >
         <div className="store-container">
@@ -76,10 +76,10 @@ export function Navbar() {
                     key={href}
                     href={href}
                     className={cn(
-                      'rounded-md px-3 py-1.5 text-sm font-semibold no-underline transition-colors duration-150',
+                      'rounded-xl px-3 py-2 text-sm font-medium no-underline transition-colors duration-200',
                       active
-                        ? 'bg-brand-50 text-brand-700'
-                        : 'text-earth-600 hover:bg-earth-50 hover:text-earth-900'
+                        ? 'bg-white text-earth-900 shadow-[var(--shadow-card)]'
+                        : 'text-earth-600 hover:bg-white hover:text-earth-900'
                     )}
                   >
                     {label}
@@ -98,7 +98,7 @@ export function Navbar() {
                 {totalItems > 0 && (
                   <span
                     key={badgeKey}
-                    className="animate-pop flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-300 px-1 text-[11px] font-bold leading-none text-earth-950"
+                    className="animate-pop flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-semibold leading-none text-earth-900"
                   >
                     {totalItems > 99 ? '99+' : totalItems}
                   </span>
@@ -120,7 +120,7 @@ export function Navbar() {
                 {totalItems > 0 && (
                   <span
                     key={badgeKey}
-                    className="animate-pop absolute right-1 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-0.5 text-[10px] font-semibold leading-none text-white"
+                    className="animate-pop absolute right-1 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-earth-900 px-0.5 text-[10px] font-semibold leading-none text-white"
                   >
                     {totalItems > 99 ? '99+' : totalItems}
                   </span>
@@ -151,13 +151,13 @@ export function Navbar() {
       {open && (
         <>
           <div
-            className="fixed inset-0 z-[60] bg-black/25 md:hidden"
+            className="fixed inset-0 z-[60] bg-earth-950/20 backdrop-blur-[2px] md:hidden"
             onClick={() => setOpen(false)}
             aria-hidden
           />
           <nav
             id="mobile-nav"
-            className="animate-slide-in-right fixed inset-y-0 right-0 z-[70] flex w-72 flex-col bg-white shadow-2xl md:hidden"
+            className="animate-slide-in-right fixed inset-y-0 right-0 z-[70] flex w-72 flex-col bg-white shadow-[var(--shadow-premium)] md:hidden"
             style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
             aria-label="Mobile"
           >
@@ -184,7 +184,7 @@ export function Navbar() {
                     className={cn(
                       'flex h-12 items-center rounded-lg px-4 text-[15px] font-medium no-underline transition-colors duration-150',
                       active
-                        ? 'bg-brand-50 text-brand-700'
+                        ? 'bg-earth-100 text-earth-900'
                         : 'text-earth-700 hover:bg-earth-50 hover:text-earth-900'
                     )}
                   >

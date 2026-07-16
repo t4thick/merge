@@ -3,16 +3,16 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
+  'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-earth-900/10 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
   {
     variants: {
       variant: {
         default:
-          'bg-brand-700 text-white shadow-[var(--shadow-elev)] hover:bg-brand-800 hover:shadow-[var(--shadow-card-hover)]',
+          'bg-earth-900 text-white shadow-[var(--shadow-card)] hover:bg-earth-800 hover:shadow-[var(--shadow-card-hover)]',
         accent:
-          'bg-earth-900 text-white hover:bg-earth-950',
+          'bg-earth-900 text-white hover:bg-earth-800',
         outline:
-          'border border-earth-300 bg-white text-earth-800 hover:border-earth-900 hover:bg-earth-50',
+          'border border-earth-200 bg-white text-earth-800 shadow-[var(--shadow-card)] hover:border-earth-300 hover:bg-earth-50',
         ghost: 'text-earth-700 hover:bg-earth-100 hover:text-earth-900',
         destructive: 'bg-red-600 text-white hover:bg-red-700',
         link: 'text-earth-900 underline-offset-4 hover:underline',

@@ -35,11 +35,11 @@ export function ProductCard({ product, priority }: { product: Product; priority?
   }
 
   return (
-    <article className="group premium-card premium-card-hover flex h-full flex-col">
+    <article className="group premium-card premium-card-hover flex h-full min-w-0 flex-col">
       <Link href={`/products/${product.id}`} className="flex flex-1 flex-col no-underline">
         <div className="product-image-frame relative">
           {!product.in_stock && (
-            <span className="absolute left-2 top-2 z-10 rounded-md bg-earth-900/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
+            <span className="absolute left-3 top-3 z-10 rounded-full bg-earth-900/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-white">
               Out of stock
             </span>
           )}
@@ -54,11 +54,11 @@ export function ProductCard({ product, priority }: { product: Product; priority?
             />
           </div>
         </div>
-        <div className="flex flex-1 flex-col p-3 sm:p-3.5">
-          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-earth-400">
+        <div className="flex flex-1 flex-col p-4 sm:p-5">
+          <p className="line-clamp-1 text-[10px] font-medium uppercase tracking-[0.14em] text-earth-500">
             {product.category}
           </p>
-          <h3 className="mt-1.5 line-clamp-2 text-[14px] font-medium leading-snug text-earth-900 transition-colors duration-150 group-hover:text-brand-700 sm:text-[15px]">
+          <h3 className="mt-2 line-clamp-2 text-[14px] font-medium leading-snug text-earth-900 transition-colors duration-200 group-hover:text-earth-600 sm:text-[15px]">
             {product.name}
           </h3>
           {product.description && (
@@ -74,12 +74,12 @@ export function ProductCard({ product, priority }: { product: Product; priority?
               )}
             </div>
           )}
-          <p className="mt-auto pt-2.5 text-[17px] font-bold tabular-nums tracking-tight text-brand-700">
+          <p className="mt-auto pt-4 text-[17px] font-semibold tabular-nums tracking-tight text-earth-900">
             {formatMoney(product.price)}
           </p>
         </div>
       </Link>
-      <div className="border-t border-earth-100 p-2">
+      <div className="px-3 pb-3 sm:px-4 sm:pb-4">
         <Button
           type="button"
           variant={product.in_stock ? 'default' : 'outline'}
@@ -137,7 +137,7 @@ export function ProductCardMini({ product }: { product: Product }) {
       />
       <div>
         <p className="line-clamp-2 text-sm font-medium text-earth-900">{product.name}</p>
-        <p className="text-sm font-bold text-brand-700">{formatMoney(product.price)}</p>
+        <p className="text-sm font-semibold text-earth-900">{formatMoney(product.price)}</p>
       </div>
     </Link>
   )

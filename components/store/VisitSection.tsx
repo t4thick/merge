@@ -5,9 +5,9 @@ import { STORE } from '@/lib/constants/store'
 
 export function VisitSection() {
   return (
-    <section className="border-t border-earth-200 bg-white py-12 sm:py-16">
+    <section className="bg-earth-50 py-12 sm:py-16 lg:py-20">
       <div className="store-container">
-        <div className="grid items-center gap-8 rounded-2xl border border-earth-200 bg-earth-50 p-8 sm:p-10 lg:grid-cols-2 lg:gap-12 lg:p-14">
+        <div className="grid items-center gap-8 rounded-3xl border border-earth-200 bg-white p-8 shadow-[var(--shadow-soft)] sm:p-10 lg:grid-cols-2 lg:gap-16 lg:p-14">
           <div>
             <h2 className="section-title">Visit the store</h2>
             <p className="section-subtitle">
@@ -15,20 +15,20 @@ export function VisitSection() {
             </p>
             <dl className="mt-6 space-y-3 text-sm">
               <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-earth-500" strokeWidth={1.75} aria-hidden />
                 <div>
                   <dt className="sr-only">Address</dt>
                   <dd className="font-medium text-earth-900">{STORE.address}</dd>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-earth-500" strokeWidth={1.75} aria-hidden />
                 <div>
                   <dt className="sr-only">Phone</dt>
                   <dd>
                     <a
                       href={STORE.phoneHref}
-                      className="font-medium text-earth-900 no-underline hover:text-brand-700"
+                      className="font-medium text-earth-900 no-underline hover:text-earth-600"
                     >
                       {STORE.phone}
                     </a>
@@ -52,7 +52,7 @@ export function VisitSection() {
             </a>
             <Link
               href="/track-order"
-              className="text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
+              className="text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
             >
               Track an order →
             </Link>

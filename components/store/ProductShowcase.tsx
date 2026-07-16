@@ -35,7 +35,7 @@ export function ProductShowcase({
           </div>
           <Link
             href={viewAllHref}
-            className="group inline-flex shrink-0 items-center gap-1 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
+            className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
           >
             View all
             <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" />
@@ -49,13 +49,13 @@ export function ProductShowcase({
         )}
 
         {loading ? (
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <ProductCardSkeleton key={i} />
             ))}
           </div>
         ) : products.length === 0 && !errorMessage ? (
-          <div className="mt-8 rounded-xl border border-dashed border-earth-300 bg-earth-50 px-6 py-14 text-center">
+          <div className="mt-10 rounded-2xl border border-dashed border-earth-300 bg-earth-50 px-6 py-14 text-center">
             <p className="text-sm text-earth-700">No products to show right now.</p>
             <Link href="/shop" className="mt-4 inline-block no-underline">
               <Button variant="outline" size="sm">
@@ -64,7 +64,7 @@ export function ProductShowcase({
             </Link>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {products.map((product, i) => (
               <ProductCard key={product.id} product={product} priority={i < priorityCount} />
             ))}

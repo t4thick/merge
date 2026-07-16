@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Fraunces, Montserrat } from 'next/font/google'
+import { Geist } from 'next/font/google'
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { Analytics } from '@vercel/analytics/next'
@@ -12,20 +12,9 @@ import { getPublicSiteUrl } from '@/lib/site-url'
 const siteUrl = getPublicSiteUrl()
 const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim()
 
-const montserrat = Montserrat({
+const geist = Geist({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-montserrat',
-  display: 'swap',
-})
-
-// Display face for the wordmark + landing H1 only (fat high-contrast italic serif).
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  weight: ['900'],
-  style: ['italic'],
-  variable: '--font-fraunces',
+  variable: '--font-geist',
   display: 'swap',
 })
 
@@ -57,14 +46,14 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: light)', color: '#fafafa' },
+    { media: '(prefers-color-scheme: dark)', color: '#fafafa' },
   ],
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${fraunces.variable}`}>
+    <html lang="en" className={geist.variable}>
       <body className="flex min-h-screen flex-col">
         <CartProvider>
           <RecentlyViewedProvider>

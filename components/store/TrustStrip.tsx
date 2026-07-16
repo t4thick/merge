@@ -32,13 +32,13 @@ export function TrustStrip({ inStockCount }: { inStockCount: number }) {
   const items = trustItems(inStockCount)
 
   return (
-    <section className="border-y border-earth-200 bg-earth-50 py-10 sm:py-12">
+    <section className="border-y border-earth-200 bg-white py-12 sm:py-16">
       <div className="store-container">
-        <ul className="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
           {items.map(({ icon: Icon, title, desc }) => (
             <li key={title} className="flex items-start gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-earth-200 bg-white text-brand-700">
-                <Icon className="h-4 w-4" aria-hidden />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-earth-200 bg-earth-50 text-earth-600">
+                <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
               </span>
               <div>
                 <p className="text-sm font-semibold text-earth-900">{title}</p>
@@ -50,12 +50,12 @@ export function TrustStrip({ inStockCount }: { inStockCount: number }) {
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-earth-200 pt-6 text-xs text-earth-600">
           <span className="inline-flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-brand-600" aria-hidden />
+            <MapPin className="h-3.5 w-3.5 text-earth-500" strokeWidth={1.75} aria-hidden />
             {STORE.address}
           </span>
           <a
             href={STORE.phoneHref}
-            className="font-medium text-brand-700 no-underline hover:text-brand-800"
+            className="font-medium text-earth-700 no-underline hover:text-earth-900"
           >
             {STORE.phone}
           </a>

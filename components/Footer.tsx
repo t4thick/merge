@@ -33,36 +33,36 @@ const LEGAL_LINKS = [
 export function Footer() {
   const supportEmail = getSupportEmail()
   return (
-    <footer className="mt-auto bg-earth-900 text-earth-300 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">
-      <div className="store-container py-12 sm:py-14">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 sm:gap-8 lg:grid-cols-5 lg:gap-8">
+    <footer className="mt-auto border-t border-earth-200 bg-white pb-[calc(4rem+env(safe-area-inset-bottom,0px))] text-earth-600 md:pb-0">
+      <div className="store-container py-12 sm:py-16 lg:py-20">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 sm:gap-x-8 lg:grid-cols-5">
           <div className="lg:col-span-1">
             <StoreLogo variant="footer" />
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-earth-400">
+            <p className="mt-5 max-w-xs text-sm leading-6 text-earth-500">
               African &amp; Caribbean groceries. Store pickup and US shipping.
             </p>
-            <div className="mt-5 flex flex-wrap gap-3 text-xs font-medium text-earth-400">
+            <div className="mt-5 flex flex-wrap gap-3 text-xs font-medium text-earth-500">
               <span className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="h-3.5 w-3.5 text-accent-400" /> Secure checkout
+                <ShieldCheck className="h-3.5 w-3.5" strokeWidth={1.75} /> Secure checkout
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Lock className="h-3.5 w-3.5 text-accent-400" /> Stripe
+                <Lock className="h-3.5 w-3.5" strokeWidth={1.75} /> Stripe
               </span>
             </div>
             <div className="mt-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-earth-500">Follow</p>
-              <SocialLinks className="mt-3" dark />
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Follow</p>
+              <SocialLinks className="mt-3" />
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-accent-400">Shop</p>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Shop</p>
+            <ul className="mt-5 space-y-3 text-sm">
               {SHOP_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-earth-300 no-underline hover:text-white"
+                    className="text-earth-600 no-underline hover:text-earth-900"
                   >
                     {link.label}
                   </Link>
@@ -72,13 +72,13 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-accent-400">Account</p>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Account</p>
+            <ul className="mt-5 space-y-3 text-sm">
               {ACCOUNT_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-earth-300 no-underline hover:text-white"
+                    className="text-earth-600 no-underline hover:text-earth-900"
                   >
                     {link.label}
                   </Link>
@@ -88,13 +88,13 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-accent-400">Help</p>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Help</p>
+            <ul className="mt-5 space-y-3 text-sm">
               {HELP_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-earth-300 no-underline hover:text-white"
+                    className="text-earth-600 no-underline hover:text-earth-900"
                   >
                     {link.label}
                   </Link>
@@ -103,7 +103,7 @@ export function Footer() {
               <li>
                 <a
                   href={`mailto:${supportEmail}`}
-                  className="break-all text-earth-300 no-underline hover:text-white"
+                  className="break-all text-earth-600 no-underline hover:text-earth-900"
                 >
                   {supportEmail}
                 </a>
@@ -112,16 +112,16 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-accent-400">Visit us</p>
-            <p className="mt-4 flex items-start gap-2 text-sm text-earth-300">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent-400" aria-hidden />
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Visit us</p>
+            <p className="mt-5 flex items-start gap-2.5 text-sm leading-6 text-earth-600">
+              <MapPin className="mt-1 h-4 w-4 shrink-0 text-earth-500" strokeWidth={1.75} aria-hidden />
               <span>{STORE.address}</span>
             </p>
             <p className="mt-3 flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 shrink-0 text-accent-400" aria-hidden />
+              <Phone className="h-4 w-4 shrink-0 text-earth-500" strokeWidth={1.75} aria-hidden />
               <a
                 href={STORE.phoneHref}
-                className="font-semibold text-white no-underline hover:text-accent-300"
+                className="font-medium text-earth-900 no-underline hover:text-earth-600"
               >
                 {STORE.phone}
               </a>
@@ -130,11 +130,11 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-earth-800 pt-8">
+        <div className="mt-12 border-t border-earth-200 pt-8">
           <PaymentMethodIcons />
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 border-t border-earth-800 pt-6 text-xs text-earth-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-3 border-t border-earth-200 pt-6 text-xs text-earth-500 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} {STORE.name}. All rights reserved.
           </p>
@@ -143,7 +143,7 @@ export function Footer() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="text-earth-400 no-underline hover:text-white"
+                className="text-earth-500 no-underline hover:text-earth-900"
               >
                 {l.label}
               </Link>
