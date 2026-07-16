@@ -32,7 +32,7 @@ export function ProductImage({
         className={cn(
           framed
             ? 'product-image-frame'
-            : 'flex aspect-square flex-col items-center justify-center gap-1 bg-earth-50',
+            : 'flex aspect-square flex-col items-center justify-center gap-1 bg-white',
           className
         )}
         role="img"
@@ -49,7 +49,7 @@ export function ProductImage({
   return (
     <div
       className={cn(
-        framed ? 'product-image-frame' : 'relative aspect-square bg-earth-50',
+        framed ? 'product-image-frame' : 'relative aspect-square bg-white',
         className
       )}
     >
@@ -58,7 +58,7 @@ export function ProductImage({
         alt={alt}
         fill
         className={cn(
-          'object-contain p-1',
+          'object-contain p-3 sm:p-4',
           hoverZoom && 'transition-transform duration-150 ease-out group-hover:scale-[1.02]'
         )}
         sizes={sizes}

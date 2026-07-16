@@ -158,7 +158,7 @@
   }
 
   .product-image-frame {
-    @apply relative aspect-square overflow-hidden bg-earth-50;
+    @apply relative aspect-square overflow-hidden bg-white;
   }
 
   .category-tile {
