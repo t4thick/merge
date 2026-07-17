@@ -5,15 +5,19 @@ import {
   Flame,
   Leaf,
   Package,
+  Scissors,
+  Shirt,
   ShoppingBasket,
   Snowflake,
   Sparkles,
+  Layers,
   Wheat,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ICON_MAP: Record<string, LucideIcon> = {
+  'African Prints': Layers,
   Beverages: Coffee,
   Bread: Wheat,
   Canned: Package,
@@ -23,9 +27,12 @@ const ICON_MAP: Record<string, LucideIcon> = {
   'Flours & Rice': Wheat,
   'Fresh Produce': Leaf,
   'Frozen foods': Snowflake,
+  'Hair & Braiding': Scissors,
+  Lace: Sparkles,
   'Meat and Seafood': Fish,
   Motherland: ShoppingBasket,
   'Non food': Box,
+  'Ready-to-wear': Shirt,
   Snack: ShoppingBasket,
   Spices: Flame,
 }

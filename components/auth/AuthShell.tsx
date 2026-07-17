@@ -16,7 +16,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
         <div className="w-full max-w-md">
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 no-underline"
+            className="mb-4 inline-flex min-h-11 items-center gap-2 no-underline"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-700 text-white">
               <Store className="h-4 w-4" aria-hidden />

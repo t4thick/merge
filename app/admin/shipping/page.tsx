@@ -2,13 +2,17 @@ import Link from 'next/link'
 import { CheckCircle2, Circle, Truck } from 'lucide-react'
 import { requireAdminPage } from '@/lib/auth/require-admin-page'
 import { getShippingLabelConfigPublic } from '@/lib/shipping/label-config'
-import { isShippoConfigured } from '@/lib/shipping/admin-ship-methods'
+import { isShippoConfigured, isUspsLabelsLive } from '@/lib/shipping/admin-ship-methods'
 import { getUspsConfigPublic } from '@/lib/shipping/usps-config'
 
 export default async function AdminShippingPage() {
   await requireAdminPage()
   const cfg = getShippingLabelConfigPublic()
   const usps = getUspsConfigPublic()
+  const shippoReady = isShippoConfigured()
+  const uspsReady = isUspsLabelsLive() && usps.uspsConfigured
+  const labelsReady = shippoReady || uspsReady
+  const activeProvider = shippoReady ? 'Shippo' : uspsReady ? 'USPS Labels API' : null
 
   return (
     <div className="space-y-8">
@@ -18,29 +22,59 @@ export default async function AdminShippingPage() {
           Shipping workflow
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-earth-600">
-          Shippo is connected and active. Click <strong>Print in admin</strong> on any order to generate a USPS label instantly — postage billed to your Shippo account.
+          One clear path for labels. Prefer Shippo for one-click print from an order page; otherwise
+          paste tracking from Click-N-Ship.
         </p>
       </div>
 
-      <section className="admin-card">
-        <h2 className="admin-section-title">Shipping status</h2>
-        <ul className="mt-4 space-y-3 text-sm text-earth-700">
-          <li className="flex gap-2">
-            <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-              Active
-            </span>
-            <span>
-              <strong>Print in admin (Shippo)</strong> — one-click USPS Ground Advantage label from any order page. Postage billed to your Shippo account.
-              {isShippoConfigured() ? ' API key on file ✓' : ''}
-            </span>
-          </li>
+      <section
+        className={`admin-card border ${
+          labelsReady ? 'border-emerald-200 bg-emerald-50/40' : 'border-amber-200 bg-amber-50/50'
+        }`}
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+              labelsReady ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+            }`}
+          >
+            {labelsReady ? 'Labels ready' : 'Labels not ready'}
+          </span>
+          <p className="text-sm text-earth-800">
+            {activeProvider
+              ? `Active provider: ${activeProvider}. Open any ship order → Print in admin.`
+              : 'No label API connected. Use Click-N-Ship and paste tracking, or add SHIPPO_API_TOKEN on Vercel.'}
+          </p>
+        </div>
+        <ul className="mt-4 space-y-2 text-sm">
+          <StatusRow ok={shippoReady} label="Shippo API token (preferred)" />
+          <StatusRow ok={Boolean(cfg.shipFrom)} label="Ship-from address (SHIP_FROM_*)" />
+          <StatusRow ok={usps.hasCredentials} label="USPS API credentials (optional fallback)" />
+          <StatusRow
+            ok={uspsReady}
+            label="USPS Labels live (USPS_LABELS_ENABLED=1 + EPS setup)"
+          />
         </ul>
       </section>
 
       <section className="admin-card">
-        <h2 className="admin-section-title">USPS API setup (one-click print)</h2>
+        <h2 className="admin-section-title">Recommended: Shippo</h2>
         <p className="mt-2 text-sm text-earth-600">
-          Requires a USPS business account with Enterprise Payment System (EPS) and a developer app at{' '}
+          Set <code className="text-xs">SHIPPO_API_TOKEN</code> on Vercel Production and redeploy.
+          Postage bills to your Shippo wallet. No USPS EPS approval required.
+        </p>
+        {!shippoReady && (
+          <p className="mt-3 text-sm text-amber-900">
+            Shippo is not configured yet — one-click print is unavailable.
+          </p>
+        )}
+      </section>
+
+      <section className="admin-card">
+        <h2 className="admin-section-title">Optional: USPS Labels API</h2>
+        <p className="mt-2 text-sm text-earth-600">
+          Only needed if you are not using Shippo. Requires a USPS business account with Enterprise
+          Payment System (EPS) and a developer app at{' '}
           <a
             href="https://developer.usps.com"
             target="_blank"
@@ -51,33 +85,13 @@ export default async function AdminShippingPage() {
           </a>
           .
         </p>
-        <ol className="mt-4 list-inside list-decimal space-y-2 text-sm text-earth-700">
-          <li>
-            Create an app → enable <strong>Labels</strong> and <strong>Domestic Prices</strong> (Products).
-            Address verify only needs <strong>Addresses</strong>.
-          </li>
-          <li>Copy Consumer Key + Consumer Secret.</li>
-          <li>
-            From your USPS business account: EPS account number, CRID, MID (Mailer ID).
-          </li>
-          <li>Add env vars on Vercel (Production) and redeploy:</li>
-        </ol>
         <ul className="mt-3 space-y-1 font-mono text-xs text-earth-800">
-          <li>USPS_API_CLIENT_ID</li>
-          <li>USPS_API_CLIENT_SECRET</li>
-          <li>USPS_EPS_ACCOUNT_NUMBER</li>
-          <li>USPS_CRID</li>
-          <li>USPS_MID</li>
-          <li>USPS_MAIL_CLASS=USPS_GROUND_ADVANTAGE</li>
-          <li>USPS_API_USE_TEST=1 (optional — sandbox at apis-tem.usps.com)</li>
-        </ul>
-        <ul className="mt-4 space-y-2 text-sm">
-          <StatusRow ok={usps.hasCredentials} label="USPS API credentials" />
-          <StatusRow ok={usps.hasShipFrom} label="Ship-from address" />
-          <StatusRow ok={usps.uspsConfigured} label="Ready to print labels" />
+          <li>USPS_API_CLIENT_ID / USPS_API_CLIENT_SECRET</li>
+          <li>USPS_EPS_ACCOUNT_NUMBER · USPS_CRID · USPS_MID</li>
+          <li>USPS_LABELS_ENABLED=1</li>
         </ul>
         {usps.useTestApi ? (
-          <p className="mt-3 text-sm text-amber-800">Test mode: using USPS TEM API (USPS_API_USE_TEST=1).</p>
+          <p className="mt-3 text-sm text-amber-800">Test mode: USPS_API_USE_TEST=1.</p>
         ) : null}
       </section>
 
@@ -100,8 +114,11 @@ export default async function AdminShippingPage() {
           </p>
         )}
         <p className="mt-4">
-          <Link href="/admin/orders" className="text-sm font-medium text-brand-700 no-underline hover:underline">
-            Go to orders →
+          <Link
+            href="/admin/orders?queue=needs_action"
+            className="text-sm font-medium text-brand-700 no-underline hover:underline"
+          >
+            Go to orders needing action →
           </Link>
         </p>
       </section>
@@ -109,9 +126,9 @@ export default async function AdminShippingPage() {
       <section className="admin-card">
         <h2 className="admin-section-title">Label PDF storage</h2>
         <p className="mt-2 text-sm text-earth-600">
-          Run <code className="text-xs">supabase/shipping-labels-storage.sql</code> in Supabase SQL Editor
-          once to create the <code className="text-xs">shipping-labels</code> bucket. Labels still print if
-          storage is missing; PDF just won&apos;t be saved for re-download.
+          Run <code className="text-xs">supabase/shipping-labels-storage.sql</code> once to create the{' '}
+          <code className="text-xs">shipping-labels</code> bucket. Labels still print if storage is
+          missing; PDF just won&apos;t be saved for re-download.
         </p>
       </section>
     </div>

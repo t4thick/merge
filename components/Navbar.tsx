@@ -14,12 +14,24 @@ import { cn } from '@/lib/utils'
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
+  { href: '/#fashion', label: 'Fashion', badge: 'Soon' as const },
+  { href: '/#mobile-market', label: 'Services' },
   { href: '/track-order', label: 'Track order' },
   { href: '/account', label: 'Account' },
 ] as const
 
+const DEPARTMENT_SHORTCUTS = [
+  { href: '/shop?category=Flours%20%26%20Rice', label: 'Rice & flour' },
+  { href: '/shop?category=Spices', label: 'Spices' },
+  { href: '/shop?category=Beverages', label: 'Drinks' },
+  { href: '/shop?category=Fresh%20Produce', label: 'Produce' },
+  { href: '/#fashion', label: 'Fashion', badge: 'Soon' as const },
+  { href: '/#mobile-market', label: 'Mobile market' },
+] as const
+
 function isActive(pathname: string, href: string) {
   if (href === '/') return pathname === '/'
+  if (href.startsWith('/#')) return false
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
@@ -69,20 +81,27 @@ export function Navbar() {
             </div>
 
             <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main">
-              {NAV_LINKS.map(({ href, label }) => {
+              {NAV_LINKS.map((link) => {
+                const { href, label } = link
+                const badge = 'badge' in link ? link.badge : undefined
                 const active = isActive(pathname, href)
                 return (
                   <Link
                     key={href}
                     href={href}
                     className={cn(
-                      'rounded-xl px-3 py-2 text-sm font-medium no-underline transition-colors duration-200',
+                      'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium no-underline transition-colors duration-150',
                       active
                         ? 'bg-white text-earth-900 shadow-[var(--shadow-card)]'
                         : 'text-earth-600 hover:bg-white hover:text-earth-900'
                     )}
                   >
                     {label}
+                    {badge && (
+                      <span className="rounded-md bg-accent-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-800">
+                        {badge}
+                      </span>
+                    )}
                   </Link>
                 )
               })}
@@ -175,23 +194,52 @@ export function Navbar() {
             </div>
 
             <div className="flex flex-col gap-1 overflow-y-auto p-3">
-              {NAV_LINKS.map(({ href, label }) => {
+              {NAV_LINKS.map((link) => {
+                const { href, label } = link
+                const badge = 'badge' in link ? link.badge : undefined
                 const active = isActive(pathname, href)
                 return (
                   <Link
                     key={href}
                     href={href}
                     className={cn(
-                      'flex h-12 items-center rounded-lg px-4 text-[15px] font-medium no-underline transition-colors duration-150',
+                      'flex h-12 items-center justify-between gap-3 rounded-lg px-4 text-[15px] font-medium no-underline transition-colors duration-150',
                       active
                         ? 'bg-earth-100 text-earth-900'
                         : 'text-earth-700 hover:bg-earth-50 hover:text-earth-900'
                     )}
                   >
-                    {label}
+                    <span>{label}</span>
+                    {badge && (
+                      <span className="rounded-md bg-accent-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-800">
+                        {badge}
+                      </span>
+                    )}
                   </Link>
                 )
               })}
+
+              <div className="mt-3 border-t border-earth-100 pt-3">
+                <p className="px-4 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-earth-400">
+                  Shop by department
+                </p>
+                <div className="flex flex-col gap-0.5">
+                  {DEPARTMENT_SHORTCUTS.map((item) => (
+                    <Link
+                      key={item.href + item.label}
+                      href={item.href}
+                      className="flex h-11 items-center justify-between gap-2 rounded-lg px-4 text-sm font-medium text-earth-700 no-underline transition-colors duration-150 hover:bg-earth-50 hover:text-earth-900"
+                    >
+                      <span>{item.label}</span>
+                      {'badge' in item && item.badge ? (
+                        <span className="rounded-md bg-accent-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-800">
+                          {item.badge}
+                        </span>
+                      ) : null}
+                    </Link>
+                  ))}
+                </div>
+              </div>
 
               <div className="mt-2 border-t border-earth-100 pt-3 px-1">
                 <NavbarAuth onNavigate={() => setOpen(false)} />

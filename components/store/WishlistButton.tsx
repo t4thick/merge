@@ -58,7 +58,7 @@ export function WishlistButton({ productId }: { productId: string }) {
       disabled={loading}
       aria-label={saved ? 'Remove from wishlist' : 'Save to wishlist'}
       className={cn(
-        'flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+        'flex h-11 w-11 items-center justify-center rounded-full border transition-colors',
         saved
           ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100'
           : 'border-earth-200 bg-white text-earth-400 hover:border-earth-300 hover:text-red-400'

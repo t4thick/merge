@@ -137,7 +137,7 @@ export function ProductReviews({ productId }: { productId: string }) {
             )}
           </div>
           {!showForm && !submitted && (
-            <Button type="button" variant="outline" onClick={() => setShowForm(true)}>
+            <Button type="button" variant="outline" className="min-h-11" onClick={() => setShowForm(true)}>
               Write a review
             </Button>
           )}

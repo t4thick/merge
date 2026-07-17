@@ -28,6 +28,7 @@ function categoryLocalFiles(slug: string): readonly string[] {
 }
 
 const CATEGORY_SLUG: Record<string, string> = {
+  'African Prints': 'african-prints',
   Beverages: 'beverages',
   Bread: 'bread',
   Canned: 'canned',
@@ -37,15 +38,19 @@ const CATEGORY_SLUG: Record<string, string> = {
   'Flours & Rice': 'flours-rice',
   'Fresh Produce': 'fresh-produce',
   'Frozen foods': 'frozen-foods',
+  'Hair & Braiding': 'hair-braiding',
+  Lace: 'lace',
   'Meat and Seafood': 'meat-seafood',
   Motherland: 'motherland',
   'Non food': 'non-food',
+  'Ready-to-wear': 'ready-to-wear',
   Snack: 'snack',
   Spices: 'spices',
 }
 
 /** Remote fallbacks when local files are missing */
 const CATEGORY_REMOTE: Record<string, string> = {
+  'African Prints': U('photo-1586495777744-4413f21067fa'),
   Beverages: U('photo-1755752919046-a6543db419cc'),
   Bread: U('photo-1725297952102-ab28892a31ab'),
   Canned: U('photo-1601598704991-eef6114775e0'),
@@ -55,9 +60,12 @@ const CATEGORY_REMOTE: Record<string, string> = {
   'Flours & Rice': U('photo-1686820740687-426a7b9b2043'),
   'Fresh Produce': U('photo-1607349913338-fca6f7fc42d0'),
   'Frozen foods': U('photo-1601599967100-f16100982063'),
+  'Hair & Braiding': U('photo-1605497788044-2834a0b2e6b5'),
+  Lace: U('photo-1594633313593-bab3825d0caf'),
   'Meat and Seafood': U('photo-1754587489041-9fc8301f4c98'),
   Motherland: U('photo-1740439225991-ab26e8f6da9d'),
   'Non food': U('photo-1631856954655-966f97d809de'),
+  'Ready-to-wear': U('photo-1490481651871-ab68de25d43d'),
   Snack: U('photo-1604719312497-c6fc196f51ec'),
   Spices: U('photo-1596040033229-a9821ebd058d'),
 }

@@ -2,24 +2,18 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { FEATURED_COLLECTIONS } from '@/lib/constants/collections'
-import {
-  getBeveragesCollectionImage,
-  getCategoryImage,
-  getCosmeticsCollectionImage,
-} from '@/lib/constants/category-images'
+import { getBeveragesCollectionImage, getCategoryImage } from '@/lib/constants/category-images'
 
 const COLLECTION_CATEGORY: Record<string, string> = {
   staples: 'Flours & Rice',
   produce: 'Fresh Produce',
+  fashion: 'African Prints',
 }
 
 export function FeaturedCollections() {
   const collections = FEATURED_COLLECTIONS.map((col) => {
     if (col.id === 'beverages') {
       return { ...col, image: getBeveragesCollectionImage() }
-    }
-    if (col.id === 'beauty') {
-      return { ...col, image: getCosmeticsCollectionImage() }
     }
     const cat = COLLECTION_CATEGORY[col.id]
     const fromCat = cat ? getCategoryImage(cat) : undefined
@@ -32,11 +26,11 @@ export function FeaturedCollections() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="section-title">Shop by department</h2>
-            <p className="section-subtitle">Rice &amp; flour, fresh produce, drinks, beauty &amp; more.</p>
+            <p className="section-subtitle">Rice &amp; flour, fresh produce, drinks, fashion &amp; more.</p>
           </div>
           <Link
             href="/shop"
-            className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
+            className="group inline-flex min-h-11 shrink-0 items-center gap-1.5 px-1 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
           >
             View all
             <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" />

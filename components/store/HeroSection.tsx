@@ -1,12 +1,13 @@
 import Link from 'next/link'
-import { ArrowRight, Check, MapPin, Truck } from 'lucide-react'
+import { ArrowRight, MapPin, PackageCheck, Store, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SearchAutocomplete } from '@/components/store/SearchAutocomplete'
 
 const SERVICE_ITEMS = [
   { label: 'Pickup in Columbus', icon: MapPin },
-  { label: 'Ships within 24h', icon: Truck },
-  { label: 'Live inventory', icon: Check },
+  { label: 'Fast Ohio delivery', icon: Truck },
+  { label: 'Nationwide shipping', icon: PackageCheck },
+  { label: 'Mobile market', icon: Store },
 ] as const
 
 export function HeroSection({ inStockCount }: { inStockCount: number }) {
@@ -15,7 +16,7 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
       <div className="store-container py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-[850px] text-center">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-earth-500">
-            African &amp; Caribbean grocery · Columbus, Ohio
+            Grocery, fashion &amp; hair · Columbus, Ohio
           </p>
 
           <h1 className="mt-5 text-balance text-[2rem] font-semibold leading-[1.06] tracking-[-0.045em] text-earth-900 sm:text-6xl lg:text-7xl">
@@ -25,23 +26,25 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
 
           <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-earth-600 sm:text-lg">
             {inStockCount > 0 ? `${inStockCount.toLocaleString()} products in stock. ` : ''}
-            Shop fufu, palm oil, egusi, spices, drinks, produce, and more.
+            Shop fufu, palm oil, egusi, spices, drinks, produce, and more. Choose nationwide
+            shipping, fast Ohio delivery, store pickup, or our mobile market.
           </p>
 
-          <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-earth-200 bg-white p-2 shadow-[var(--shadow-premium)]">
+          {/* Desktop/tablet only — mobile already has sticky search in the header */}
+          <div className="mx-auto mt-8 hidden max-w-2xl rounded-2xl border border-earth-200 bg-white p-2 shadow-[var(--shadow-premium)] sm:block">
             <SearchAutocomplete placeholder="Search products, brands, or categories" />
           </div>
 
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-6 sm:flex-row">
             <Link href="/shop" className="w-full no-underline sm:w-auto">
               <Button size="lg" className="h-12 w-full px-7 sm:w-auto">
                 Shop all products
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>
             </Link>
-            <Link href="/track-order" className="w-full no-underline sm:w-auto">
+            <Link href="#mobile-market" className="w-full no-underline sm:w-auto">
               <Button size="lg" variant="outline" className="h-12 w-full px-7 sm:w-auto">
-                Track an order
+                Mobile market &amp; delivery
               </Button>
             </Link>
           </div>

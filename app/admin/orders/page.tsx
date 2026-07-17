@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { parseOrderRef } from '@/lib/orders/order-number'
 import { getReportTimeZone } from '@/lib/admin/revenue-stats'
+import { NEEDS_ACTION_STATUSES } from '@/lib/admin/ops-health'
 import { BulkOrdersTable } from '@/components/admin/BulkOrdersTable'
 import { Pagination } from '@/components/admin/Pagination'
 
@@ -27,16 +28,24 @@ const STATUS_PILL_COLORS: Record<OrderStatus, string> = {
 }
 
 const PAGE_SIZE = 50
+const NEEDS_ACTION_SET = new Set<string>(NEEDS_ACTION_STATUSES)
 
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string; when?: string; page?: string }>
+  searchParams: Promise<{ status?: string; q?: string; when?: string; page?: string; queue?: string }>
 }) {
   await requireAdminPage()
-  const { status: rawStatus, q, when, page: pageParam } = await searchParams
+  const { status: rawStatus, q, when, page: pageParam, queue: rawQueue } = await searchParams
   const activeStatus = rawStatus ? normalizeOrderStatus(rawStatus) : undefined
   const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1)
+
+  // Default to the fulfillment queue so staff land on work, not history.
+  const queue: 'needs_action' | 'all' = activeStatus
+    ? 'all'
+    : rawQueue === 'all'
+      ? 'all'
+      : 'needs_action'
 
   const zone = getReportTimeZone()
   const now = DateTime.now().setZone(zone)
@@ -77,9 +86,20 @@ export default async function AdminOrdersPage({
   }
   const { data: orders } = await query
 
-  const filtered = activeStatus
-    ? (orders ?? []).filter((o) => normalizeOrderStatus(o.status) === activeStatus)
-    : (orders ?? [])
+  const needsActionCount = (orders ?? []).filter((o) =>
+    NEEDS_ACTION_SET.has(normalizeOrderStatus(o.status))
+  ).length
+
+  const filtered = (() => {
+    const list = orders ?? []
+    if (activeStatus) {
+      return list.filter((o) => normalizeOrderStatus(o.status) === activeStatus)
+    }
+    if (queue === 'needs_action') {
+      return list.filter((o) => NEEDS_ACTION_SET.has(normalizeOrderStatus(o.status)))
+    }
+    return list
+  })()
 
   const filteredRevenue = filtered.reduce((s, o) => s + Number(o.total_amount ?? 0), 0)
   const counts = ORDER_STATUSES.reduce<Record<string, number>>((acc, status) => {
@@ -94,6 +114,8 @@ export default async function AdminOrdersPage({
   function buildPageHref(p: number) {
     const sp = new URLSearchParams()
     if (activeStatus) sp.set('status', activeStatus)
+    else if (queue === 'all') sp.set('queue', 'all')
+    else sp.set('queue', 'needs_action')
     if (q) sp.set('q', q)
     if (when) sp.set('when', when)
     if (p > 1) sp.set('page', String(p))
@@ -113,13 +135,26 @@ export default async function AdminOrdersPage({
     { id: '7d', label: 'Last 7 days' },
   ]
 
+  function statusFilterHref(extra: Record<string, string | undefined>) {
+    const sp = new URLSearchParams()
+    if (q) sp.set('q', q)
+    if (when) sp.set('when', when)
+    for (const [k, v] of Object.entries(extra)) {
+      if (v) sp.set(k, v)
+    }
+    return `/admin/orders${sp.toString() ? `?${sp.toString()}` : ''}`
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="admin-page-title">Orders</h1>
           <p className="mt-1 text-sm text-earth-500">
-            {filtered.length} shown · {orders?.length ?? 0} total · ${filteredRevenue.toFixed(2)} gross in view
+            {queue === 'needs_action' && !activeStatus
+              ? `${filtered.length} need action · ${orders?.length ?? 0} total`
+              : `${filtered.length} shown · ${orders?.length ?? 0} total`}
+            {` · $${filteredRevenue.toFixed(2)} gross in view`}
           </p>
         </div>
         <Link href={exportHref} className="no-underline">
@@ -137,6 +172,8 @@ export default async function AdminOrdersPage({
           if (opt.id) sp.set('when', opt.id)
           if (q) sp.set('q', q)
           if (activeStatus) sp.set('status', activeStatus)
+          else if (queue === 'all') sp.set('queue', 'all')
+          else sp.set('queue', 'needs_action')
           const href = `/admin/orders${sp.toString() ? `?${sp.toString()}` : ''}`
           return (
             <Link key={opt.id ?? 'any'} href={href}
@@ -154,30 +191,34 @@ export default async function AdminOrdersPage({
           <Input type="search" name="q" defaultValue={q ?? ''} placeholder="Search by name, email, or LQ-1042" className="pl-10" />
         </div>
         {activeStatus && <input type="hidden" name="status" value={activeStatus} />}
+        {!activeStatus && <input type="hidden" name="queue" value={queue} />}
         {when && <input type="hidden" name="when" value={when} />}
         <Button type="submit" size="sm">Search</Button>
       </form>
 
       <div className="flex flex-wrap gap-1.5">
-        {(() => {
-          const sp = new URLSearchParams()
-          if (q) sp.set('q', q)
-          if (when) sp.set('when', when)
-          const allHref = `/admin/orders${sp.toString() ? `?${sp.toString()}` : ''}`
-          return (
-            <Link href={allHref}
-              className={`admin-status-pill no-underline ${!activeStatus ? 'bg-earth-900 text-white' : 'bg-white text-earth-700 ring-1 ring-earth-200 hover:bg-earth-50'}`}
-            >
-              All ({orders?.length ?? 0})
-            </Link>
-          )
-        })()}
+        <Link
+          href={statusFilterHref({ queue: 'needs_action' })}
+          className={`admin-status-pill no-underline ${
+            queue === 'needs_action' && !activeStatus
+              ? 'bg-earth-900 text-white'
+              : 'bg-amber-50 text-amber-800 ring-1 ring-amber-200 hover:bg-amber-100'
+          }`}
+        >
+          Needs action ({needsActionCount})
+        </Link>
+        <Link
+          href={statusFilterHref({ queue: 'all' })}
+          className={`admin-status-pill no-underline ${
+            queue === 'all' && !activeStatus
+              ? 'bg-earth-900 text-white'
+              : 'bg-white text-earth-700 ring-1 ring-earth-200 hover:bg-earth-50'
+          }`}
+        >
+          All ({orders?.length ?? 0})
+        </Link>
         {ORDER_STATUSES.map((status) => {
-          const sp = new URLSearchParams()
-          sp.set('status', status)
-          if (q) sp.set('q', q)
-          if (when) sp.set('when', when)
-          const href = `/admin/orders?${sp.toString()}`
+          const href = statusFilterHref({ status })
           const isActive = activeStatus === status
           return (
             <Link key={status} href={href}
@@ -191,7 +232,16 @@ export default async function AdminOrdersPage({
 
       {paginated.length === 0 ? (
         <div className="admin-card text-center">
-          <p className="text-sm text-earth-600">No orders in this view.</p>
+          <p className="text-sm text-earth-600">
+            {queue === 'needs_action' && !activeStatus
+              ? 'No orders need action right now.'
+              : 'No orders in this view.'}
+          </p>
+          {queue === 'needs_action' && !activeStatus && (
+            <Link href="/admin/orders?queue=all" className="mt-3 inline-block text-sm font-medium text-brand-700 no-underline hover:underline">
+              View all orders →
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-4">

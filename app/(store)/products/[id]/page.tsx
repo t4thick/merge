@@ -172,7 +172,7 @@ export default async function ProductPage({
       <div className="store-container py-6 sm:py-8 lg:py-10">
         <Link
           href="/shop"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-earth-600 no-underline transition-colors hover:text-earth-900"
+          className="mb-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-earth-600 no-underline transition-colors hover:text-earth-900"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Back to shop

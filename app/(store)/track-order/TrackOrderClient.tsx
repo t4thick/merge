@@ -168,14 +168,14 @@ export function TrackOrderClient() {
             <button
               type="button"
               onClick={() => setSearchMode('order')}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${searchMode === 'order' ? 'bg-earth-900 text-white' : 'text-earth-600 hover:text-earth-900'}`}
+              className={`min-h-11 rounded-md px-3 py-2 text-sm font-medium transition-colors ${searchMode === 'order' ? 'bg-earth-900 text-white' : 'text-earth-600 hover:text-earth-900'}`}
             >
               Order number
             </button>
             <button
               type="button"
               onClick={() => setSearchMode('email')}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${searchMode === 'email' ? 'bg-earth-900 text-white' : 'text-earth-600 hover:text-earth-900'}`}
+              className={`min-h-11 rounded-md px-3 py-2 text-sm font-medium transition-colors ${searchMode === 'email' ? 'bg-earth-900 text-white' : 'text-earth-600 hover:text-earth-900'}`}
             >
               Email address
             </button>
@@ -353,7 +353,7 @@ export function TrackOrderClient() {
         <p className="mt-10">
           <Link
             href="/shop"
-            className="text-sm font-semibold text-brand-700 no-underline hover:text-brand-900"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-700 no-underline hover:text-brand-900"
           >
             ← Continue shopping
           </Link>

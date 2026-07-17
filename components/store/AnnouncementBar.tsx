@@ -1,16 +1,30 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { X } from 'lucide-react'
 import { STORE } from '@/lib/constants/store'
 import { FREE_STANDARD_SHIPPING_SUBTOTAL } from '@/lib/shipping'
 
-const DISMISS_KEY = 'kam_bar_v1'
+const DISMISS_KEY = 'kam_bar_v3'
 
 const MESSAGES = [
-  'Columbus? Free store pickup — send Uber with your order #',
-  `Free standard US shipping on orders $${FREE_STANDARD_SHIPPING_SUBTOTAL}+`,
-  `Same-day store pickup · ${STORE.address}`,
+  {
+    text: `Nationwide shipping · Free standard on $${FREE_STANDARD_SHIPPING_SUBTOTAL}+ · Pickup in Columbus`,
+    href: undefined as string | undefined,
+  },
+  {
+    text: 'Fashion & hair — coming soon · Braiding by phone (614) 377-8297',
+    href: '/#fashion',
+  },
+  {
+    text: 'Mobile market & Ohio delivery — call (614) 377-8297',
+    href: '/#mobile-market',
+  },
+  {
+    text: `Store pickup · ${STORE.address}`,
+    href: undefined,
+  },
 ] as const
 
 export function AnnouncementBar() {
@@ -25,14 +39,6 @@ export function AnnouncementBar() {
     }
   }, [])
 
-  useEffect(() => {
-    if (hidden) return
-    const id = window.setInterval(() => {
-      setIndex((i) => (i + 1) % MESSAGES.length)
-    }, 6000)
-    return () => window.clearInterval(id)
-  }, [hidden])
-
   function dismiss() {
     setHidden(true)
     try {
@@ -44,11 +50,33 @@ export function AnnouncementBar() {
 
   if (hidden) return null
 
+  const msg = MESSAGES[index]
+
   return (
     <div className="relative border-b border-earth-200 bg-white py-2.5 text-center text-xs font-medium text-earth-600">
-      <p key={index} className="animate-fade-in px-10">
-        {MESSAGES[index]}
-      </p>
+      {msg.href ? (
+        <Link href={msg.href} className="px-10 text-earth-700 no-underline hover:text-earth-900">
+          {msg.text}
+        </Link>
+      ) : (
+        <p className="px-10">{msg.text}</p>
+      )}
+
+      <div className="mt-1.5 flex items-center justify-center gap-1.5 pb-0.5">
+        {MESSAGES.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Announcement ${i + 1} of ${MESSAGES.length}`}
+            aria-current={i === index}
+            onClick={() => setIndex(i)}
+            className={`h-2 w-2 rounded-full transition-colors duration-150 ${
+              i === index ? 'bg-earth-800' : 'bg-earth-300 hover:bg-earth-500'
+            }`}
+          />
+        ))}
+      </div>
+
       <button
         type="button"
         onClick={dismiss}

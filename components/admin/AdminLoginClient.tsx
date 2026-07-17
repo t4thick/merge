@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { AlertTriangle, Eye, EyeOff, Lock } from 'lucide-react'
+import { AlertTriangle, BarChart3, Eye, EyeOff, Lock, PackageCheck, ShoppingBag } from 'lucide-react'
 import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -128,25 +128,66 @@ export function AdminLoginClient({
   }
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] bg-earth-50">
-      <div className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-10 sm:px-6">
+    <div className="grid min-h-screen bg-slate-50 lg:grid-cols-[minmax(360px,0.9fr)_minmax(520px,1.1fr)]">
+      <aside className="relative hidden overflow-hidden bg-slate-950 p-12 text-white lg:flex lg:flex-col lg:justify-between xl:p-16">
+        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-slate-800/60" aria-hidden />
+        <div className="relative">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sm font-bold text-slate-950">
+              K
+            </span>
+            <div>
+              <p className="text-sm font-semibold">Kintampo</p>
+              <p className="text-xs text-slate-400">Seller Center</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative max-w-lg">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Operations workspace</p>
+          <h1 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-[-0.045em] xl:text-5xl">
+            Run the store from one place.
+          </h1>
+          <p className="mt-5 max-w-md text-base leading-7 text-slate-400">
+            Process orders, manage inventory, print shipping labels, and track store performance.
+          </p>
+          <ul className="mt-10 grid gap-3 text-sm text-slate-300">
+            <li className="flex items-center gap-3">
+              <ShoppingBag className="h-4 w-4 text-slate-500" aria-hidden />
+              Order and fulfillment workflows
+            </li>
+            <li className="flex items-center gap-3">
+              <PackageCheck className="h-4 w-4 text-slate-500" aria-hidden />
+              Inventory and catalog controls
+            </li>
+            <li className="flex items-center gap-3">
+              <BarChart3 className="h-4 w-4 text-slate-500" aria-hidden />
+              Sales and product reporting
+            </li>
+          </ul>
+        </div>
+
+        <p className="relative text-xs text-slate-500">Private staff access · Kintampo African Market</p>
+      </aside>
+
+      <div className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-8">
         <div className="w-full max-w-md">
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-earth-600 no-underline transition-colors hover:text-earth-900"
+            className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-slate-500 no-underline transition-colors hover:text-slate-950"
           >
             ← Back to store
           </Link>
 
-          <div className="rounded-xl border border-earth-200 bg-white p-6 shadow-[var(--shadow-card)] sm:p-8">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-earth-900 text-white">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgb(15_23_42/0.08)] sm:p-8">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 text-white">
               <Lock className="h-5 w-5" strokeWidth={1.75} aria-hidden />
             </div>
-            <h1 className="mt-4 text-2xl font-semibold tracking-tight text-earth-900">
-              Staff sign in
+            <h1 className="mt-5 text-2xl font-semibold tracking-[-0.035em] text-slate-950">
+              Sign in to Seller Center
             </h1>
             <p className="mt-1 text-sm text-earth-600">
-              Enter the staff password to access the admin dashboard.
+              Use the staff password to open the operations workspace.
             </p>
 
             {forbidden && (
@@ -278,7 +319,7 @@ export function AdminLoginClient({
                     <button
                       type="button"
                       onClick={() => setShowStaffPassword((v) => !v)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-earth-500 transition-colors hover:bg-earth-100 hover:text-earth-700"
+                      className="absolute right-0.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-earth-500 transition-colors hover:bg-earth-100 hover:text-earth-700"
                       aria-label={showStaffPassword ? 'Hide password' : 'Show password'}
                       tabIndex={-1}
                     >

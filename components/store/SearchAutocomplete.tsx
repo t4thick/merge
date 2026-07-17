@@ -139,8 +139,8 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
           submit()
         }}
         className={cn(
-          'flex items-center gap-2 rounded-lg border border-earth-200 bg-white transition-shadow duration-150',
-          compact ? 'px-2' : 'px-3 shadow-[var(--shadow-card)]',
+          'flex items-center gap-2 rounded-xl border border-earth-200 bg-white transition-shadow duration-150',
+          compact ? 'px-2 py-0.5' : 'px-3 shadow-[var(--shadow-card)]',
           open && 'border-brand-500 ring-4 ring-brand-500/15'
         )}
       >
@@ -161,14 +161,14 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
           aria-autocomplete="list"
           aria-controls={listboxId}
           className={cn(
-            'min-w-0 flex-1 bg-transparent text-sm text-earth-900 placeholder:text-earth-400 focus:outline-none',
-            compact ? 'h-9' : 'h-10'
+            'min-w-0 flex-1 bg-transparent text-base text-earth-900 placeholder:text-earth-400 focus:outline-none sm:text-sm',
+            compact ? 'h-11' : 'h-11'
           )}
         />
         {q ? (
           <button
             type="button"
-            className="rounded-md p-1 text-earth-400 transition-colors hover:bg-earth-100 hover:text-earth-700"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-earth-400 transition-colors hover:bg-earth-100 hover:text-earth-700"
             aria-label="Clear search"
             onClick={() => {
               setQ('')
@@ -181,10 +181,10 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
         ) : null}
         <button
           type="submit"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-700 text-white transition-colors hover:bg-brand-800"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-earth-900 text-white transition-colors hover:bg-earth-800"
           aria-label="Search"
         >
-          <Search className="h-3.5 w-3.5" />
+          <Search className="h-4 w-4" />
         </button>
       </form>
 

@@ -99,10 +99,10 @@ export function LoginForm() {
           disabled={loading}
         />
 
-        <label className="flex items-center gap-2 text-sm text-earth-600">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-earth-600">
           <input
             type="checkbox"
-            className="rounded border-earth-300"
+            className="h-5 w-5 rounded border-earth-300"
             checked={rememberDevice}
             onChange={(e) => setRememberDevice(e.target.checked)}
           />
@@ -120,12 +120,20 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm">
-        <Link href={`/forgot-password?next=${encodeURIComponent(next)}`}>Forgot password?</Link>
+      <p className="mt-4 text-center text-sm">
+        <Link
+          href={`/forgot-password?next=${encodeURIComponent(next)}`}
+          className="inline-flex min-h-11 items-center"
+        >
+          Forgot password?
+        </Link>
       </p>
-      <p className="mt-2 text-center text-sm text-earth-500">
+      <p className="text-center text-sm text-earth-500">
         New here?{' '}
-        <Link href={`/signup?next=${encodeURIComponent(next)}`} className="font-semibold">
+        <Link
+          href={`/signup?next=${encodeURIComponent(next)}`}
+          className="inline-flex min-h-11 items-center font-semibold"
+        >
           Create an account
         </Link>
       </p>

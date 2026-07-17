@@ -1,14 +1,16 @@
 /**
- * Remove photo backgrounds, composite onto a clean white square,
- * upload to Supabase Storage (`product-images`), and update `image_url`.
+ * Normalize product photos onto a clean white square WITHOUT cutting the product.
+ * Only edge-connected near-white / studio-gray pixels become pure white so
+ * packaging colors stay intact (AI cutout was washing light products out).
  *
  * Usage:
  *   node --env-file=.env.local scripts/whiten-product-images.mjs
  *   node --env-file=.env.local scripts/whiten-product-images.mjs --limit=10
  *   node --env-file=.env.local scripts/whiten-product-images.mjs --force
+ *   node --env-file=.env.local scripts/whiten-product-images.mjs --force --cutout
+ *     (--cutout re-enables AI subject cutout — avoid unless you need it)
  */
 import { createClient } from '@supabase/supabase-js'
-import { removeBackground } from '@imgly/background-removal-node'
 import { createRequire } from 'module'
 import { readFileSync } from 'fs'
 import { resolve, dirname } from 'path'
@@ -22,11 +24,15 @@ const ROOT = resolve(__dirname, '..')
 const EXPORT_FILE = resolve(ROOT, 'data', 'products-export.json')
 
 const SIZE = 1200
-const PAD = Math.round(SIZE * 0.1)
+const PAD = Math.round(SIZE * 0.08)
 const BUCKET = 'product-images'
-const CONCURRENCY = 1 // onnxruntime can't share sessions across concurrent jobs on Windows
+const CONCURRENCY = 2
 
-/** Prefer original export URLs so re-runs don't cut already-composited images. */
+/** Edge flood: treat as studio background if bright enough and not strongly colored. */
+const BG_LUMA_MIN = 210
+const BG_CHROMA_MAX = 28
+
+/** Prefer original export URLs so re-runs don't reprocess already-composited images. */
 function loadOriginalUrls() {
   try {
     const rows = JSON.parse(readFileSync(EXPORT_FILE, 'utf8'))
@@ -42,6 +48,7 @@ function loadOriginalUrls() {
 
 const args = new Set(process.argv.slice(2))
 const force = args.has('--force')
+const useCutout = args.has('--cutout')
 const limitArg = [...args].find((a) => a.startsWith('--limit='))
 const limit = limitArg ? Number(limitArg.split('=')[1]) : Infinity
 
@@ -75,22 +82,86 @@ async function fetchBuffer(imageUrl) {
   return Buffer.from(await res.arrayBuffer())
 }
 
-/** Cut subject out, drop on pure white square with padding. */
+function isStudioBackground(r, g, b) {
+  const luma = 0.299 * r + 0.587 * g + 0.114 * b
+  if (luma < BG_LUMA_MIN) return false
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  return max - min <= BG_CHROMA_MAX
+}
+
+/** Flood-fill from image edges: only near-white / gray studio pixels → pure white. */
+async function whitenEdgeBackground(input) {
+  const { data, info } = await sharp(input)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+
+  const { width, height } = info
+  const count = width * height
+  const seen = new Uint8Array(count)
+  const queue = new Uint32Array(count)
+  let read = 0
+  let write = 0
+
+  function enqueue(pixel) {
+    if (seen[pixel]) return
+    const o = pixel * 4
+    if (!isStudioBackground(data[o], data[o + 1], data[o + 2])) return
+    seen[pixel] = 1
+    queue[write++] = pixel
+  }
+
+  for (let x = 0; x < width; x++) {
+    enqueue(x)
+    enqueue((height - 1) * width + x)
+  }
+  for (let y = 0; y < height; y++) {
+    enqueue(y * width)
+    enqueue(y * width + width - 1)
+  }
+
+  while (read < write) {
+    const pixel = queue[read++]
+    const x = pixel % width
+    const y = Math.floor(pixel / width)
+    if (x > 0) enqueue(pixel - 1)
+    if (x + 1 < width) enqueue(pixel + 1)
+    if (y > 0) enqueue(pixel - width)
+    if (y + 1 < height) enqueue(pixel + width)
+  }
+
+  for (let pixel = 0; pixel < count; pixel++) {
+    if (!seen[pixel]) continue
+    const o = pixel * 4
+    data[o] = 255
+    data[o + 1] = 255
+    data[o + 2] = 255
+    data[o + 3] = 255
+  }
+
+  return sharp(data, { raw: info }).removeAlpha().jpeg({ quality: 92, mozjpeg: true }).toBuffer()
+}
+
+/** Place original on a white square; optionally AI-cut (legacy). */
 async function toWhiteSquare(input) {
-  // Feed a typed Blob straight to img.ly (its own sharp decodes). Avoids
-  // SharedArrayBuffer issues when our sharp + theirs both touch the buffer.
-  const jpegCopy = Buffer.from(input)
-  const cutout = await removeBackground(new Blob([jpegCopy], { type: 'image/jpeg' }), {
-    model: 'medium',
-    output: { format: 'image/png', quality: 0.9 },
-  })
-  const cutoutBuf = Buffer.from(await cutout.arrayBuffer())
+  let subject = input
+
+  if (useCutout) {
+    const { removeBackground } = await import('@imgly/background-removal-node')
+    const jpegCopy = Buffer.from(input)
+    const cutout = await removeBackground(new Blob([jpegCopy], { type: 'image/jpeg' }), {
+      model: 'medium',
+      output: { format: 'image/png', quality: 0.9 },
+    })
+    subject = Buffer.from(await cutout.arrayBuffer())
+  }
 
   const inner = SIZE - PAD * 2
-  return sharp(cutoutBuf)
+  const placed = await sharp(subject)
     .resize(inner, inner, {
       fit: 'contain',
-      background: { r: 255, g: 255, b: 255, alpha: 0 },
+      background: { r: 255, g: 255, b: 255, alpha: useCutout ? 0 : 1 },
       withoutEnlargement: false,
     })
     .extend({
@@ -98,11 +169,14 @@ async function toWhiteSquare(input) {
       bottom: PAD,
       left: PAD,
       right: PAD,
-      background: { r: 255, g: 255, b: 255, alpha: 0 },
+      background: { r: 255, g: 255, b: 255, alpha: useCutout ? 0 : 1 },
     })
     .flatten({ background: { r: 255, g: 255, b: 255 } })
-    .jpeg({ quality: 90, mozjpeg: true })
+    .jpeg({ quality: 92, mozjpeg: true })
     .toBuffer()
+
+  // Soft studio cleanup — keeps product colors; only edge-connected pale bg → #FFF
+  return Buffer.from(await whitenEdgeBackground(placed))
 }
 
 function alreadyOurs(imageUrl) {
@@ -116,7 +190,6 @@ async function processOne(product, originals) {
   const sourceUrl = originals.get(product.id) || product.image_url
   const raw = await fetchBuffer(sourceUrl)
   const jpeg = await toWhiteSquare(raw)
-  // storage-js rejects SharedArrayBuffer-backed Buffers from sharp — copy first.
   const uploadBody = Buffer.from(jpeg)
   const path = `${product.id}.jpg`
 
@@ -153,7 +226,6 @@ async function mapPool(items, concurrency, fn) {
       } catch (e) {
         results[idx] = { id: items[idx].id, error: e instanceof Error ? e.message : String(e) }
         process.stdout.write('FAIL ' + results[idx].error)
-        if (e instanceof Error && e.stack) console.error('\n' + e.stack.split('\n').slice(0, 6).join('\n'))
       }
     }
   }
@@ -177,7 +249,7 @@ if (error) {
 const list = (products ?? []).slice(0, Number.isFinite(limit) ? limit : undefined)
 const originals = loadOriginalUrls()
 console.log(
-  `Removing backgrounds + whitening ${list.length} images → ${BUCKET}/ (originals mapped: ${originals.size})`
+  `Whitening backgrounds (preserve product) for ${list.length} images → ${BUCKET}/ (originals: ${originals.size}, cutout=${useCutout})`
 )
 
 const results = await mapPool(list, CONCURRENCY, (p) => processOne(p, originals))

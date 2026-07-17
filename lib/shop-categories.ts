@@ -1,5 +1,6 @@
 /** Category values used in shop filters and URLs (matches DB `products.category`). */
 export const SHOP_CATEGORIES = [
+  'African Prints',
   'Beverages',
   'Bread',
   'Canned',
@@ -9,9 +10,12 @@ export const SHOP_CATEGORIES = [
   'Flours & Rice',
   'Fresh Produce',
   'Frozen foods',
+  'Hair & Braiding',
+  'Lace',
   'Meat and Seafood',
   'Motherland',
   'Non food',
+  'Ready-to-wear',
   'Snack',
   'Spices',
 ] as const

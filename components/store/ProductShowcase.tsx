@@ -35,7 +35,7 @@ export function ProductShowcase({
           </div>
           <Link
             href={viewAllHref}
-            className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
+            className="group inline-flex min-h-11 shrink-0 items-center gap-1.5 px-1 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
           >
             View all
             <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" />

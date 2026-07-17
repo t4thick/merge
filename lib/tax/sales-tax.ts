@@ -28,7 +28,14 @@ export const FOOD_EXEMPT_CATEGORY_KEYS = new Set(
 
 /** Categories that always collect Ohio store sales tax when tax applies. */
 export const TAXABLE_CATEGORY_KEYS = new Set(
-  ['Cosmetics', 'Non food'].map(normalizeCategoryKey)
+  [
+    'Cosmetics',
+    'Non food',
+    'African Prints',
+    'Lace',
+    'Ready-to-wear',
+    'Hair & Braiding',
+  ].map(normalizeCategoryKey)
 )
 
 export function normalizeCategoryKey(category: string): string {
@@ -54,6 +61,19 @@ export function isCategoryTaxable(category: string): boolean {
   }
   if (key.includes('household') && !key.includes('food')) return true
   if (key.includes('bath') && key.includes('sponge')) return true
+  if (
+    key.includes('fashion') ||
+    key.includes('apparel') ||
+    key.includes('clothing') ||
+    key.includes('fabric') ||
+    key.includes('ankara') ||
+    key.includes('print') ||
+    key.includes('lace') ||
+    key.includes('braid') ||
+    key.includes('hair')
+  ) {
+    return true
+  }
 
   // Default: treat unknown categories as grocery (exempt).
   return false

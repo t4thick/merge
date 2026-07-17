@@ -1,6 +1,7 @@
 import { createClientOptional } from '@/lib/supabase/server'
 import { getSupabasePublicConfig, formatCatalogError, SupabaseConfigError } from '@/lib/supabase/config'
 import { fetchCuratedHomepageShowcase } from '@/lib/supabase/homepage-curation'
+import { FASHION_CATEGORIES } from '@/lib/constants/categories'
 import type { Product } from '@/types'
 
 export type ProductsQueryResult = {
@@ -272,23 +273,46 @@ export async function fetchFrequentlyBoughtTogether(
   }
 }
 
+async function fetchFashionProducts(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  limit = 8
+): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('id,name,price,image_url,category,in_stock,description,created_at')
+    .in('category', [...FASHION_CATEGORIES])
+    .eq('in_stock', true)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error || !data) return []
+  return data as Product[]
+}
+
 export async function fetchHomepageProducts(): Promise<{
   staples: Product[]
   trending: Product[]
   newArrivals: Product[]
+  fashion: Product[]
   categoryCount: Record<string, number>
   inStockCount: number
   configured: boolean
   errorMessage: string | null
 }> {
+  const empty = {
+    staples: [] as Product[],
+    trending: [] as Product[],
+    newArrivals: [] as Product[],
+    fashion: [] as Product[],
+    categoryCount: {} as Record<string, number>,
+    inStockCount: 0,
+  }
+
   const { configured } = getSupabasePublicConfig()
   if (!configured) {
     return {
-      staples: [],
-      trending: [],
-      newArrivals: [],
-      categoryCount: {},
-      inStockCount: 0,
+      ...empty,
       configured: false,
       errorMessage: formatCatalogError(null, false),
     }
@@ -298,27 +322,21 @@ export async function fetchHomepageProducts(): Promise<{
     const supabase = await createClientOptional()
     if (!supabase) {
       return {
-        staples: [],
-        trending: [],
-        newArrivals: [],
-        categoryCount: {},
-        inStockCount: 0,
+        ...empty,
         configured: false,
         errorMessage: formatCatalogError(null, false),
       }
     }
-    const [showcase, catRes] = await Promise.all([
+    const [showcase, catRes, fashion] = await Promise.all([
       fetchCuratedHomepageShowcase(supabase),
       supabase.from('products').select('category').eq('in_stock', true),
+      fetchFashionProducts(supabase),
     ])
 
     if (catRes.error) {
       return {
-        staples: [],
-        trending: [],
-        newArrivals: [],
-        categoryCount: {},
-        inStockCount: 0,
+        ...empty,
+        fashion,
         configured: true,
         errorMessage: formatCatalogError(catRes.error, true),
       }
@@ -339,6 +357,7 @@ export async function fetchHomepageProducts(): Promise<{
       staples: showcase.staples,
       trending: showcase.trending,
       newArrivals: showcase.newArrivals,
+      fashion,
       categoryCount,
       inStockCount,
       configured: true,
@@ -346,11 +365,7 @@ export async function fetchHomepageProducts(): Promise<{
     }
   } catch (e) {
     return {
-      staples: [],
-      trending: [],
-      newArrivals: [],
-      categoryCount: {},
-      inStockCount: 0,
+      ...empty,
       configured: configured,
       errorMessage: formatCatalogError(e instanceof Error ? e : { message: String(e) }, configured),
     }

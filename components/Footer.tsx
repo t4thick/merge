@@ -7,10 +7,11 @@ import { StoreLogo } from '@/components/ui/StoreLogo'
 
 const SHOP_LINKS = [
   { href: '/shop', label: 'All products' },
+  { href: '/#fashion', label: 'Fashion (soon)' },
+  { href: '/#mobile-market', label: 'Services' },
   { href: '/shop?category=Spices', label: 'Spices' },
   { href: '/shop?category=Flours%20%26%20Rice', label: 'Rice & flour' },
   { href: '/shop?category=Beverages', label: 'Beverages' },
-  { href: '/shop?category=Frozen', label: 'Frozen' },
 ] as const
 
 const ACCOUNT_LINKS = [
@@ -57,12 +58,12 @@ export function Footer() {
 
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Shop</p>
-            <ul className="mt-5 space-y-3 text-sm">
+            <ul className="mt-3 text-sm">
               {SHOP_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-earth-600 no-underline hover:text-earth-900"
+                    className="inline-flex min-h-11 min-w-11 items-center text-earth-600 no-underline hover:text-earth-900"
                   >
                     {link.label}
                   </Link>
@@ -73,12 +74,12 @@ export function Footer() {
 
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Account</p>
-            <ul className="mt-5 space-y-3 text-sm">
+            <ul className="mt-3 text-sm">
               {ACCOUNT_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-earth-600 no-underline hover:text-earth-900"
+                    className="inline-flex min-h-11 min-w-11 items-center text-earth-600 no-underline hover:text-earth-900"
                   >
                     {link.label}
                   </Link>
@@ -89,12 +90,12 @@ export function Footer() {
 
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Help</p>
-            <ul className="mt-5 space-y-3 text-sm">
+            <ul className="mt-3 text-sm">
               {HELP_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-earth-600 no-underline hover:text-earth-900"
+                    className="inline-flex min-h-11 min-w-11 items-center text-earth-600 no-underline hover:text-earth-900"
                   >
                     {link.label}
                   </Link>
@@ -103,7 +104,7 @@ export function Footer() {
               <li>
                 <a
                   href={`mailto:${supportEmail}`}
-                  className="break-all text-earth-600 no-underline hover:text-earth-900"
+                  className="inline-flex min-h-11 items-center break-all text-earth-600 no-underline hover:text-earth-900"
                 >
                   {supportEmail}
                 </a>
@@ -121,7 +122,7 @@ export function Footer() {
               <Phone className="h-4 w-4 shrink-0 text-earth-500" strokeWidth={1.75} aria-hidden />
               <a
                 href={STORE.phoneHref}
-                className="font-medium text-earth-900 no-underline hover:text-earth-600"
+                className="inline-flex min-h-11 items-center font-medium text-earth-900 no-underline hover:text-earth-600"
               >
                 {STORE.phone}
               </a>
@@ -138,12 +139,12 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} {STORE.name}. All rights reserved.
           </p>
-          <p className="flex gap-5">
+          <p className="flex gap-3">
             {LEGAL_LINKS.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className="text-earth-500 no-underline hover:text-earth-900"
+                className="inline-flex min-h-11 min-w-11 items-center px-1 text-earth-500 no-underline hover:text-earth-900"
               >
                 {l.label}
               </Link>

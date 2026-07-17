@@ -49,7 +49,8 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="glass-nav fixed bottom-0 left-0 right-0 z-50 border-t border-earth-200 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-earth-200 bg-white md:hidden"
+      // Solid white — glass blur let product labels bleed through on scroll.
       // Hidden on iPad (md: 768px+) since full navbar is shown
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       aria-label="Mobile navigation"

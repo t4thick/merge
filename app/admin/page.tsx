@@ -7,7 +7,9 @@ import {
   ChevronRight,
   DollarSign,
   Download,
+  ExternalLink,
   Package,
+  Plus,
   ReceiptText,
   ShoppingBag,
   TrendingUp,
@@ -31,6 +33,7 @@ import {
   type PeriodOrderRow,
 } from '@/lib/admin/period-stats'
 import { formatOrderNumber } from '@/lib/orders/order-number'
+import { getOpsHealth, NEEDS_ACTION_STATUSES } from '@/lib/admin/ops-health'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -115,6 +118,9 @@ export default async function AdminDashboard({
     { count: ordersAllTime },
     { data: recentOrders },
     { count: openOrdersCount },
+    { count: pendingReviewsCount },
+    { count: readyPickupCount },
+    { count: needsActionCount },
   ] = await Promise.all([
     fetchOrdersAndItems(startIso, endIso),
     prevStartIso && prevEndIso
@@ -136,8 +142,21 @@ export default async function AdminDashboard({
       .from('orders')
       .select('id', { count: 'exact', head: true })
       .in('status', ['ordered', 'processing']),
+    supabaseAdmin
+      .from('product_reviews')
+      .select('id', { count: 'exact', head: true })
+      .eq('approved', false),
+    supabaseAdmin
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'ready_for_pickup'),
+    supabaseAdmin
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .in('status', [...NEEDS_ACTION_STATUSES]),
   ])
 
+  const opsHealth = getOpsHealth()
   const periodStats = computePeriodStats(currOrders, currItems)
   const prevStats = computePeriodStats(prev.orders as PeriodOrderRow[], prev.items)
 
@@ -152,50 +171,143 @@ export default async function AdminDashboard({
   const customParam = (k: 'from' | 'to') => (rangeKey === 'custom' ? sp[k] : undefined)
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto max-w-[1500px] space-y-6 sm:space-y-8">
+      <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <h1 className="admin-page-title">Dashboard</h1>
-          <p className="mt-1 text-sm text-earth-500">
-            Showing <span className="font-semibold text-earth-800">{range.label}</span>
-            {' · '}
-            {range.formattedRange}
-            {' · '}
-            {getReportTimeZoneLabel()}
+          <p className="text-xs font-medium text-slate-500">Store operations</p>
+          <h1 className="admin-page-title mt-1">Overview</h1>
+          <p className="mt-1.5 text-sm text-slate-500">
+            Sales, fulfillment, inventory, and customer activity in one place.
           </p>
         </div>
-        <Link href={exportHref} className="no-underline">
-          <Button size="sm" variant="outline" className="gap-1.5">
-            <Download className="h-4 w-4" aria-hidden />
-            Export CSV
-          </Button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/" target="_blank" className="no-underline">
+            <Button size="sm" variant="outline" className="h-10 gap-1.5 rounded-lg px-3.5">
+              <ExternalLink className="h-4 w-4" aria-hidden />
+              View store
+            </Button>
+          </Link>
+          <Link href="/admin/products/new" className="no-underline">
+            <Button size="sm" className="h-10 gap-1.5 rounded-lg px-3.5">
+              <Plus className="h-4 w-4" aria-hidden />
+              Add product
+            </Button>
+          </Link>
+        </div>
       </header>
 
-      {/* Range pills */}
-      <div className="-mx-1 flex flex-wrap gap-1.5 px-1">
-        {RANGE_OPTIONS.map((opt) => {
-          const active = opt.id === rangeKey
-          const params: Record<string, string | undefined> = { range: opt.id }
-          if (opt.id === 'custom') {
-            params.from = customParam('from')
-            params.to = customParam('to')
-          }
-          return (
-            <Link
-              key={opt.id}
-              href={buildHref(params)}
-              className={`admin-status-pill no-underline ${
-                active
-                  ? 'bg-earth-900 text-white'
-                  : 'bg-white text-earth-700 ring-1 ring-earth-200 hover:bg-earth-50'
-              }`}
-            >
-              {opt.label}
-            </Link>
-          )
-        })}
-      </div>
+      <section className="admin-card p-0 sm:p-0">
+        <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="admin-section-title">Tasks to complete</h2>
+            <p className="mt-0.5 text-xs text-slate-500">Daily actions that need attention.</p>
+          </div>
+          <span className="inline-flex w-fit items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+            Live
+          </span>
+        </div>
+        <div className="grid grid-cols-2 xl:grid-cols-4">
+          <TaskCard
+            icon={ShoppingBag}
+            label="Needs action"
+            value={needsActionCount ?? 0}
+            href="/admin/orders?queue=needs_action"
+            tone="blue"
+          />
+          <TaskCard
+            icon={Box}
+            label="Ready for pickup"
+            value={readyPickupCount ?? 0}
+            href="/admin/orders?status=ready_for_pickup"
+            tone="teal"
+          />
+          <TaskCard
+            icon={AlertTriangle}
+            label="Out of stock"
+            value={lowStockCount ?? 0}
+            href="/admin/products?stock=out"
+            tone="amber"
+          />
+          <TaskCard
+            icon={ReceiptText}
+            label="Reviews to approve"
+            value={pendingReviewsCount ?? 0}
+            href="/admin/reviews"
+            tone="violet"
+          />
+        </div>
+      </section>
+
+      <section className="admin-card p-0 sm:p-0">
+        <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="admin-section-title">Ops readiness</h2>
+            <p className="mt-0.5 text-xs text-slate-500">
+              {opsHealth.readyCount}/{opsHealth.totalCount} required systems ready
+              {openOrdersCount ? ` · ${openOrdersCount} processing` : ''}
+            </p>
+          </div>
+          <Link href="/admin/shipping" className="text-xs font-medium text-slate-600 no-underline hover:text-slate-950">
+            Shipping setup →
+          </Link>
+        </div>
+        <ul className="divide-y divide-slate-100">
+          {opsHealth.items.map((item) => (
+            <li key={item.id} className="flex items-start gap-3 px-5 py-3.5">
+              <span
+                className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                  item.ok ? 'bg-emerald-500' : item.id === 'sms' ? 'bg-slate-300' : 'bg-amber-500'
+                }`}
+                aria-hidden
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-slate-900">{item.label}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{item.detail}</p>
+              </div>
+              {item.href && !item.ok && item.id !== 'sms' ? (
+                <Link href={item.href} className="shrink-0 text-xs font-medium text-brand-700 no-underline hover:underline">
+                  Fix
+                </Link>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-wrap gap-1.5">
+          {RANGE_OPTIONS.map((opt) => {
+            const active = opt.id === rangeKey
+            const params: Record<string, string | undefined> = { range: opt.id }
+            if (opt.id === 'custom') {
+              params.from = customParam('from')
+              params.to = customParam('to')
+            }
+            return (
+              <Link
+                key={opt.id}
+                href={buildHref(params)}
+                className={`admin-status-pill no-underline ${
+                  active
+                    ? 'bg-slate-950 text-white'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+                }`}
+              >
+                {opt.label}
+              </Link>
+            )
+          })}
+        </div>
+        <div className="flex items-center gap-2 px-1 text-xs text-slate-500">
+          <span className="hidden md:inline">{range.formattedRange} · {getReportTimeZoneLabel()}</span>
+          <Link href={exportHref} className="no-underline">
+            <Button size="sm" variant="ghost" className="h-8 gap-1.5 rounded-lg px-2.5">
+              <Download className="h-3.5 w-3.5" aria-hidden />
+              Export
+            </Button>
+          </Link>
+        </div>
+      </section>
 
       {rangeKey === 'custom' && (
         <form
@@ -478,6 +590,47 @@ export default async function AdminDashboard({
 }
 
 type IconCmp = React.ComponentType<{ className?: string; strokeWidth?: number; 'aria-hidden'?: boolean }>
+
+function TaskCard({
+  icon: Icon,
+  label,
+  value,
+  href,
+  tone,
+}: {
+  icon: IconCmp
+  label: string
+  value: number
+  href: string
+  tone: 'blue' | 'teal' | 'amber' | 'violet'
+}) {
+  const tones = {
+    blue: 'bg-blue-50 text-blue-700',
+    teal: 'bg-teal-50 text-teal-700',
+    amber: 'bg-amber-50 text-amber-700',
+    violet: 'bg-violet-50 text-violet-700',
+  }
+
+  return (
+    <Link
+      href={href}
+      className="group relative flex min-h-32 flex-col items-start gap-3 border-b border-slate-100 px-4 py-5 no-underline even:border-l hover:bg-slate-50 sm:min-h-28 sm:flex-row sm:items-center sm:gap-4 sm:px-5 xl:border-b-0 xl:border-l-0 xl:border-r xl:last:border-r-0"
+    >
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}>
+        <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-2xl font-semibold tracking-[-0.03em] tabular-nums text-slate-950">
+          {value}
+        </span>
+        <span className="mt-0.5 block text-xs font-medium text-slate-500 group-hover:text-slate-700">
+          {label}
+        </span>
+      </span>
+      <ChevronRight className="absolute right-4 top-5 h-4 w-4 shrink-0 text-slate-300 group-hover:text-slate-600 sm:static sm:ml-auto" aria-hidden />
+    </Link>
+  )
+}
 
 function Kpi({
   icon: Icon,

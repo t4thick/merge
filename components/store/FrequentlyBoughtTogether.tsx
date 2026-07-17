@@ -66,13 +66,13 @@ export function FrequentlyBoughtTogether({ anchor, suggestions }: Props) {
         </div>
 
         <div className="mt-6 overflow-hidden rounded-xl border border-earth-200 bg-white">
-          <div className="grid items-stretch gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <ul className="flex items-center gap-0 overflow-x-auto px-3 py-5 sm:gap-1 sm:px-5">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-stretch gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <ul className="grid min-w-0 grid-cols-2 gap-2 px-3 py-5 sm:flex sm:items-center sm:gap-1 sm:overflow-x-auto sm:px-5">
               {allProducts.map((p, i) => (
-                <li key={p.id} className="flex shrink-0 items-center">
+                <li key={p.id} className="flex min-w-0 items-center sm:shrink-0">
                   <label
                     className={cn(
-                      'group flex w-32 cursor-pointer flex-col items-center gap-2 rounded-lg border p-2 transition-colors sm:w-36',
+                      'group flex w-full cursor-pointer flex-col items-center gap-2 rounded-lg border p-2 transition-colors sm:w-36',
                       selected.has(p.id)
                         ? 'border-brand-500 bg-brand-50/50'
                         : 'border-earth-200 bg-white hover:border-earth-300'
@@ -101,7 +101,7 @@ export function FrequentlyBoughtTogether({ anchor, suggestions }: Props) {
                     </span>
                     <Link
                       href={`/products/${p.id}`}
-                      className="line-clamp-2 px-1 text-center text-[12px] font-medium text-earth-900 no-underline hover:text-brand-700"
+                      className="line-clamp-2 flex min-h-11 items-center px-1 text-center text-[12px] font-medium text-earth-900 no-underline hover:text-brand-700"
                     >
                       {p.name}
                     </Link>
@@ -122,7 +122,7 @@ export function FrequentlyBoughtTogether({ anchor, suggestions }: Props) {
                     />
                   </label>
                   {i < allProducts.length - 1 && (
-                    <Plus className="mx-1 h-4 w-4 shrink-0 text-earth-400" aria-hidden />
+                    <Plus className="mx-1 hidden h-4 w-4 shrink-0 text-earth-400 sm:block" aria-hidden />
                   )}
                 </li>
               ))}

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Bell, BellOff, ShoppingBag, X } from 'lucide-react'
 import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client'
@@ -87,6 +88,7 @@ function maybeShowSystemNotification(order: OrderRow) {
 }
 
 export function AdminOrderNotifier() {
+  const pathname = usePathname()
   const [toasts, setToasts] = useState<Toast[]>([])
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('unsupported')
   const [soundOn, setSoundOn] = useState(true)
@@ -192,6 +194,8 @@ export function AdminOrderNotifier() {
     })
   }
 
+  if (pathname === '/admin/login') return null
+
   return (
     <div className="admin-order-notifier">
       <div
@@ -237,14 +241,14 @@ export function AdminOrderNotifier() {
         ))}
       </div>
 
-      <div className="border-b border-earth-100 bg-white/60">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-1.5 text-[11px] text-earth-500 sm:px-6 lg:px-8">
-          <span className="font-medium uppercase tracking-wider">Live alerts:</span>
+      <div className="fixed bottom-4 left-4 z-20 hidden rounded-xl border border-slate-200 bg-white px-2 py-1.5 shadow-lg sm:block lg:left-[264px]">
+        <div className="flex items-center gap-1 text-[11px] text-slate-500">
+          <span className="px-1 font-medium">Alerts</span>
           {permission === 'default' && (
             <button
               type="button"
               onClick={() => void requestPerm()}
-              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium text-earth-700 transition-colors hover:bg-earth-100"
+              className="inline-flex min-h-7 items-center gap-1 rounded-md px-1.5 font-medium text-slate-700 transition-colors hover:bg-slate-100"
             >
               <Bell className="h-3 w-3" aria-hidden />
               Enable browser alerts
@@ -256,11 +260,11 @@ export function AdminOrderNotifier() {
               Browser alerts on
             </span>
           )}
-          <span className="text-earth-300">·</span>
+          <span className="text-slate-300">·</span>
           <button
             type="button"
             onClick={toggleSound}
-            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium text-earth-700 transition-colors hover:bg-earth-100"
+            className="inline-flex min-h-7 items-center gap-1 rounded-md px-1.5 font-medium text-slate-700 transition-colors hover:bg-slate-100"
           >
             {soundOn ? (
               <Bell className="h-3 w-3" aria-hidden />

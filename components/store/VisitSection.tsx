@@ -28,7 +28,7 @@ export function VisitSection() {
                   <dd>
                     <a
                       href={STORE.phoneHref}
-                      className="font-medium text-earth-900 no-underline hover:text-earth-600"
+                      className="inline-flex min-h-11 items-center font-medium text-earth-900 no-underline hover:text-earth-600"
                     >
                       {STORE.phone}
                     </a>
@@ -52,7 +52,7 @@ export function VisitSection() {
             </a>
             <Link
               href="/track-order"
-              className="text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
             >
               Track an order →
             </Link>

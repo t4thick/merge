@@ -44,7 +44,7 @@ export function PasswordField({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-auto px-2 py-0 text-xs"
+          className="h-11 min-w-11 px-2 text-xs"
           onClick={() => setVisible((v) => !v)}
           aria-pressed={visible}
         >
