@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
   ChevronRight,
@@ -107,9 +107,10 @@ function AdminNav({ pathname }: { pathname: string }) {
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [open, setOpen] = useState(false)
 
-  useEffect(() => setOpen(false), [pathname])
+  useEffect(() => setOpen(false), [pathname, searchParams])
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => {

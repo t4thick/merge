@@ -22,7 +22,9 @@ function isEmailTransportConfigured(): boolean {
     Boolean(process.env.SMTP_HOST?.trim()) &&
     Boolean(process.env.SMTP_USER?.trim()) &&
     Boolean(process.env.SMTP_PASS?.trim())
-  const postmark = Boolean(process.env.POSTMARK_SERVER_TOKEN?.trim())
+  // Mirror pickSender(): Postmark requires EMAIL_FROM or sends are skipped.
+  const postmark =
+    Boolean(process.env.POSTMARK_SERVER_TOKEN?.trim()) && Boolean(process.env.EMAIL_FROM?.trim())
   return gmail || smtp || postmark
 }
 
@@ -70,7 +72,7 @@ export function getOpsHealth(): {
       ok: isEmailTransportConfigured(),
       detail: isEmailTransportConfigured()
         ? 'Customer / merchant emails can send'
-        : 'No email transport — orders won’t notify anyone',
+        : 'No email transport — set Gmail/SMTP, or Postmark + EMAIL_FROM',
     },
     {
       id: 'labels',

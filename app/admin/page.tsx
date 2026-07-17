@@ -451,11 +451,11 @@ export default async function AdminDashboard({
           <div className="grid grid-cols-2 gap-3">
             <OpCard
               icon={Box}
-              label="Open orders"
-              value={openOrdersCount ?? 0}
-              href="/admin/orders?status=ordered"
+              label="Needs action"
+              value={needsActionCount ?? 0}
+              href="/admin/orders?queue=needs_action"
               cta="Process"
-              tone={(openOrdersCount ?? 0) > 0 ? 'attention' : 'neutral'}
+              tone={(needsActionCount ?? 0) > 0 ? 'attention' : 'neutral'}
             />
             <OpCard
               icon={AlertTriangle}
@@ -483,7 +483,7 @@ export default async function AdminDashboard({
               icon={ShoppingBag}
               label="Orders (all time)"
               value={ordersAllTime ?? 0}
-              href="/admin/orders"
+              href="/admin/orders?queue=all"
               cta="Browse"
             />
           </div>
@@ -495,7 +495,7 @@ export default async function AdminDashboard({
         <div className="mb-3 flex items-center justify-between">
           <h2 className="admin-section-title">Latest orders</h2>
           <Link
-            href="/admin/orders"
+            href="/admin/orders?queue=all"
             className="inline-flex items-center gap-0.5 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
           >
             View all <ChevronRight className="h-4 w-4" />

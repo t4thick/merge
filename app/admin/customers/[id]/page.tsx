@@ -123,7 +123,7 @@ export default async function CustomerDetail({
           </dl>
           {email && (
             <Link
-              href={`/admin/orders?q=${encodeURIComponent(email)}`}
+              href={`/admin/orders?queue=all&q=${encodeURIComponent(email)}`}
               className="mt-4 inline-block text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
             >
               All orders by email →

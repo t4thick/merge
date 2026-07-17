@@ -44,7 +44,7 @@ export function FashionSection({ products, categoryCount }: FashionSectionProps)
   return (
     <section
       id="fashion"
-      className="page-section border-t border-earth-200 bg-earth-50"
+      className="page-section scroll-mt-28 border-t border-earth-200 bg-earth-50 md:scroll-mt-24"
       aria-labelledby="fashion-title"
     >
       <div className="store-container">
@@ -170,7 +170,11 @@ export function FashionSection({ products, categoryCount }: FashionSectionProps)
                 <p className="mt-1 text-sm text-earth-500">Latest prints, lace &amp; apparel in stock.</p>
               </div>
               <Link
-                href="/shop?category=Ready-to-wear"
+                href={
+                  products[0]?.category
+                    ? `/shop?category=${encodeURIComponent(products[0].category)}`
+                    : '/shop'
+                }
                 className="inline-flex min-h-11 shrink-0 items-center px-1 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
               >
                 View all

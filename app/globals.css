@@ -78,10 +78,18 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Sticky announcement + nav — keep hash targets readable */
+    scroll-padding-top: 7.5rem;
     /* Prevent any rogue element from creating horizontal scroll on mobile Safari.
        overflow-x: clip is preferred (doesn't break position: sticky); hidden is the fallback. */
     overflow-x: hidden;
     overflow-x: clip;
+  }
+
+  @media (min-width: 768px) {
+    html {
+      scroll-padding-top: 5.5rem;
+    }
   }
 
   body {
@@ -404,7 +412,7 @@
 }
 
 .animate-slide-up {
-  animation: slide-up 0.22s ease-out;
+  animation: slide-up 0.2s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

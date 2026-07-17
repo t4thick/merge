@@ -8,7 +8,8 @@ import { StoreLogo } from '@/components/ui/StoreLogo'
 const SHOP_LINKS = [
   { href: '/shop', label: 'All products' },
   { href: '/#fashion', label: 'Fashion (soon)' },
-  { href: '/#mobile-market', label: 'Services' },
+  { href: '/#mobile-market', label: 'Mobile market' },
+  { href: '/#services', label: 'Services' },
   { href: '/shop?category=Spices', label: 'Spices' },
   { href: '/shop?category=Flours%20%26%20Rice', label: 'Rice & flour' },
   { href: '/shop?category=Beverages', label: 'Beverages' },

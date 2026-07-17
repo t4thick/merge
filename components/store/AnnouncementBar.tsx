@@ -22,6 +22,10 @@ const MESSAGES = [
     href: '/#mobile-market',
   },
   {
+    text: 'Insurance, notary & more services — by appointment',
+    href: '/#services',
+  },
+  {
     text: `Store pickup · ${STORE.address}`,
     href: undefined,
   },
@@ -55,14 +59,14 @@ export function AnnouncementBar() {
   return (
     <div className="relative border-b border-earth-200 bg-white py-2.5 text-center text-xs font-medium text-earth-600">
       {msg.href ? (
-        <Link href={msg.href} className="px-10 text-earth-700 no-underline hover:text-earth-900">
+        <Link href={msg.href} className="block px-10 text-earth-700 no-underline hover:text-earth-900">
           {msg.text}
         </Link>
       ) : (
         <p className="px-10">{msg.text}</p>
       )}
 
-      <div className="mt-1.5 flex items-center justify-center gap-1.5 pb-0.5">
+      <div className="mt-1 flex items-center justify-center gap-0.5 pb-0.5">
         {MESSAGES.map((_, i) => (
           <button
             key={i}
@@ -70,10 +74,15 @@ export function AnnouncementBar() {
             aria-label={`Announcement ${i + 1} of ${MESSAGES.length}`}
             aria-current={i === index}
             onClick={() => setIndex(i)}
-            className={`h-2 w-2 rounded-full transition-colors duration-150 ${
-              i === index ? 'bg-earth-800' : 'bg-earth-300 hover:bg-earth-500'
-            }`}
-          />
+            className="flex h-11 w-11 items-center justify-center rounded-xl transition-colors duration-150 hover:bg-earth-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-earth-300"
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${
+                i === index ? 'bg-earth-800' : 'bg-earth-300'
+              }`}
+              aria-hidden
+            />
+          </button>
         ))}
       </div>
 

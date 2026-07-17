@@ -15,7 +15,7 @@ const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
   { href: '/#fashion', label: 'Fashion', badge: 'Soon' as const },
-  { href: '/#mobile-market', label: 'Services' },
+  { href: '/#services', label: 'Services' },
   { href: '/track-order', label: 'Track order' },
   { href: '/account', label: 'Account' },
 ] as const
@@ -27,6 +27,7 @@ const DEPARTMENT_SHORTCUTS = [
   { href: '/shop?category=Fresh%20Produce', label: 'Produce' },
   { href: '/#fashion', label: 'Fashion', badge: 'Soon' as const },
   { href: '/#mobile-market', label: 'Mobile market' },
+  { href: '/#services', label: 'More services' },
 ] as const
 
 function isActive(pathname: string, href: string) {

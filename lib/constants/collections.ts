@@ -25,12 +25,11 @@ export const FEATURED_COLLECTIONS = [
     image: '/images/categories/beverages.png',
   },
   {
-    id: 'fashion',
-    title: 'Fashion & Hair',
-    subtitle: 'Coming soon · braiding by phone',
-    emoji: '🧵',
-    href: '/#fashion',
-    image: '/images/categories/african-prints.jpg',
+    id: 'beauty',
+    title: 'Beauty & Body Care',
+    subtitle: 'Lotions, soaps & skincare',
+    emoji: '✨',
+    href: '/shop?category=Cosmetics',
+    image: '/images/categories/cosmetics.jpg',
   },
 ] as const
-

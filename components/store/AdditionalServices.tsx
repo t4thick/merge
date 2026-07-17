@@ -34,12 +34,14 @@ const SERVICE_GROUPS = [
 export function AdditionalServices() {
   return (
     <section
-      id="mobile-market"
-      className="page-section border-t border-earth-200 bg-white"
+      className="page-section scroll-mt-28 border-t border-earth-200 bg-white md:scroll-mt-24"
       aria-labelledby="mobile-market-title"
     >
       <div className="store-container">
-        <div className="grid overflow-hidden rounded-3xl bg-earth-950 text-white shadow-[var(--shadow-card)] lg:grid-cols-[0.95fr_1.05fr]">
+        <div
+          id="mobile-market"
+          className="grid scroll-mt-28 overflow-hidden rounded-3xl bg-earth-950 text-white shadow-[var(--shadow-card)] md:scroll-mt-24 lg:grid-cols-[0.95fr_1.05fr]"
+        >
           <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
               Mobile market · Ohio delivery · Nationwide shipping
@@ -119,7 +121,10 @@ export function AdditionalServices() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-5 border-b border-earth-200 pb-8 sm:mt-16 sm:flex-row sm:items-end sm:justify-between">
+        <div
+          id="services"
+          className="mt-12 flex scroll-mt-28 flex-col gap-5 border-b border-earth-200 pb-8 sm:mt-16 sm:flex-row sm:items-end sm:justify-between md:scroll-mt-24"
+        >
           <div>
             <p className="section-eyebrow">Available by appointment</p>
             <h2 id="additional-services-title" className="section-title mt-3">

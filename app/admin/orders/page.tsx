@@ -28,7 +28,18 @@ const STATUS_PILL_COLORS: Record<OrderStatus, string> = {
 }
 
 const PAGE_SIZE = 50
-const NEEDS_ACTION_SET = new Set<string>(NEEDS_ACTION_STATUSES)
+
+type OrderListRow = {
+  id: string
+  order_number: number | null
+  customer_name: string | null
+  customer_email: string | null
+  city: string | null
+  total_amount: number | null
+  status: string | null
+  created_at: string
+  shipping_method: string | null
+}
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -41,11 +52,14 @@ export default async function AdminOrdersPage({
   const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1)
 
   // Default to the fulfillment queue so staff land on work, not history.
+  // Searches default to all so customer lookups aren't hidden by the queue.
   const queue: 'needs_action' | 'all' = activeStatus
     ? 'all'
-    : rawQueue === 'all'
+    : rawQueue === 'all' || Boolean(q?.trim())
       ? 'all'
-      : 'needs_action'
+      : rawQueue === 'needs_action' || !rawQueue
+        ? 'needs_action'
+        : 'all'
 
   const zone = getReportTimeZone()
   const now = DateTime.now().setZone(zone)
@@ -63,53 +77,71 @@ export default async function AdminOrdersPage({
     whenEnd = todayStart.plus({ days: 1 })
   }
 
-  let query = supabaseAdmin
-    .from('orders')
-    .select('id, order_number, customer_name, customer_email, city, total_amount, status, created_at, shipping_method')
-    .order('created_at', { ascending: false })
-
-  if (whenStart && whenEnd) {
-    query = query
-      .gte('created_at', whenStart.toUTC().toISO()!)
-      .lt('created_at', whenEnd.toUTC().toISO()!)
+  function applyCommonFilters<T extends { gte: Function; lt: Function; or: Function }>(query: T): T {
+    let next = query
+    if (whenStart && whenEnd) {
+      next = next.gte('created_at', whenStart.toUTC().toISO()!).lt('created_at', whenEnd.toUTC().toISO()!) as T
+    }
+    if (q?.trim()) {
+      const term = q.trim()
+      const ref = parseOrderRef(term)
+      if (ref?.type === 'number') {
+        next = next.or(
+          `customer_name.ilike.%${term}%,customer_email.ilike.%${term}%,order_number.eq.${ref.value}`
+        ) as T
+      } else if (ref?.type === 'uuid') {
+        next = next.or(
+          `customer_name.ilike.%${term}%,customer_email.ilike.%${term}%,id.eq.${ref.value}`
+        ) as T
+      } else {
+        next = next.or(`customer_name.ilike.%${term}%,customer_email.ilike.%${term}%`) as T
+      }
+    }
+    return next
   }
-  if (q?.trim()) {
-    const term = q.trim()
-    const ref = parseOrderRef(term)
-    if (ref?.type === 'number') {
-      query = query.or(`customer_name.ilike.%${term}%,customer_email.ilike.%${term}%,order_number.eq.${ref.value}`)
-    } else if (ref?.type === 'uuid') {
-      query = query.or(`customer_name.ilike.%${term}%,customer_email.ilike.%${term}%,id.eq.${ref.value}`)
-    } else {
-      query = query.or(`customer_name.ilike.%${term}%,customer_email.ilike.%${term}%`)
-    }
-  }
-  const { data: orders } = await query
 
-  const needsActionCount = (orders ?? []).filter((o) =>
-    NEEDS_ACTION_SET.has(normalizeOrderStatus(o.status))
-  ).length
+  // Lightweight status rows for pill counts (same when/q scope).
+  let statusQuery = supabaseAdmin.from('orders').select('status')
+  statusQuery = applyCommonFilters(statusQuery as never) as typeof statusQuery
+  const { data: statusRows } = await statusQuery
 
-  const filtered = (() => {
-    const list = orders ?? []
-    if (activeStatus) {
-      return list.filter((o) => normalizeOrderStatus(o.status) === activeStatus)
-    }
-    if (queue === 'needs_action') {
-      return list.filter((o) => NEEDS_ACTION_SET.has(normalizeOrderStatus(o.status)))
-    }
-    return list
-  })()
-
-  const filteredRevenue = filtered.reduce((s, o) => s + Number(o.total_amount ?? 0), 0)
   const counts = ORDER_STATUSES.reduce<Record<string, number>>((acc, status) => {
-    acc[status] = (orders ?? []).filter((o) => normalizeOrderStatus(o.status) === status).length
+    acc[status] = 0
     return acc
   }, {})
+  let totalInScope = 0
+  let needsActionCount = 0
+  for (const row of statusRows ?? []) {
+    totalInScope += 1
+    const st = normalizeOrderStatus(row.status)
+    counts[st] = (counts[st] ?? 0) + 1
+    if ((NEEDS_ACTION_STATUSES as readonly string[]).includes(st)) needsActionCount += 1
+  }
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  let listQuery = supabaseAdmin
+    .from('orders')
+    .select(
+      'id, order_number, customer_name, customer_email, city, total_amount, status, created_at, shipping_method',
+      { count: 'exact' }
+    )
+    .order('created_at', { ascending: false })
+
+  listQuery = applyCommonFilters(listQuery as never) as typeof listQuery
+  if (activeStatus) {
+    listQuery = listQuery.eq('status', activeStatus)
+  } else if (queue === 'needs_action') {
+    listQuery = listQuery.in('status', [...NEEDS_ACTION_STATUSES])
+  }
+
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+  const { data: orders, count: filteredCount } = await listQuery.range(from, to)
+
+  const paginated = (orders ?? []) as OrderListRow[]
+  const filteredTotal = filteredCount ?? paginated.length
+  const filteredRevenue = paginated.reduce((s, o) => s + Number(o.total_amount ?? 0), 0)
+  const totalPages = Math.max(1, Math.ceil(filteredTotal / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
-  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
   function buildPageHref(p: number) {
     const sp = new URLSearchParams()
@@ -145,16 +177,18 @@ export default async function AdminOrdersPage({
     return `/admin/orders${sp.toString() ? `?${sp.toString()}` : ''}`
   }
 
+  const showingNeedsAction = queue === 'needs_action' && !activeStatus
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="admin-page-title">Orders</h1>
           <p className="mt-1 text-sm text-earth-500">
-            {queue === 'needs_action' && !activeStatus
-              ? `${filtered.length} need action · ${orders?.length ?? 0} total`
-              : `${filtered.length} shown · ${orders?.length ?? 0} total`}
-            {` · $${filteredRevenue.toFixed(2)} gross in view`}
+            {showingNeedsAction
+              ? `${filteredTotal} need action · ${totalInScope} in scope`
+              : `${filteredTotal} shown · ${totalInScope} in scope`}
+            {` · $${filteredRevenue.toFixed(2)} on this page`}
           </p>
         </div>
         <Link href={exportHref} className="no-underline">
@@ -176,7 +210,9 @@ export default async function AdminOrdersPage({
           else sp.set('queue', 'needs_action')
           const href = `/admin/orders${sp.toString() ? `?${sp.toString()}` : ''}`
           return (
-            <Link key={opt.id ?? 'any'} href={href}
+            <Link
+              key={opt.id ?? 'any'}
+              href={href}
               className={`admin-status-pill no-underline ${active ? 'bg-earth-900 text-white' : 'bg-white text-earth-700 ring-1 ring-earth-200 hover:bg-earth-50'}`}
             >
               {opt.label}
@@ -186,21 +222,32 @@ export default async function AdminOrdersPage({
       </div>
 
       <form method="GET" className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-earth-400" aria-hidden />
-          <Input type="search" name="q" defaultValue={q ?? ''} placeholder="Search by name, email, or LQ-1042" className="pl-10" />
+        <div className="relative max-w-md flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-earth-400"
+            aria-hidden
+          />
+          <Input
+            type="search"
+            name="q"
+            defaultValue={q ?? ''}
+            placeholder="Search by name, email, or LQ-1042"
+            className="pl-10"
+          />
         </div>
         {activeStatus && <input type="hidden" name="status" value={activeStatus} />}
-        {!activeStatus && <input type="hidden" name="queue" value={queue} />}
+        {!activeStatus && <input type="hidden" name="queue" value="all" />}
         {when && <input type="hidden" name="when" value={when} />}
-        <Button type="submit" size="sm">Search</Button>
+        <Button type="submit" size="sm">
+          Search
+        </Button>
       </form>
 
       <div className="flex flex-wrap gap-1.5">
         <Link
           href={statusFilterHref({ queue: 'needs_action' })}
           className={`admin-status-pill no-underline ${
-            queue === 'needs_action' && !activeStatus
+            showingNeedsAction
               ? 'bg-earth-900 text-white'
               : 'bg-amber-50 text-amber-800 ring-1 ring-amber-200 hover:bg-amber-100'
           }`}
@@ -215,13 +262,15 @@ export default async function AdminOrdersPage({
               : 'bg-white text-earth-700 ring-1 ring-earth-200 hover:bg-earth-50'
           }`}
         >
-          All ({orders?.length ?? 0})
+          All ({totalInScope})
         </Link>
         {ORDER_STATUSES.map((status) => {
           const href = statusFilterHref({ status })
           const isActive = activeStatus === status
           return (
-            <Link key={status} href={href}
+            <Link
+              key={status}
+              href={href}
               className={`admin-status-pill no-underline ${isActive ? 'bg-earth-900 text-white' : `${STATUS_PILL_COLORS[status]} hover:opacity-80`}`}
             >
               {ORDER_STATUS_LABEL[status]} ({counts[status] ?? 0})
@@ -233,12 +282,13 @@ export default async function AdminOrdersPage({
       {paginated.length === 0 ? (
         <div className="admin-card text-center">
           <p className="text-sm text-earth-600">
-            {queue === 'needs_action' && !activeStatus
-              ? 'No orders need action right now.'
-              : 'No orders in this view.'}
+            {showingNeedsAction ? 'No orders need action right now.' : 'No orders in this view.'}
           </p>
-          {queue === 'needs_action' && !activeStatus && (
-            <Link href="/admin/orders?queue=all" className="mt-3 inline-block text-sm font-medium text-brand-700 no-underline hover:underline">
+          {showingNeedsAction && (
+            <Link
+              href="/admin/orders?queue=all"
+              className="mt-3 inline-block text-sm font-medium text-brand-700 no-underline hover:underline"
+            >
               View all orders →
             </Link>
           )}
