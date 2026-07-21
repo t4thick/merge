@@ -279,7 +279,17 @@ export async function POST(req: NextRequest) {
 
     if (snapErr || !snap) {
       console.error('[checkout] snapshot insert', snapErr)
-      return NextResponse.json({ error: 'Could not prepare checkout.' }, { status: 500 })
+      const missingTable =
+        snapErr?.code === 'PGRST205' ||
+        /checkout_snapshots/i.test(snapErr?.message ?? '')
+      return NextResponse.json(
+        {
+          error: missingTable
+            ? 'Checkout is not fully set up yet. The store database is missing the checkout_snapshots table — contact support or retry in a few minutes.'
+            : 'Could not prepare checkout.',
+        },
+        { status: 500 }
+      )
     }
 
     const amountCents = Math.round(totals.total * 100)

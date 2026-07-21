@@ -270,6 +270,35 @@ create policy "service_role_only_order_status_logs"
   on public.order_status_logs for all to anon, authenticated
   using (false) with check (false);
 
+-- 8) Checkout snapshots (Stripe Payment Element) -----------------------------
+create table if not exists public.checkout_snapshots (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  payload jsonb not null,
+  payment_intent_id text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists checkout_snapshots_user_id_idx
+  on public.checkout_snapshots (user_id);
+
+create index if not exists checkout_snapshots_payment_intent_id_idx
+  on public.checkout_snapshots (payment_intent_id);
+
+alter table public.checkout_snapshots enable row level security;
+
+revoke all on table public.checkout_snapshots from anon, authenticated;
+
+drop policy if exists "deny all non-service-role access to checkout_snapshots"
+  on public.checkout_snapshots;
+
+create policy "deny all non-service-role access to checkout_snapshots"
+  on public.checkout_snapshots
+  for all
+  to public
+  using (false)
+  with check (false);
+
 -- Done ----------------------------------------------------------------------
 select 'bootstrap ok' as status,
   (select count(*) from public.products) as products;
