@@ -13,6 +13,8 @@ export type OpsHealthItem = {
   ok: boolean
   detail: string
   href?: string
+  /** Show green "Complete" pill when ok */
+  completeBadge?: boolean
 }
 
 type EmailTransport = 'gmail' | 'smtp' | 'postmark' | null
@@ -40,38 +42,92 @@ function hasCarrierSmsGateway(): boolean {
   return Boolean(process.env.MERCHANT_SMS_GATEWAY_EMAIL?.trim())
 }
 
-function emailHealthDetail(): { ok: boolean; detail: string } {
+function isTwilioConfigured(): boolean {
+  return (
+    Boolean(process.env.TWILIO_ACCOUNT_SID?.trim()) &&
+    Boolean(process.env.TWILIO_AUTH_TOKEN?.trim()) &&
+    Boolean(process.env.TWILIO_FROM_NUMBER?.trim()) &&
+    Boolean(process.env.MERCHANT_ALERT_PHONE?.trim())
+  )
+}
+
+function formatAlertPhone(): string {
+  const raw = process.env.MERCHANT_ALERT_PHONE?.trim() ?? ''
+  if (raw.startsWith('+1') && raw.length === 12) {
+    const d = raw.slice(2)
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  }
+  return raw
+}
+
+function smsHealthDetail(): { ok: boolean; detail: string; completeBadge: boolean } {
+  if (isTwilioConfigured()) {
+    const phone = formatAlertPhone()
+    return {
+      ok: true,
+      completeBadge: true,
+      detail: phone
+        ? `SMS setup complete — new orders text ${phone}`
+        : 'SMS setup complete — Twilio alerts on',
+    }
+  }
+
+  const missing: string[] = []
+  if (!process.env.TWILIO_ACCOUNT_SID?.trim()) missing.push('TWILIO_ACCOUNT_SID')
+  if (!process.env.TWILIO_AUTH_TOKEN?.trim()) missing.push('TWILIO_AUTH_TOKEN')
+  if (!process.env.TWILIO_FROM_NUMBER?.trim()) missing.push('TWILIO_FROM_NUMBER')
+  if (!process.env.MERCHANT_ALERT_PHONE?.trim()) missing.push('MERCHANT_ALERT_PHONE')
+
+  if (missing.length > 0 && missing.length < 4) {
+    return {
+      ok: false,
+      completeBadge: false,
+      detail: `Almost there — add ${missing.join(', ')} on Vercel`,
+    }
+  }
+
+  return {
+    ok: false,
+    completeBadge: false,
+    detail:
+      'Step 1: Twilio account + number. Set all four TWILIO_* / MERCHANT_ALERT_PHONE vars (E.164, e.g. +16143778297). No email needed.',
+  }
+}
+
+function emailHealthDetail(): { ok: boolean; detail: string; completeBadge: boolean } {
   const transport = emailTransport()
   const inbox = hasMerchantInbox()
-  const phoneBuzz = hasCarrierSmsGateway()
 
   if (transport && inbox) {
     const via =
       transport === 'gmail' ? 'Gmail' : transport === 'smtp' ? 'SMTP' : 'Postmark'
-    const phone = phoneBuzz ? ' · phone buzz via carrier gateway' : ''
     return {
       ok: true,
-      detail: `Email setup complete — ${via} sending receipts and order alerts${phone}`,
+      completeBadge: true,
+      detail: `Email setup complete — ${via} sending receipts and order alerts`,
+    }
+  }
+
+  if (hasCarrierSmsGateway() && transport && !isTwilioConfigured()) {
+    return {
+      ok: false,
+      completeBadge: false,
+      detail: 'Optional later — finish SMS first, then add MERCHANT_ORDER_EMAIL for inbox alerts',
     }
   }
 
   if (transport && !inbox) {
     return {
       ok: false,
-      detail: 'Transport ready — add MERCHANT_ORDER_EMAIL on Vercel (where alerts go)',
-    }
-  }
-
-  if (!transport && inbox) {
-    return {
-      ok: false,
-      detail: 'MERCHANT_ORDER_EMAIL set — add Gmail, SMTP, or Postmark + EMAIL_FROM to send',
+      completeBadge: false,
+      detail: 'Optional later — transport ready; add MERCHANT_ORDER_EMAIL when you wire email',
     }
   }
 
   return {
     ok: false,
-    detail: 'Set GMAIL_USER + GMAIL_APP_PASSWORD, or Postmark + EMAIL_FROM, plus MERCHANT_ORDER_EMAIL',
+    completeBadge: false,
+    detail: 'Optional later — Gmail or Postmark + MERCHANT_ORDER_EMAIL (after SMS)',
   }
 }
 
@@ -83,49 +139,30 @@ function isStripeConfigured(): boolean {
   )
 }
 
-function isTwilioConfigured(): boolean {
-  return (
-    Boolean(process.env.TWILIO_ACCOUNT_SID?.trim()) &&
-    Boolean(process.env.TWILIO_AUTH_TOKEN?.trim()) &&
-    Boolean(process.env.TWILIO_FROM_NUMBER?.trim()) &&
-    Boolean(process.env.MERCHANT_ALERT_PHONE?.trim())
-  )
-}
-
-function smsHealthDetail(): { ok: boolean; detail: string } {
-  if (isTwilioConfigured()) {
-    return { ok: true, detail: 'Twilio SMS alerts on' }
-  }
-  if (hasCarrierSmsGateway() && emailTransport()) {
-    return { ok: true, detail: 'Phone buzz via MERCHANT_SMS_GATEWAY_EMAIL (free carrier gateway)' }
-  }
-  if (hasCarrierSmsGateway() && !emailTransport()) {
-    return {
-      ok: false,
-      detail: 'Gateway set — finish email setup first (gateway uses the same mail transport)',
-    }
-  }
-  return {
-    ok: false,
-    detail: 'Optional — set MERCHANT_SMS_GATEWAY_EMAIL (free) or Twilio',
-  }
-}
-
 export function getOpsHealth(): {
   items: OpsHealthItem[]
   readyCount: number
   totalCount: number
   labelsReady: boolean
+  smsReady: boolean
 } {
   const usps = getUspsConfigPublic()
   const shipCfg = getShippingLabelConfigPublic()
   const shippo = isShippoConfigured()
   const uspsLive = isUspsLabelsLive() && usps.uspsConfigured
   const labelsReady = shippo || uspsLive
-  const email = emailHealthDetail()
   const sms = smsHealthDetail()
+  const email = emailHealthDetail()
 
+  // Phone alerts first — user rolls out one system at a time.
   const items: OpsHealthItem[] = [
+    {
+      id: 'sms',
+      label: 'Phone alerts (SMS)',
+      ok: sms.ok,
+      detail: sms.detail,
+      completeBadge: sms.completeBadge,
+    },
     {
       id: 'stripe',
       label: 'Payments (Stripe)',
@@ -139,6 +176,7 @@ export function getOpsHealth(): {
       label: 'Order email',
       ok: email.ok,
       detail: email.detail,
+      completeBadge: email.completeBadge,
     },
     {
       id: 'labels',
@@ -160,21 +198,16 @@ export function getOpsHealth(): {
         : 'Set SHIP_FROM_* on Vercel',
       href: '/admin/shipping',
     },
-    {
-      id: 'sms',
-      label: 'Phone alerts',
-      ok: sms.ok,
-      detail: sms.detail,
-    },
   ]
 
-  // Phone alerts optional — don't count against required readiness.
-  const required = items.filter((i) => i.id !== 'sms')
+  // Required for launch checklist: stripe + labels + ship-from (SMS tracked separately).
+  const required = items.filter((i) => i.id !== 'email' && i.id !== 'sms')
   return {
     items,
     readyCount: required.filter((i) => i.ok).length,
     totalCount: required.length,
     labelsReady,
+    smsReady: sms.ok,
   }
 }
 

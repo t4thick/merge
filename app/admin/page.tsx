@@ -243,7 +243,13 @@ export default async function AdminDashboard({
           <div>
             <h2 className="admin-section-title">Ops readiness</h2>
             <p className="mt-0.5 text-xs text-slate-500">
-              {opsHealth.readyCount}/{opsHealth.totalCount} required systems ready
+              {opsHealth.smsReady ? (
+                <span className="font-medium text-emerald-700">SMS ready</span>
+              ) : (
+                <span className="font-medium text-amber-700">Set up phone alerts first</span>
+              )}
+              {' · '}
+              {opsHealth.readyCount}/{opsHealth.totalCount} shipping/payment systems ready
               {openOrdersCount ? ` · ${openOrdersCount} processing` : ''}
             </p>
           </div>
@@ -256,7 +262,7 @@ export default async function AdminDashboard({
             <li key={item.id} className="flex items-start gap-3 px-5 py-3.5">
               <span
                 className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${
-                  item.ok ? 'bg-emerald-500' : item.id === 'sms' ? 'bg-slate-300' : 'bg-amber-500'
+                  item.ok ? 'bg-emerald-500' : item.id === 'email' ? 'bg-slate-300' : 'bg-amber-500'
                 }`}
                 aria-hidden
               />
@@ -264,12 +270,12 @@ export default async function AdminDashboard({
                 <p className="text-sm font-medium text-slate-900">{item.label}</p>
                 <p className="mt-0.5 text-xs text-slate-500">{item.detail}</p>
               </div>
-              {item.ok && item.id === 'email' ? (
+              {item.ok && item.completeBadge ? (
                 <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
                   Complete
                 </span>
               ) : null}
-              {item.href && !item.ok && item.id !== 'sms' ? (
+              {item.href && !item.ok ? (
                 <Link href={item.href} className="shrink-0 text-xs font-medium text-brand-700 no-underline hover:underline">
                   Fix
                 </Link>
