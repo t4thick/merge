@@ -264,6 +264,11 @@ export default async function AdminDashboard({
                 <p className="text-sm font-medium text-slate-900">{item.label}</p>
                 <p className="mt-0.5 text-xs text-slate-500">{item.detail}</p>
               </div>
+              {item.ok && item.id === 'email' ? (
+                <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
+                  Complete
+                </span>
+              ) : null}
               {item.href && !item.ok && item.id !== 'sms' ? (
                 <Link href={item.href} className="shrink-0 text-xs font-medium text-brand-700 no-underline hover:underline">
                   Fix

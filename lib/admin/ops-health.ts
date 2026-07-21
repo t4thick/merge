@@ -15,17 +15,64 @@ export type OpsHealthItem = {
   href?: string
 }
 
-function isEmailTransportConfigured(): boolean {
+type EmailTransport = 'gmail' | 'smtp' | 'postmark' | null
+
+function emailTransport(): EmailTransport {
   const gmail =
     Boolean(process.env.GMAIL_USER?.trim()) && Boolean(process.env.GMAIL_APP_PASSWORD?.trim())
+  if (gmail) return 'gmail'
   const smtp =
     Boolean(process.env.SMTP_HOST?.trim()) &&
     Boolean(process.env.SMTP_USER?.trim()) &&
     Boolean(process.env.SMTP_PASS?.trim())
-  // Mirror pickSender(): Postmark requires EMAIL_FROM or sends are skipped.
+  if (smtp) return 'smtp'
   const postmark =
     Boolean(process.env.POSTMARK_SERVER_TOKEN?.trim()) && Boolean(process.env.EMAIL_FROM?.trim())
-  return gmail || smtp || postmark
+  if (postmark) return 'postmark'
+  return null
+}
+
+function hasMerchantInbox(): boolean {
+  return Boolean(process.env.MERCHANT_ORDER_EMAIL?.trim())
+}
+
+function hasCarrierSmsGateway(): boolean {
+  return Boolean(process.env.MERCHANT_SMS_GATEWAY_EMAIL?.trim())
+}
+
+function emailHealthDetail(): { ok: boolean; detail: string } {
+  const transport = emailTransport()
+  const inbox = hasMerchantInbox()
+  const phoneBuzz = hasCarrierSmsGateway()
+
+  if (transport && inbox) {
+    const via =
+      transport === 'gmail' ? 'Gmail' : transport === 'smtp' ? 'SMTP' : 'Postmark'
+    const phone = phoneBuzz ? ' · phone buzz via carrier gateway' : ''
+    return {
+      ok: true,
+      detail: `Email setup complete — ${via} sending receipts and order alerts${phone}`,
+    }
+  }
+
+  if (transport && !inbox) {
+    return {
+      ok: false,
+      detail: 'Transport ready — add MERCHANT_ORDER_EMAIL on Vercel (where alerts go)',
+    }
+  }
+
+  if (!transport && inbox) {
+    return {
+      ok: false,
+      detail: 'MERCHANT_ORDER_EMAIL set — add Gmail, SMTP, or Postmark + EMAIL_FROM to send',
+    }
+  }
+
+  return {
+    ok: false,
+    detail: 'Set GMAIL_USER + GMAIL_APP_PASSWORD, or Postmark + EMAIL_FROM, plus MERCHANT_ORDER_EMAIL',
+  }
 }
 
 function isStripeConfigured(): boolean {
@@ -36,13 +83,32 @@ function isStripeConfigured(): boolean {
   )
 }
 
-function isSmsConfigured(): boolean {
+function isTwilioConfigured(): boolean {
   return (
     Boolean(process.env.TWILIO_ACCOUNT_SID?.trim()) &&
     Boolean(process.env.TWILIO_AUTH_TOKEN?.trim()) &&
     Boolean(process.env.TWILIO_FROM_NUMBER?.trim()) &&
     Boolean(process.env.MERCHANT_ALERT_PHONE?.trim())
   )
+}
+
+function smsHealthDetail(): { ok: boolean; detail: string } {
+  if (isTwilioConfigured()) {
+    return { ok: true, detail: 'Twilio SMS alerts on' }
+  }
+  if (hasCarrierSmsGateway() && emailTransport()) {
+    return { ok: true, detail: 'Phone buzz via MERCHANT_SMS_GATEWAY_EMAIL (free carrier gateway)' }
+  }
+  if (hasCarrierSmsGateway() && !emailTransport()) {
+    return {
+      ok: false,
+      detail: 'Gateway set — finish email setup first (gateway uses the same mail transport)',
+    }
+  }
+  return {
+    ok: false,
+    detail: 'Optional — set MERCHANT_SMS_GATEWAY_EMAIL (free) or Twilio',
+  }
 }
 
 export function getOpsHealth(): {
@@ -56,6 +122,8 @@ export function getOpsHealth(): {
   const shippo = isShippoConfigured()
   const uspsLive = isUspsLabelsLive() && usps.uspsConfigured
   const labelsReady = shippo || uspsLive
+  const email = emailHealthDetail()
+  const sms = smsHealthDetail()
 
   const items: OpsHealthItem[] = [
     {
@@ -69,10 +137,8 @@ export function getOpsHealth(): {
     {
       id: 'email',
       label: 'Order email',
-      ok: isEmailTransportConfigured(),
-      detail: isEmailTransportConfigured()
-        ? 'Customer / merchant emails can send'
-        : 'No email transport — set Gmail/SMTP, or Postmark + EMAIL_FROM',
+      ok: email.ok,
+      detail: email.detail,
     },
     {
       id: 'labels',
@@ -96,15 +162,13 @@ export function getOpsHealth(): {
     },
     {
       id: 'sms',
-      label: 'SMS alerts',
-      ok: isSmsConfigured(),
-      detail: isSmsConfigured()
-        ? 'Twilio merchant SMS on'
-        : 'Optional — Twilio not configured',
+      label: 'Phone alerts',
+      ok: sms.ok,
+      detail: sms.detail,
     },
   ]
 
-  // SMS is optional — don't count against "must fix" readiness for labels/payments.
+  // Phone alerts optional — don't count against required readiness.
   const required = items.filter((i) => i.id !== 'sms')
   return {
     items,
