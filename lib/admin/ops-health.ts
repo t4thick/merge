@@ -117,12 +117,58 @@ function emailHealthDetail(): { ok: boolean; detail: string; completeBadge: bool
   }
 }
 
+function stripeKeyMode(): 'live' | 'test' | 'mixed' | 'missing' {
+  const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim() ?? ''
+  const sk = process.env.STRIPE_SECRET_KEY?.trim() ?? ''
+  if (!pk || !sk) return 'missing'
+  const pkLive = pk.startsWith('pk_live_')
+  const skLive = sk.startsWith('sk_live_')
+  if (pkLive && skLive) return 'live'
+  if (pk.startsWith('pk_test_') && sk.startsWith('sk_test_')) return 'test'
+  return 'mixed'
+}
+
 function isStripeConfigured(): boolean {
   return (
     Boolean(process.env.STRIPE_SECRET_KEY?.trim()) &&
     Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim()) &&
     Boolean(process.env.STRIPE_WEBHOOK_SECRET?.trim())
   )
+}
+
+function stripeHealthDetail(): { ok: boolean; detail: string; completeBadge: boolean } {
+  const configured = isStripeConfigured()
+  const mode = stripeKeyMode()
+
+  if (!configured) {
+    return {
+      ok: false,
+      completeBadge: false,
+      detail: 'Missing Stripe keys — checkout returns errors',
+    }
+  }
+
+  if (mode === 'mixed') {
+    return {
+      ok: false,
+      completeBadge: false,
+      detail: 'Key mismatch — pk and sk must both be live or both be test',
+    }
+  }
+
+  if (mode === 'test') {
+    return {
+      ok: false,
+      completeBadge: false,
+      detail: 'Test keys on server — swap to pk_live_ / sk_live_ on Vercel for real charges',
+    }
+  }
+
+  return {
+    ok: true,
+    completeBadge: true,
+    detail: 'Live keys + webhook set — real payments enabled',
+  }
 }
 
 export function getOpsHealth(): {
@@ -139,6 +185,7 @@ export function getOpsHealth(): {
   const labelsReady = shippo || uspsLive
   const sms = smsHealthDetail()
   const email = emailHealthDetail()
+  const stripe = stripeHealthDetail()
 
   const items: OpsHealthItem[] = [
     {
@@ -151,10 +198,9 @@ export function getOpsHealth(): {
     {
       id: 'stripe',
       label: 'Payments (Stripe)',
-      ok: isStripeConfigured(),
-      detail: isStripeConfigured()
-        ? 'Secret, publishable, and webhook keys set'
-        : 'Missing Stripe keys — checkout returns errors',
+      ok: stripe.ok,
+      detail: stripe.detail,
+      completeBadge: stripe.completeBadge,
     },
     {
       id: 'email',
