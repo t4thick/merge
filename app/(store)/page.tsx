@@ -4,7 +4,6 @@ import { HeroSection } from '@/components/store/HeroSection'
 import { TrustStrip } from '@/components/store/TrustStrip'
 import { CategoryBrowse } from '@/components/store/CategoryBrowse'
 import { FeaturedCollections } from '@/components/store/FeaturedCollections'
-import { FashionSection } from '@/components/store/FashionSection'
 import { HomepageReviews } from '@/components/store/HomepageReviews'
 import { ProductShowcase } from '@/components/store/ProductShowcase'
 import { RecentlyViewed } from '@/components/store/RecentlyViewed'
@@ -15,10 +14,6 @@ import { fetchHomepageReviews } from '@/lib/supabase/homepage-reviews'
 import { fetchHomepageProducts } from '@/lib/supabase/products'
 
 const HOME_CATEGORY_ORDER = [
-  'African Prints',
-  'Lace',
-  'Ready-to-wear',
-  'Hair & Braiding',
   'Flours & Rice',
   'Fresh Produce',
   'Beverages',
@@ -33,7 +28,7 @@ const HOME_CATEGORY_ORDER = [
 
 export default async function Home() {
   const [
-    { staples, trending, newArrivals, fashion, categoryCount, inStockCount, errorMessage },
+    { staples, trending, newArrivals, categoryCount, inStockCount, errorMessage },
     reviewData,
   ] = await Promise.all([fetchHomepageProducts(), fetchHomepageReviews()])
 
@@ -47,7 +42,6 @@ export default async function Home() {
     <>
       <HeroSection inStockCount={inStockCount} />
       <CategoryBrowse displayCategories={displayCategories} categoryCount={categoryCount} />
-      <FashionSection products={fashion} categoryCount={categoryCount} />
       {staples.length > 0 && (
         <ProductShowcase
           title="Yam, fufu & staples"

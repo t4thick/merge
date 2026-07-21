@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils'
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
-  { href: '/#fashion', label: 'Fashion', badge: 'Soon' as const },
   { href: '/#services', label: 'Services' },
   { href: '/track-order', label: 'Track order' },
   { href: '/account', label: 'Account' },
@@ -25,7 +24,6 @@ const DEPARTMENT_SHORTCUTS = [
   { href: '/shop?category=Spices', label: 'Spices' },
   { href: '/shop?category=Beverages', label: 'Drinks' },
   { href: '/shop?category=Fresh%20Produce', label: 'Produce' },
-  { href: '/#fashion', label: 'Fashion', badge: 'Soon' as const },
   { href: '/#mobile-market', label: 'Mobile market' },
   { href: '/#services', label: 'More services' },
 ] as const
@@ -82,9 +80,7 @@ export function Navbar() {
             </div>
 
             <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main">
-              {NAV_LINKS.map((link) => {
-                const { href, label } = link
-                const badge = 'badge' in link ? link.badge : undefined
+              {NAV_LINKS.map(({ href, label }) => {
                 const active = isActive(pathname, href)
                 return (
                   <Link
@@ -98,11 +94,6 @@ export function Navbar() {
                     )}
                   >
                     {label}
-                    {badge && (
-                      <span className="rounded-md bg-accent-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-800">
-                        {badge}
-                      </span>
-                    )}
                   </Link>
                 )
               })}
@@ -195,9 +186,7 @@ export function Navbar() {
             </div>
 
             <div className="flex flex-col gap-1 overflow-y-auto p-3">
-              {NAV_LINKS.map((link) => {
-                const { href, label } = link
-                const badge = 'badge' in link ? link.badge : undefined
+              {NAV_LINKS.map(({ href, label }) => {
                 const active = isActive(pathname, href)
                 return (
                   <Link
@@ -210,12 +199,7 @@ export function Navbar() {
                         : 'text-earth-700 hover:bg-earth-50 hover:text-earth-900'
                     )}
                   >
-                    <span>{label}</span>
-                    {badge && (
-                      <span className="rounded-md bg-accent-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-800">
-                        {badge}
-                      </span>
-                    )}
+                    {label}
                   </Link>
                 )
               })}
@@ -229,14 +213,9 @@ export function Navbar() {
                     <Link
                       key={item.href + item.label}
                       href={item.href}
-                      className="flex h-11 items-center justify-between gap-2 rounded-lg px-4 text-sm font-medium text-earth-700 no-underline transition-colors duration-150 hover:bg-earth-50 hover:text-earth-900"
+                      className="flex h-11 items-center rounded-lg px-4 text-sm font-medium text-earth-700 no-underline transition-colors duration-150 hover:bg-earth-50 hover:text-earth-900"
                     >
-                      <span>{item.label}</span>
-                      {'badge' in item && item.badge ? (
-                        <span className="rounded-md bg-accent-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-800">
-                          {item.badge}
-                        </span>
-                      ) : null}
+                      {item.label}
                     </Link>
                   ))}
                 </div>

@@ -14,10 +14,6 @@ const MESSAGES = [
     href: undefined as string | undefined,
   },
   {
-    text: 'Fashion & hair — coming soon · Braiding by phone (614) 377-8297',
-    href: '/#fashion',
-  },
-  {
     text: 'Mobile market & Ohio delivery — call (614) 377-8297',
     href: '/#mobile-market',
   },

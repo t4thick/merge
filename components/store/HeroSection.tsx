@@ -16,7 +16,7 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
       <div className="store-container py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-[850px] text-center">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-earth-500">
-            Grocery, fashion &amp; hair · Columbus, Ohio
+            African &amp; Caribbean grocery · Columbus, Ohio
           </p>
 
           <h1 className="mt-5 text-balance text-[2rem] font-semibold leading-[1.06] tracking-[-0.045em] text-earth-900 sm:text-6xl lg:text-7xl">
