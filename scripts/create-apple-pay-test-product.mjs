@@ -1,8 +1,8 @@
 /**
- * Inserts a $0.55 in-stock Snack product for live Apple Pay / checkout testing.
+ * Inserts a $1 in-stock Snack product for live checkout testing.
  *
  *   node --env-file=.env.local scripts/create-apple-pay-test-product.mjs
- *   node --env-file=.env.vercel.production scripts/create-apple-pay-test-product.mjs
+ *   npx vercel env run -e production '--' node scripts/create-apple-pay-test-product.mjs
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -18,9 +18,9 @@ if (!url || !key) {
 const supabase = createClient(url, key)
 
 const row = {
-  name: 'Apple Pay test item ($0.55)',
-  description: 'Internal test product for payment verification. Not for resale.',
-  price: 0.55,
+  name: 'Checkout test item ($1)',
+  description: 'Internal test product for live payment verification. Not for resale.',
+  price: 1,
   category: 'Snack',
   image_url: null,
   in_stock: true,
