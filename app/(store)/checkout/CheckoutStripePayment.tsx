@@ -1,7 +1,17 @@
 'use client'
 
-import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
-import type { Appearance, StripeElementsOptions } from '@stripe/stripe-js'
+import {
+  Elements,
+  ExpressCheckoutElement,
+  PaymentElement,
+  useElements,
+  useStripe,
+} from '@stripe/react-stripe-js'
+import type {
+  Appearance,
+  StripeElementsOptions,
+  StripeExpressCheckoutElementConfirmEvent,
+} from '@stripe/stripe-js'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -51,8 +61,41 @@ function PayForm({ clientSecret, returnUrl, totalLabel }: Props) {
   const elements = useElements()
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [walletAvailable, setWalletAvailable] = useState(false)
 
   const returnUrlReady = returnUrl.length > 0
+
+  function finishPayment() {
+    const piId = paymentIntentIdFromClientSecret(clientSecret)
+    router.push(
+      piId
+        ? `/checkout/success?payment_intent=${encodeURIComponent(piId)}`
+        : '/checkout/success'
+    )
+  }
+
+  async function confirmPayment(): Promise<string | null> {
+    if (!stripe || !elements) return 'Payment form is still loading. Wait a few seconds and try again.'
+
+    try {
+      const result = await Promise.race([
+        stripe.confirmPayment({
+          elements,
+          clientSecret,
+          confirmParams: { return_url: returnUrl },
+          redirect: 'if_required',
+        }),
+        new Promise<never>((_, reject) => {
+          window.setTimeout(() => reject(new Error('timeout')), 90_000)
+        }),
+      ])
+      return result.error?.message ?? null
+    } catch (err) {
+      return err instanceof Error && err.message === 'timeout'
+        ? 'Payment is taking too long. If your card was charged, check your email or Account → orders. Otherwise try again.'
+        : 'Payment could not be completed. Please try again.'
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -75,50 +118,94 @@ function PayForm({ clientSecret, returnUrl, totalLabel }: Props) {
       return
     }
 
-    const confirmPromise = stripe.confirmPayment({
-      elements,
-      clientSecret,
-      confirmParams: { return_url: returnUrl },
-      redirect: 'if_required',
-    })
-
-    const timeoutMs = 90_000
-    let stripeError: { message?: string } | undefined
-
-    try {
-      const result = await Promise.race([
-        confirmPromise,
-        new Promise<never>((_, reject) => {
-          window.setTimeout(() => reject(new Error('timeout')), timeoutMs)
-        }),
-      ])
-      stripeError = result.error
-    } catch (err) {
-      const msg =
-        err instanceof Error && err.message === 'timeout'
-          ? 'Payment is taking too long. If your card was charged, check your email or Account → orders. Otherwise try again.'
-          : 'Payment could not be completed. Please try again.'
-      setError(msg)
+    const confirmError = await confirmPayment()
+    if (confirmError) {
+      setError(confirmError)
       setBusy(false)
       return
     }
 
-    if (stripeError) {
-      setError(stripeError.message ?? 'Payment could not be completed.')
-      setBusy(false)
+    finishPayment()
+  }
+
+  async function handleExpressConfirm(event: StripeExpressCheckoutElementConfirmEvent) {
+    if (!returnUrlReady || busy) {
+      event.paymentFailed({ reason: 'fail', message: 'Checkout is still loading. Please try again.' })
       return
     }
 
-    const piId = paymentIntentIdFromClientSecret(clientSecret)
-    if (piId) {
-      router.push(`/checkout/success?payment_intent=${encodeURIComponent(piId)}`)
+    setBusy(true)
+    setError('')
+    const confirmError = await confirmPayment()
+
+    if (confirmError) {
+      setError(confirmError)
+      setBusy(false)
+      event.paymentFailed({ reason: 'fail', message: confirmError })
       return
     }
-    router.push('/checkout/success')
+
+    finishPayment()
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <section
+        aria-label="Express checkout"
+        className={cn(
+          'rounded-xl border border-earth-200 bg-earth-50 p-3 sm:p-4',
+          !walletAvailable && 'hidden'
+        )}
+      >
+        <div className="mb-3">
+          <p className="text-sm font-semibold text-earth-900">Express checkout</p>
+          <p className="mt-0.5 text-xs text-earth-500">Pay securely with your saved wallet.</p>
+        </div>
+        <ExpressCheckoutElement
+          options={{
+            buttonHeight: 52,
+            buttonTheme: {
+              applePay: 'black',
+              googlePay: 'black',
+            },
+            buttonType: {
+              applePay: 'buy',
+              googlePay: 'buy',
+            },
+            layout: {
+              maxColumns: 2,
+              maxRows: 1,
+              overflow: 'auto',
+            },
+            paymentMethodOrder: ['apple_pay', 'google_pay'],
+            paymentMethods: {
+              applePay: 'auto',
+              googlePay: 'auto',
+              amazonPay: 'never',
+              link: 'never',
+              paypal: 'never',
+              klarna: 'never',
+            },
+          }}
+          onReady={({ availablePaymentMethods }) => {
+            setWalletAvailable(
+              Boolean(availablePaymentMethods?.applePay || availablePaymentMethods?.googlePay)
+            )
+          }}
+          onConfirm={handleExpressConfirm}
+        />
+      </section>
+
+      {walletAvailable ? (
+        <div className="flex items-center gap-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-earth-200" />
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-earth-500">
+            Or pay by card
+          </span>
+          <span className="h-px flex-1 bg-earth-200" />
+        </div>
+      ) : null}
+
       <div className="rounded-xl border border-earth-200 bg-white p-3 sm:p-4">
         <PaymentElement
           options={{
@@ -128,8 +215,8 @@ function PayForm({ clientSecret, returnUrl, totalLabel }: Props) {
               defaultCollapsed: false,
             },
             wallets: {
-              applePay: 'auto',
-              googlePay: 'auto',
+              applePay: 'never',
+              googlePay: 'never',
             },
           }}
         />
