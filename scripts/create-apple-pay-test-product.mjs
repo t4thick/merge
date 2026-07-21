@@ -1,7 +1,6 @@
 /**
- * Inserts a $1 in-stock Snack product for live checkout testing.
+ * Inserts or updates the live checkout test product ($0.60, Snack = no tax).
  *
- *   node --env-file=.env.local scripts/create-apple-pay-test-product.mjs
  *   npx vercel env run -e production '--' node scripts/create-apple-pay-test-product.mjs
  */
 
@@ -17,24 +16,37 @@ if (!url || !key) {
 
 const supabase = createClient(url, key)
 
+const SNACK_IMAGE =
+  'https://images.unsplash.com/photo-1604719312497-c6fc196f51ec?auto=format&fit=crop&w=800&q=80'
+
 const row = {
-  name: 'Checkout test item ($1)',
-  description: 'Internal test product for live payment verification. Not for resale.',
-  price: 1,
+  name: 'Payment test item ($0.60)',
+  description: 'Live checkout test — Snack category, no sales tax. Safe for payment verification.',
+  price: 0.6,
   category: 'Snack',
-  image_url: null,
+  image_url: SNACK_IMAGE,
   in_stock: true,
 }
 
 const { data: existing } = await supabase
   .from('products')
   .select('id, name, price')
-  .eq('name', row.name)
+  .ilike('name', 'Payment test item%')
   .maybeSingle()
 
 if (existing) {
-  console.log('Already exists:', existing)
-  console.log(`Shop: /products/${existing.id}`)
+  const { data, error } = await supabase
+    .from('products')
+    .update(row)
+    .eq('id', existing.id)
+    .select('id, name, price, category')
+    .single()
+  if (error) {
+    console.error(error.message)
+    process.exit(1)
+  }
+  console.log('Updated:', data)
+  console.log(`/products/${data.id}`)
   process.exit(0)
 }
 
@@ -46,4 +58,4 @@ if (error) {
 }
 
 console.log('Created:', data)
-console.log(`/products/${data.id} (open on your deployed domain)`)
+console.log(`/products/${data.id}`)
