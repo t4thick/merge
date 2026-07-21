@@ -13,7 +13,6 @@ export type OpsHealthItem = {
   ok: boolean
   detail: string
   href?: string
-  /** Show green "Complete" pill when ok */
   completeBadge?: boolean
 }
 
@@ -38,51 +37,38 @@ function hasMerchantInbox(): boolean {
   return Boolean(process.env.MERCHANT_ORDER_EMAIL?.trim())
 }
 
-function hasCarrierSmsGateway(): boolean {
-  return Boolean(process.env.MERCHANT_SMS_GATEWAY_EMAIL?.trim())
-}
-
-function isTwilioConfigured(): boolean {
-  return (
-    Boolean(process.env.TWILIO_ACCOUNT_SID?.trim()) &&
-    Boolean(process.env.TWILIO_AUTH_TOKEN?.trim()) &&
-    Boolean(process.env.TWILIO_FROM_NUMBER?.trim()) &&
-    Boolean(process.env.MERCHANT_ALERT_PHONE?.trim())
-  )
-}
-
-function formatAlertPhone(): string {
-  const raw = process.env.MERCHANT_ALERT_PHONE?.trim() ?? ''
-  if (raw.startsWith('+1') && raw.length === 12) {
-    const d = raw.slice(2)
-    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
-  }
-  return raw
+function carrierGateway(): string | null {
+  const raw = process.env.MERCHANT_SMS_GATEWAY_EMAIL?.trim()
+  return raw || null
 }
 
 function smsHealthDetail(): { ok: boolean; detail: string; completeBadge: boolean } {
-  if (isTwilioConfigured()) {
-    const phone = formatAlertPhone()
+  const gateway = carrierGateway()
+  const transport = emailTransport()
+
+  if (gateway && transport) {
     return {
       ok: true,
       completeBadge: true,
-      detail: phone
-        ? `SMS setup complete — new orders text ${phone}`
-        : 'SMS setup complete — Twilio alerts on',
+      detail: `Phone alerts complete — texts via carrier gateway (${gateway})`,
     }
   }
 
-  const missing: string[] = []
-  if (!process.env.TWILIO_ACCOUNT_SID?.trim()) missing.push('TWILIO_ACCOUNT_SID')
-  if (!process.env.TWILIO_AUTH_TOKEN?.trim()) missing.push('TWILIO_AUTH_TOKEN')
-  if (!process.env.TWILIO_FROM_NUMBER?.trim()) missing.push('TWILIO_FROM_NUMBER')
-  if (!process.env.MERCHANT_ALERT_PHONE?.trim()) missing.push('MERCHANT_ALERT_PHONE')
-
-  if (missing.length > 0 && missing.length < 4) {
+  if (gateway && !transport) {
     return {
       ok: false,
       completeBadge: false,
-      detail: `Almost there — add ${missing.join(', ')} on Vercel`,
+      detail:
+        'Gateway set — add GMAIL_USER + GMAIL_APP_PASSWORD (send pipe only; not full order email yet)',
+    }
+  }
+
+  if (!gateway && transport) {
+    return {
+      ok: false,
+      completeBadge: false,
+      detail:
+        'Add MERCHANT_SMS_GATEWAY_EMAIL — e.g. 6143778297@vtext.com (Verizon) or txt.att.net (AT&T)',
     }
   }
 
@@ -90,7 +76,7 @@ function smsHealthDetail(): { ok: boolean; detail: string; completeBadge: boolea
     ok: false,
     completeBadge: false,
     detail:
-      'Step 1: Twilio account + number. Set all four TWILIO_* / MERCHANT_ALERT_PHONE vars (E.164, e.g. +16143778297). No email needed.',
+      'Set MERCHANT_SMS_GATEWAY_EMAIL (phone@carrier) + GMAIL_USER + GMAIL_APP_PASSWORD on Vercel',
   }
 }
 
@@ -104,15 +90,15 @@ function emailHealthDetail(): { ok: boolean; detail: string; completeBadge: bool
     return {
       ok: true,
       completeBadge: true,
-      detail: `Email setup complete — ${via} sending receipts and order alerts`,
+      detail: `Email setup complete — ${via} sending receipts and inbox alerts`,
     }
   }
 
-  if (hasCarrierSmsGateway() && transport && !isTwilioConfigured()) {
+  if (transport && !inbox && carrierGateway()) {
     return {
       ok: false,
       completeBadge: false,
-      detail: 'Optional later — finish SMS first, then add MERCHANT_ORDER_EMAIL for inbox alerts',
+      detail: 'Optional later — phone alerts work; add MERCHANT_ORDER_EMAIL for inbox copies',
     }
   }
 
@@ -120,14 +106,14 @@ function emailHealthDetail(): { ok: boolean; detail: string; completeBadge: bool
     return {
       ok: false,
       completeBadge: false,
-      detail: 'Optional later — transport ready; add MERCHANT_ORDER_EMAIL when you wire email',
+      detail: 'Optional later — add MERCHANT_ORDER_EMAIL when you want full order emails',
     }
   }
 
   return {
     ok: false,
     completeBadge: false,
-    detail: 'Optional later — Gmail or Postmark + MERCHANT_ORDER_EMAIL (after SMS)',
+    detail: 'Optional later — customer receipts and merchant inbox (after phone alerts)',
   }
 }
 
@@ -154,11 +140,10 @@ export function getOpsHealth(): {
   const sms = smsHealthDetail()
   const email = emailHealthDetail()
 
-  // Phone alerts first — user rolls out one system at a time.
   const items: OpsHealthItem[] = [
     {
       id: 'sms',
-      label: 'Phone alerts (SMS)',
+      label: 'Phone alerts (carrier)',
       ok: sms.ok,
       detail: sms.detail,
       completeBadge: sms.completeBadge,
@@ -200,7 +185,6 @@ export function getOpsHealth(): {
     },
   ]
 
-  // Required for launch checklist: stripe + labels + ship-from (SMS tracked separately).
   const required = items.filter((i) => i.id !== 'email' && i.id !== 'sms')
   return {
     items,
