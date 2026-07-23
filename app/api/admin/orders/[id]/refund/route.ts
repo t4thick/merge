@@ -27,13 +27,19 @@ export async function POST(
 
     const { data: order, error: fetchErr } = await supabaseAdmin
       .from('orders')
-      .select('id, payment_intent_id, total_amount, refund_amount, refunded_at, payment_method, status')
+      .select(
+        'id, stripe_payment_intent_id, total_amount, refund_amount, refunded_at, payment_method, status'
+      )
       .eq('id', id)
       .single()
 
-    if (fetchErr || !order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 })
+    if (fetchErr) {
+      console.error('[refund] order lookup failed:', fetchErr.message)
+      return NextResponse.json({ error: 'Order not found.' }, { status: 404 })
+    }
+    if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 })
     if (order.refunded_at) return NextResponse.json({ error: 'Order already refunded.' }, { status: 400 })
-    if (order.payment_method !== 'stripe' || !order.payment_intent_id) {
+    if (order.payment_method !== 'stripe' || !order.stripe_payment_intent_id) {
       return NextResponse.json({ error: 'Order has no Stripe payment to refund.' }, { status: 400 })
     }
 
@@ -62,7 +68,7 @@ export async function POST(
     }
 
     const refund = await stripe.refunds.create({
-      payment_intent: order.payment_intent_id,
+      payment_intent: order.stripe_payment_intent_id,
       amount: amountCents,
       reason: 'requested_by_customer',
     })
