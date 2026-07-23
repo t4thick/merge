@@ -703,10 +703,10 @@ export function CheckoutClient({
               <p className="mt-4 rounded-xl border border-earth-200 bg-earth-50 px-4 py-3 text-sm text-earth-600">
                 Need Ohio delivery or the mobile market?{' '}
                 <a
-                  href="tel:+16143778297"
+                  href={STORE.phoneHref}
                   className="font-medium text-earth-900 no-underline hover:underline"
                 >
-                  Call (614) 377-8297
+                  Call {STORE.phone}
                 </a>{' '}
                 to schedule — checkout here covers store pickup and nationwide shipping.
               </p>

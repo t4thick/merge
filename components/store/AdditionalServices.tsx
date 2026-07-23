@@ -2,9 +2,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, FileCheck2, GraduationCap, Landmark, PackageCheck, Phone, ShieldCheck, Store, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { STORE } from '@/lib/constants/store'
 
-const SERVICE_PHONE = '(614) 377-8297'
-const SERVICE_PHONE_HREF = 'tel:+16143778297'
+const SERVICE_PHONE = STORE.phone
+const SERVICE_PHONE_HREF = STORE.phoneHref
 const SECONDARY_SERVICE_PHONE = '(614) 323-7385'
 const SECONDARY_SERVICE_PHONE_HREF = 'tel:+16143237385'
 

@@ -28,9 +28,9 @@ export const STORE = {
     state: 'OH',
     zip: '43229',
     country: 'US',
-    phone: '6144460893',
+    phone: '6143778297',
   },
-  phone: '(614) 446-0893',
-  phoneHref: 'tel:+16144460893',
+  phone: '(614) 377-8297',
+  phoneHref: 'tel:+16143778297',
   hours: 'Mon–Sat 9am–8pm · Sun 10am–6pm',
 } as const

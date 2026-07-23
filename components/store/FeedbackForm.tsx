@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { getSupportEmail } from '@/lib/constants/store'
+import { getSupportEmail, STORE } from '@/lib/constants/store'
 
 const CATEGORIES = [
   { value: 'suggestion', label: 'Site suggestion' },
@@ -84,8 +84,8 @@ export function FeedbackForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <p className="text-sm text-earth-600">
         Tell us what to fix or add on the website. Orders and stock questions: call{' '}
-        <a href="tel:+16144460893" className="font-medium text-brand-700 no-underline">
-          (614) 446-0893
+        <a href={STORE.phoneHref} className="font-medium text-brand-700 no-underline">
+          {STORE.phone}
         </a>{' '}
         or email{' '}
         <a href={`mailto:${supportEmail}`} className="font-medium text-brand-700 no-underline">
