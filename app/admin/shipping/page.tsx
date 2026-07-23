@@ -4,6 +4,7 @@ import { requireAdminPage } from '@/lib/auth/require-admin-page'
 import { getShippingLabelConfigPublic } from '@/lib/shipping/label-config'
 import { isShippoConfigured, isUspsLabelsLive } from '@/lib/shipping/admin-ship-methods'
 import { getUspsConfigPublic } from '@/lib/shipping/usps-config'
+import { CreateTestShippingOrderButton } from '@/components/admin/CreateTestShippingOrderButton'
 
 export default async function AdminShippingPage() {
   await requireAdminPage()
@@ -16,15 +17,18 @@ export default async function AdminShippingPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="admin-page-title flex items-center gap-2">
-          <Truck className="h-7 w-7 text-brand-700" aria-hidden />
-          Shipping workflow
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-earth-600">
-          One clear path for labels. Prefer Shippo for one-click print from an order page; otherwise
-          paste tracking from Click-N-Ship.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="admin-page-title flex items-center gap-2">
+            <Truck className="h-7 w-7 text-brand-700" aria-hidden />
+            Shipping workflow
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm text-earth-600">
+            One clear path for labels. Prefer Shippo for one-click print from an order page; otherwise
+            paste tracking from Click-N-Ship.
+          </p>
+        </div>
+        <CreateTestShippingOrderButton />
       </div>
 
       <section
