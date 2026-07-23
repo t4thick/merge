@@ -9,14 +9,14 @@ export function VisitSection() {
   return (
     <section id="visit" className="scroll-mt-28 bg-earth-50 py-12 sm:py-16 lg:py-20 md:scroll-mt-24">
       <div className="store-container">
-        <div className="grid overflow-hidden rounded-3xl border border-earth-200 bg-white shadow-[var(--shadow-soft)] lg:grid-cols-2">
-          <div className="relative min-h-[280px] bg-earth-100 sm:min-h-[360px]">
+        <div className="grid overflow-hidden rounded-3xl border border-earth-200 bg-white shadow-[var(--shadow-soft)] lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="relative min-h-[320px] bg-earth-100 sm:min-h-[420px]">
             <Image
               src="/images/store/aisle-depth.png"
               alt="Kintampo African Market aisle — jewelry, rice, and grocery shelves"
               fill
               quality={90}
-              sizes="(max-width:1024px) 100vw, 50vw"
+              sizes="(max-width:1024px) 100vw, 55vw"
               className="object-cover object-center"
             />
           </div>
@@ -24,8 +24,7 @@ export function VisitSection() {
           <div className="flex flex-col justify-center p-8 sm:p-10 lg:p-12">
             <h2 className="section-title">Visit the store</h2>
             <p className="section-subtitle mt-2">
-              Shop online for store pickup or nationwide shipping — or stop by our Columbus
-              location.
+              Pickup online orders here — or shop the floor in Columbus.
             </p>
 
             <dl className="mt-6 space-y-4 text-sm">
@@ -48,27 +47,22 @@ export function VisitSection() {
               <div className="pl-7 text-earth-600">{STORE.hours}</div>
             </dl>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-8 flex flex-col gap-3">
               <Link href="/shop" className="no-underline">
-                <Button size="lg" className="h-11 w-full px-6 sm:w-auto">
+                <Button size="lg" className="h-11 w-full">
                   Shop online
                 </Button>
               </Link>
-              {STORE_PHONES.map((p) => (
-                <a key={p.href} href={p.href} className="no-underline">
-                  <Button size="lg" variant="outline" className="h-11 w-full px-5 sm:w-auto">
-                    Call {p.label}
-                  </Button>
-                </a>
-              ))}
+              <div className="grid gap-2 sm:grid-cols-1">
+                {STORE_PHONES.map((p) => (
+                  <a key={p.href} href={p.href} className="no-underline">
+                    <Button size="lg" variant="outline" className="h-11 w-full">
+                      Call {p.label}
+                    </Button>
+                  </a>
+                ))}
+              </div>
             </div>
-
-            <Link
-              href="/track-order"
-              className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
-            >
-              Track an order →
-            </Link>
           </div>
         </div>
       </div>

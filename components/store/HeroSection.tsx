@@ -6,77 +6,69 @@ import { SearchAutocomplete } from '@/components/store/SearchAutocomplete'
 
 const SERVICE_ITEMS = [
   { label: 'Pickup in Columbus', icon: MapPin },
-  { label: 'Fast Ohio delivery', icon: Truck },
-  { label: 'Nationwide shipping', icon: PackageCheck },
+  { label: 'Ohio delivery', icon: Truck },
+  { label: 'US shipping', icon: PackageCheck },
   { label: 'Mobile market', icon: Store },
 ] as const
 
 export function HeroSection({ inStockCount }: { inStockCount: number }) {
   return (
-    <section className="border-b border-earth-200 bg-earth-50" aria-label="Kintampo African Market">
-      <div className="store-container py-10 sm:py-14 lg:py-16">
-        <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-earth-500">
-              African &amp; Caribbean grocery · Columbus, Ohio
-            </p>
+    <section className="border-b border-earth-200 bg-earth-950" aria-label="Kintampo African Market">
+      {/* Full-bleed store photo */}
+      <div className="relative min-h-[70vh] w-full sm:min-h-[78vh]">
+        <Image
+          src="/images/store/aisle-front.png"
+          alt="Inside Kintampo African Market — stocked aisles with rice, drinks, and grocery shelves"
+          fill
+          priority
+          quality={92}
+          sizes="100vw"
+          className="object-cover object-[center_40%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-earth-950 via-earth-950/55 to-earth-950/25" />
 
-            <h1 className="mt-4 text-balance text-[2rem] font-semibold leading-[1.06] tracking-[-0.045em] text-earth-900 sm:text-5xl lg:text-6xl">
-              <span className="block">Stocked shelves.</span>
-              <span className="block">Ready to order.</span>
-            </h1>
+        <div className="store-container relative flex min-h-[70vh] flex-col justify-end pb-10 pt-28 sm:min-h-[78vh] sm:pb-14 lg:pb-16">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/70">
+            African &amp; Caribbean grocery · Columbus, Ohio
+          </p>
+          <h1 className="mt-3 max-w-3xl text-balance text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.045em] text-white sm:text-5xl lg:text-6xl">
+            Your market. Online and in store.
+          </h1>
+          <p className="mt-4 max-w-xl text-base leading-7 text-white/80 sm:text-lg">
+            {inStockCount > 0 ? `${inStockCount.toLocaleString()} products in stock. ` : ''}
+            Rice, drinks, spices, beauty oils, produce — pickup, Ohio delivery, or ship nationwide.
+          </p>
 
-            <p className="mt-5 max-w-xl text-base leading-7 text-earth-600 sm:text-lg">
-              {inStockCount > 0 ? `${inStockCount.toLocaleString()} products in stock. ` : ''}
-              Rice, drinks, spices, beauty oils, produce, and more — pickup in Columbus, Ohio
-              delivery, nationwide shipping, or mobile market.
-            </p>
-
-            <div className="mt-7 hidden max-w-xl rounded-2xl border border-earth-200 bg-white p-2 shadow-[var(--shadow-premium)] sm:block">
-              <SearchAutocomplete placeholder="Search products, brands, or categories" />
-            </div>
-
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link href="/shop" className="w-full no-underline sm:w-auto">
-                <Button size="lg" className="h-12 w-full px-7 sm:w-auto">
-                  Shop all products
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Button>
-              </Link>
-              <Link href="#visit" className="w-full no-underline sm:w-auto">
-                <Button size="lg" variant="outline" className="h-12 w-full px-7 sm:w-auto">
-                  Visit the store
-                </Button>
-              </Link>
-            </div>
-
-            <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-earth-200 pt-5 text-sm text-earth-600">
-              {SERVICE_ITEMS.map(({ label, icon: Icon }) => (
-                <li key={label} className="inline-flex items-center gap-2">
-                  <Icon className="h-4 w-4 text-earth-500" strokeWidth={1.75} aria-hidden />
-                  {label}
-                </li>
-              ))}
-            </ul>
+          <div className="mt-6 hidden max-w-xl rounded-2xl border border-white/15 bg-white/95 p-2 shadow-[var(--shadow-premium)] backdrop-blur-sm sm:block">
+            <SearchAutocomplete placeholder="Search products, brands, or categories" />
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl border border-earth-200 bg-earth-100 shadow-[var(--shadow-premium)]">
-            <div className="relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
-              <Image
-                src="/images/store/aisle-front.png"
-                alt="Inside Kintampo African Market — stocked aisles with rice, drinks, and grocery shelves"
-                fill
-                priority
-                quality={90}
-                sizes="(max-width: 1024px) 100vw, 48vw"
-                className="object-cover object-center"
-              />
-            </div>
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-earth-950/75 to-transparent p-5 pt-16">
-              <p className="text-sm font-semibold text-white">1668 E Dublin Granville Rd</p>
-              <p className="mt-0.5 text-xs text-white/75">Columbus, OH · Open 7 days</p>
-            </div>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Link href="/shop" className="w-full no-underline sm:w-auto">
+              <Button size="lg" className="h-12 w-full bg-brand-600 px-7 text-white hover:bg-brand-700 sm:w-auto">
+                Shop all products
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Button>
+            </Link>
+            <Link href="#store-photos" className="w-full no-underline sm:w-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 w-full border-white/30 bg-white/10 px-7 text-white shadow-none hover:bg-white/20 sm:w-auto"
+              >
+                See the store
+              </Button>
+            </Link>
           </div>
+
+          <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/15 pt-5 text-sm text-white/75">
+            {SERVICE_ITEMS.map(({ label, icon: Icon }) => (
+              <li key={label} className="inline-flex items-center gap-2">
+                <Icon className="h-4 w-4 text-white/55" strokeWidth={1.75} aria-hidden />
+                {label}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

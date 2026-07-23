@@ -42,8 +42,8 @@ export default async function Home() {
   return (
     <>
       <HeroSection inStockCount={inStockCount} />
-      <CategoryBrowse displayCategories={displayCategories} categoryCount={categoryCount} />
       <StoreHighlights />
+      <CategoryBrowse displayCategories={displayCategories} categoryCount={categoryCount} />
       {staples.length > 0 && (
         <ProductShowcase
           title="Yam, fufu & staples"
