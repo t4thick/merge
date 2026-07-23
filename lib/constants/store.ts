@@ -1,5 +1,5 @@
 /** Public inbox for customer contact & feedback (override with NEXT_PUBLIC_SUPPORT_EMAIL). */
-export const DEFAULT_SUPPORT_EMAIL = 'kkras5050@gmail.com'
+export const DEFAULT_SUPPORT_EMAIL = 'kalebdoffour@gmail.com'
 
 export function getSupportEmail(): string {
   return process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() || DEFAULT_SUPPORT_EMAIL
