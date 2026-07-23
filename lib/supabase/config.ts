@@ -30,7 +30,7 @@ export class SupabaseConfigError extends Error {
 /** Customer-safe message — never show raw fetch / TypeError text. */
 export function formatCatalogError(error: { message?: string } | null, configured: boolean): string {
   if (!configured) {
-    return 'Our online catalog is temporarily unavailable while we finish setup. Please call (614) 377-8297 or (614) 325-7385 or visit us at 1668 E Dublin Granville Rd, Columbus, OH.'
+    return 'Our online catalog is temporarily unavailable while we finish setup. Please call (614) 377-8297, (614) 325-7385, or (614) 323-7385 or visit us at 1668 E Dublin Granville Rd, Columbus, OH.'
   }
   const msg = error?.message ?? ''
   if (/fetch failed|ECONNREFUSED|ENOTFOUND|network/i.test(msg)) {

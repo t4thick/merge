@@ -20,6 +20,7 @@ import {
 import { calculateSalesTax } from '@/lib/tax/sales-tax'
 import { getAuthSiteOrigin } from '@/lib/site-url-client'
 import { STORE } from '@/lib/constants/store'
+import { StorePhoneLinks } from '@/components/store/StorePhoneLinks'
 import { cn } from '@/lib/utils'
 import { PickupPromoBanner } from '@/components/store/PickupPromoBanner'
 import { friendlyShippingError } from '@/lib/checkout/shipping-errors'
@@ -701,20 +702,11 @@ export function CheckoutClient({
                 })}
               </div>
               <p className="mt-4 rounded-xl border border-earth-200 bg-earth-50 px-4 py-3 text-sm text-earth-600">
-                Need Ohio delivery or the mobile market?{' '}
-                <a
-                  href={STORE.phoneHref}
-                  className="font-medium text-earth-900 no-underline hover:underline"
-                >
-                  Call {STORE.phone}
-                </a>
-                {' or '}
-                <a
-                  href={STORE.phoneAltHref}
-                  className="font-medium text-earth-900 no-underline hover:underline"
-                >
-                  {STORE.phoneAlt}
-                </a>{' '}
+                Need Ohio delivery or the mobile market? Call{' '}
+                <StorePhoneLinks
+                  linkClassName="font-medium text-earth-900 no-underline hover:underline"
+                  separator=" or "
+                />{' '}
                 to schedule — checkout here covers store pickup and nationwide shipping.
               </p>
             </CheckoutStep>
@@ -735,22 +727,10 @@ export function CheckoutClient({
                       </div>
                       <div className="flex items-start gap-2.5">
                         <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-                        <dd className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                          <a
-                            href={STORE.phoneHref}
-                            className="font-medium text-brand-700 no-underline hover:text-brand-800"
-                          >
-                            {STORE.phone}
-                          </a>
-                          <span className="text-earth-400" aria-hidden>
-                            ·
-                          </span>
-                          <a
-                            href={STORE.phoneAltHref}
-                            className="font-medium text-brand-700 no-underline hover:text-brand-800"
-                          >
-                            {STORE.phoneAlt}
-                          </a>
+                        <dd>
+                          <StorePhoneLinks
+                            linkClassName="font-medium text-brand-700 no-underline hover:text-brand-800"
+                          />
                         </dd>
                       </div>
                     </dl>

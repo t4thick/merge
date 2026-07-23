@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { PageHeader } from '@/components/store/PageHeader'
-import { STORE } from '@/lib/constants/store'
-import { getSupportEmail } from '@/lib/constants/store'
+import { STORE, getSupportEmail, storePhonesPlain } from '@/lib/constants/store'
 
 export const metadata = { title: 'Terms of Service' }
 
@@ -141,7 +140,7 @@ export default function TermsPage() {
               <a href={`mailto:${supportEmail}`} className="font-medium text-brand-700">
                 {supportEmail}
               </a>{' '}
-              or call us at {STORE.phone} or {STORE.phoneAlt}.
+              or call us at {storePhonesPlain()}.
             </p>
           </section>
 

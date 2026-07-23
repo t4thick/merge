@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PageHeader } from '@/components/store/PageHeader'
-import { STORE, getSupportEmail } from '@/lib/constants/store'
+import { STORE, getSupportEmail, storePhonesPlain } from '@/lib/constants/store'
 
 export const metadata = { title: 'Privacy Policy' }
 
@@ -146,7 +146,8 @@ export default function PrivacyPage() {
             <address className="mt-3 not-italic text-earth-700">
               {STORE.name}<br />
               {STORE.address}<br />
-              Phone: {STORE.phone} · {STORE.phoneAlt}<br />
+              Phone: {storePhonesPlain()}
+<br />
               Email:{' '}
               <a href={`mailto:${supportEmail}`} className="font-medium text-brand-700">
                 {supportEmail}

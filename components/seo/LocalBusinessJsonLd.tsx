@@ -1,4 +1,4 @@
-import { getSupportEmail, STORE } from '@/lib/constants/store'
+import { getSupportEmail, STORE, STORE_PHONES } from '@/lib/constants/store'
 import { SOCIAL_SAME_AS } from '@/lib/constants/social'
 import { getPublicSiteUrl } from '@/lib/site-url'
 
@@ -13,7 +13,7 @@ export function LocalBusinessJsonLd() {
     alternateName: STORE.shortName,
     description: STORE.tagline,
     url: siteUrl,
-    telephone: [STORE.phoneHref.replace('tel:', ''), STORE.phoneAltHref.replace('tel:', '')],
+    telephone: STORE_PHONES.map((p) => p.href.replace('tel:', '')),
     email: getSupportEmail(),
     image: `${siteUrl}/brand/logo-reference.png`,
     address: {

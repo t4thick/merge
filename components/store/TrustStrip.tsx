@@ -1,6 +1,7 @@
 import { CreditCard, MapPin, Package, Truck } from 'lucide-react'
 import { formatInStockShort } from '@/lib/catalog-stats'
 import { STORE } from '@/lib/constants/store'
+import { StorePhoneLinks } from '@/components/store/StorePhoneLinks'
 import { FREE_STANDARD_SHIPPING_SUBTOTAL } from '@/lib/shipping'
 
 function trustItems(inStockCount: number) {
@@ -53,18 +54,9 @@ export function TrustStrip({ inStockCount }: { inStockCount: number }) {
             <MapPin className="h-3.5 w-3.5 text-earth-500" strokeWidth={1.75} aria-hidden />
             {STORE.address}
           </span>
-          <a
-            href={STORE.phoneHref}
-            className="inline-flex min-h-11 items-center font-medium text-earth-700 no-underline hover:text-earth-900"
-          >
-            {STORE.phone}
-          </a>
-          <a
-            href={STORE.phoneAltHref}
-            className="inline-flex min-h-11 items-center font-medium text-earth-700 no-underline hover:text-earth-900"
-          >
-            {STORE.phoneAlt}
-          </a>
+          <StorePhoneLinks
+            linkClassName="inline-flex min-h-11 items-center font-medium text-earth-700 no-underline hover:text-earth-900"
+          />
           <span className="text-earth-500">{STORE.hours}</span>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { HeroSection } from '@/components/store/HeroSection'
 import { TrustStrip } from '@/components/store/TrustStrip'
 import { CategoryBrowse } from '@/components/store/CategoryBrowse'
 import { FeaturedCollections } from '@/components/store/FeaturedCollections'
+import { StoreHighlights } from '@/components/store/StoreHighlights'
 import { HomepageReviews } from '@/components/store/HomepageReviews'
 import { ProductShowcase } from '@/components/store/ProductShowcase'
 import { RecentlyViewed } from '@/components/store/RecentlyViewed'
@@ -42,6 +43,7 @@ export default async function Home() {
     <>
       <HeroSection inStockCount={inStockCount} />
       <CategoryBrowse displayCategories={displayCategories} categoryCount={categoryCount} />
+      <StoreHighlights />
       {staples.length > 0 && (
         <ProductShowcase
           title="Yam, fufu & staples"

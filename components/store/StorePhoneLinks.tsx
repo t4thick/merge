@@ -1,4 +1,4 @@
-import { STORE } from '@/lib/constants/store'
+import { STORE_PHONES } from '@/lib/constants/store'
 import { cn } from '@/lib/utils'
 
 type StorePhoneLinksProps = {
@@ -7,7 +7,7 @@ type StorePhoneLinksProps = {
   separator?: string
 }
 
-/** Both store numbers as tap-to-call links. */
+/** All store numbers as tap-to-call links. */
 export function StorePhoneLinks({
   className,
   linkClassName,
@@ -19,15 +19,18 @@ export function StorePhoneLinks({
 
   return (
     <span className={cn('inline-flex flex-wrap items-center gap-x-1', className)}>
-      <a href={STORE.phoneHref} className={link}>
-        {STORE.phone}
-      </a>
-      <span className="text-earth-400" aria-hidden>
-        {separator}
-      </span>
-      <a href={STORE.phoneAltHref} className={link}>
-        {STORE.phoneAlt}
-      </a>
+      {STORE_PHONES.map((phone, i) => (
+        <span key={phone.href} className="inline-flex items-center gap-x-1">
+          {i > 0 && (
+            <span className="text-earth-400" aria-hidden>
+              {separator}
+            </span>
+          )}
+          <a href={phone.href} className={link}>
+            {phone.label}
+          </a>
+        </span>
+      ))}
     </span>
   )
 }

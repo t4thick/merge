@@ -1,15 +1,26 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, FileCheck2, GraduationCap, Landmark, PackageCheck, Phone, ShieldCheck, Store, Truck } from 'lucide-react'
+import {
+  ArrowRight,
+  FileCheck2,
+  GraduationCap,
+  Landmark,
+  PackageCheck,
+  Phone,
+  Scissors,
+  ShieldCheck,
+  Store,
+  Truck,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { STORE } from '@/lib/constants/store'
-
-const SERVICE_PHONE = STORE.phone
-const SERVICE_PHONE_HREF = STORE.phoneHref
-const SECONDARY_SERVICE_PHONE = STORE.phoneAlt
-const SECONDARY_SERVICE_PHONE_HREF = STORE.phoneAltHref
+import { STORE, STORE_PHONES, storePhonesPlain } from '@/lib/constants/store'
 
 const SERVICE_GROUPS = [
+  {
+    title: 'Sewing & alterations',
+    description: 'Sewing, alterations, lace and clothes — call to book.',
+    icon: Scissors,
+  },
   {
     title: 'Insurance & planning',
     description: 'Term life, whole life, indexed universal life, annuities and retirement planning.',
@@ -82,11 +93,11 @@ export function AdditionalServices() {
               </li>
             </ul>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a href={SERVICE_PHONE_HREF} className="w-full no-underline sm:w-auto">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <a href={STORE.phoneHref} className="w-full no-underline sm:w-auto">
                 <Button size="lg" className="h-12 w-full bg-white px-6 text-earth-950 hover:bg-earth-100 sm:w-auto">
                   <Phone className="h-4 w-4" aria-hidden />
-                  Call {SERVICE_PHONE}
+                  Call {STORE.phone}
                 </Button>
               </a>
               <Link href="/shop" className="w-full no-underline sm:w-auto">
@@ -100,21 +111,13 @@ export function AdditionalServices() {
                 </Button>
               </Link>
             </div>
-            <p className="mt-4 text-xs text-white/50">
-              Also:{' '}
-              <a
-                href={SECONDARY_SERVICE_PHONE_HREF}
-                className="inline-flex min-h-11 items-center text-white/75 no-underline hover:text-white"
-              >
-                {SECONDARY_SERVICE_PHONE}
-              </a>
-            </p>
+            <p className="mt-4 text-xs text-white/50">Also: {storePhonesPlain()}</p>
           </div>
 
           <div className="relative min-h-[260px] bg-earth-900 sm:min-h-[360px] lg:min-h-full">
             <Image
-              src="/images/mobile-market/kintampo-mobile-market.png"
-              alt="Kintampo African Market mobile service van in Columbus, Ohio"
+              src="/images/store/aisle-front.png"
+              alt="Inside Kintampo African Market stocked grocery aisles"
               fill
               sizes="(max-width: 1024px) 100vw, 52vw"
               className="object-cover object-center"
@@ -132,27 +135,23 @@ export function AdditionalServices() {
               More services at Kintampo
             </h2>
             <p className="section-subtitle">
-              Insurance, financial planning, notary and Ghana-related support in Columbus.
+              Sewing, insurance, financial planning, notary and Ghana-related support in Columbus.
             </p>
           </div>
 
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <a href={SERVICE_PHONE_HREF} className="w-full no-underline sm:w-auto">
-              <Button size="lg" variant="outline" className="h-12 w-full px-6 sm:w-auto">
-                <Phone className="h-4 w-4" aria-hidden />
-                Call {SERVICE_PHONE}
-              </Button>
-            </a>
-            <a href={SECONDARY_SERVICE_PHONE_HREF} className="w-full no-underline sm:w-auto">
-              <Button size="lg" variant="outline" className="h-12 w-full px-6 sm:w-auto">
-                <Phone className="h-4 w-4" aria-hidden />
-                Call {SECONDARY_SERVICE_PHONE}
-              </Button>
-            </a>
+          <div className="flex w-full flex-col gap-2 sm:w-auto">
+            {STORE_PHONES.map((p) => (
+              <a key={p.href} href={p.href} className="w-full no-underline sm:w-auto">
+                <Button size="lg" variant="outline" className="h-11 w-full px-5 sm:w-auto">
+                  <Phone className="h-4 w-4" aria-hidden />
+                  {p.label}
+                </Button>
+              </a>
+            ))}
           </div>
         </div>
 
-        <div className="grid gap-px overflow-hidden rounded-2xl border border-earth-200 bg-earth-200 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-px overflow-hidden rounded-2xl border border-earth-200 bg-earth-200 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {SERVICE_GROUPS.map(({ title, description, icon: Icon }) => (
             <article key={title} className="bg-white p-6 sm:p-7">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-earth-100 text-earth-700">
