@@ -141,7 +141,7 @@ export default function TermsPage() {
               <a href={`mailto:${supportEmail}`} className="font-medium text-brand-700">
                 {supportEmail}
               </a>{' '}
-              or call us at {STORE.phone}.
+              or call us at {STORE.phone} or {STORE.phoneAlt}.
             </p>
           </section>
 

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { MapPin, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { STORE } from '@/lib/constants/store'
+import { StorePhoneLinks } from '@/components/store/StorePhoneLinks'
 
 export function VisitSection() {
   return (
@@ -26,12 +27,7 @@ export function VisitSection() {
                 <div>
                   <dt className="sr-only">Phone</dt>
                   <dd>
-                    <a
-                      href={STORE.phoneHref}
-                      className="inline-flex min-h-11 items-center font-medium text-earth-900 no-underline hover:text-earth-600"
-                    >
-                      {STORE.phone}
-                    </a>
+                    <StorePhoneLinks />
                   </dd>
                 </div>
               </div>
@@ -47,7 +43,12 @@ export function VisitSection() {
             </Link>
             <a href={STORE.phoneHref} className="no-underline">
               <Button size="lg" variant="outline" className="h-11 w-full px-6 lg:w-auto">
-                Call the store
+                Call {STORE.phone}
+              </Button>
+            </a>
+            <a href={STORE.phoneAltHref} className="no-underline">
+              <Button size="lg" variant="outline" className="h-11 w-full px-6 lg:w-auto">
+                Call {STORE.phoneAlt}
               </Button>
             </a>
             <Link

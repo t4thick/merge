@@ -3,6 +3,7 @@ import { Lock, MapPin, Phone, ShieldCheck } from 'lucide-react'
 import { getSupportEmail, STORE } from '@/lib/constants/store'
 import { PaymentMethodIcons } from '@/components/store/PaymentMethodIcons'
 import { SocialLinks } from '@/components/store/SocialLinks'
+import { StorePhoneLinks } from '@/components/store/StorePhoneLinks'
 import { StoreLogo } from '@/components/ui/StoreLogo'
 
 const SHOP_LINKS = [
@@ -118,14 +119,9 @@ export function Footer() {
               <MapPin className="mt-1 h-4 w-4 shrink-0 text-earth-500" strokeWidth={1.75} aria-hidden />
               <span>{STORE.address}</span>
             </p>
-            <p className="mt-3 flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 shrink-0 text-earth-500" strokeWidth={1.75} aria-hidden />
-              <a
-                href={STORE.phoneHref}
-                className="inline-flex min-h-11 items-center font-medium text-earth-900 no-underline hover:text-earth-600"
-              >
-                {STORE.phone}
-              </a>
+            <p className="mt-3 flex items-start gap-2 text-sm">
+              <Phone className="mt-3 h-4 w-4 shrink-0 text-earth-500" strokeWidth={1.75} aria-hidden />
+              <StorePhoneLinks />
             </p>
             <p className="mt-2 text-xs text-earth-500">{STORE.hours}</p>
           </div>

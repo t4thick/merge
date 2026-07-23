@@ -707,6 +707,13 @@ export function CheckoutClient({
                   className="font-medium text-earth-900 no-underline hover:underline"
                 >
                   Call {STORE.phone}
+                </a>
+                {' or '}
+                <a
+                  href={STORE.phoneAltHref}
+                  className="font-medium text-earth-900 no-underline hover:underline"
+                >
+                  {STORE.phoneAlt}
                 </a>{' '}
                 to schedule — checkout here covers store pickup and nationwide shipping.
               </p>
@@ -728,12 +735,21 @@ export function CheckoutClient({
                       </div>
                       <div className="flex items-start gap-2.5">
                         <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-                        <dd>
+                        <dd className="flex flex-wrap items-center gap-x-2 gap-y-1">
                           <a
                             href={STORE.phoneHref}
                             className="font-medium text-brand-700 no-underline hover:text-brand-800"
                           >
                             {STORE.phone}
+                          </a>
+                          <span className="text-earth-400" aria-hidden>
+                            ·
+                          </span>
+                          <a
+                            href={STORE.phoneAltHref}
+                            className="font-medium text-brand-700 no-underline hover:text-brand-800"
+                          >
+                            {STORE.phoneAlt}
                           </a>
                         </dd>
                       </div>

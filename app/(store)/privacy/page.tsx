@@ -146,7 +146,7 @@ export default function PrivacyPage() {
             <address className="mt-3 not-italic text-earth-700">
               {STORE.name}<br />
               {STORE.address}<br />
-              Phone: {STORE.phone}<br />
+              Phone: {STORE.phone} · {STORE.phoneAlt}<br />
               Email:{' '}
               <a href={`mailto:${supportEmail}`} className="font-medium text-brand-700">
                 {supportEmail}

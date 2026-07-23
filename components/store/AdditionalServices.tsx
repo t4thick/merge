@@ -6,8 +6,8 @@ import { STORE } from '@/lib/constants/store'
 
 const SERVICE_PHONE = STORE.phone
 const SERVICE_PHONE_HREF = STORE.phoneHref
-const SECONDARY_SERVICE_PHONE = '(614) 323-7385'
-const SECONDARY_SERVICE_PHONE_HREF = 'tel:+16143237385'
+const SECONDARY_SERVICE_PHONE = STORE.phoneAlt
+const SECONDARY_SERVICE_PHONE_HREF = STORE.phoneAltHref
 
 const SERVICE_GROUPS = [
   {
@@ -101,7 +101,7 @@ export function AdditionalServices() {
               </Link>
             </div>
             <p className="mt-4 text-xs text-white/50">
-              Alternate mobile-services line:{' '}
+              Also:{' '}
               <a
                 href={SECONDARY_SERVICE_PHONE_HREF}
                 className="inline-flex min-h-11 items-center text-white/75 no-underline hover:text-white"
@@ -136,12 +136,20 @@ export function AdditionalServices() {
             </p>
           </div>
 
-          <a href={SERVICE_PHONE_HREF} className="w-full no-underline sm:w-auto">
-            <Button size="lg" variant="outline" className="h-12 w-full px-6 sm:w-auto">
-              <Phone className="h-4 w-4" aria-hidden />
-              Call {SERVICE_PHONE}
-            </Button>
-          </a>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <a href={SERVICE_PHONE_HREF} className="w-full no-underline sm:w-auto">
+              <Button size="lg" variant="outline" className="h-12 w-full px-6 sm:w-auto">
+                <Phone className="h-4 w-4" aria-hidden />
+                Call {SERVICE_PHONE}
+              </Button>
+            </a>
+            <a href={SECONDARY_SERVICE_PHONE_HREF} className="w-full no-underline sm:w-auto">
+              <Button size="lg" variant="outline" className="h-12 w-full px-6 sm:w-auto">
+                <Phone className="h-4 w-4" aria-hidden />
+                Call {SECONDARY_SERVICE_PHONE}
+              </Button>
+            </a>
+          </div>
         </div>
 
         <div className="grid gap-px overflow-hidden rounded-2xl border border-earth-200 bg-earth-200 sm:grid-cols-2 lg:grid-cols-4">

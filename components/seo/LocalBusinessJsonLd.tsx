@@ -13,7 +13,7 @@ export function LocalBusinessJsonLd() {
     alternateName: STORE.shortName,
     description: STORE.tagline,
     url: siteUrl,
-    telephone: STORE.phoneHref.replace('tel:', ''),
+    telephone: [STORE.phoneHref.replace('tel:', ''), STORE.phoneAltHref.replace('tel:', '')],
     email: getSupportEmail(),
     image: `${siteUrl}/brand/logo-reference.png`,
     address: {

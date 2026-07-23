@@ -59,6 +59,12 @@ export function TrustStrip({ inStockCount }: { inStockCount: number }) {
           >
             {STORE.phone}
           </a>
+          <a
+            href={STORE.phoneAltHref}
+            className="inline-flex min-h-11 items-center font-medium text-earth-700 no-underline hover:text-earth-900"
+          >
+            {STORE.phoneAlt}
+          </a>
           <span className="text-earth-500">{STORE.hours}</span>
         </div>
       </div>

@@ -86,6 +86,10 @@ export function FeedbackForm() {
         Tell us what to fix or add on the website. Orders and stock questions: call{' '}
         <a href={STORE.phoneHref} className="font-medium text-brand-700 no-underline">
           {STORE.phone}
+        </a>
+        {' or '}
+        <a href={STORE.phoneAltHref} className="font-medium text-brand-700 no-underline">
+          {STORE.phoneAlt}
         </a>{' '}
         or email{' '}
         <a href={`mailto:${supportEmail}`} className="font-medium text-brand-700 no-underline">

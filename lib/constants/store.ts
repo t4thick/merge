@@ -32,5 +32,13 @@ export const STORE = {
   },
   phone: '(614) 377-8297',
   phoneHref: 'tel:+16143778297',
+  /** Second public contact line (shown with primary wherever we list call info). */
+  phoneAlt: '(614) 325-7385',
+  phoneAltHref: 'tel:+16143257385',
   hours: 'Mon–Sat 9am–8pm · Sun 10am–6pm',
 } as const
+
+/** "Call (614) 377-8297 or (614) 325-7385" for plain text / announcements. */
+export function storePhonesPlain(): string {
+  return `${STORE.phone} or ${STORE.phoneAlt}`
+}

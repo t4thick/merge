@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { X } from 'lucide-react'
-import { STORE } from '@/lib/constants/store'
+import { STORE, storePhonesPlain } from '@/lib/constants/store'
 import { FREE_STANDARD_SHIPPING_SUBTOTAL } from '@/lib/shipping'
 
 const DISMISS_KEY = 'kam_bar_v3'
@@ -14,7 +14,7 @@ const MESSAGES = [
     href: undefined as string | undefined,
   },
   {
-    text: 'Mobile market & Ohio delivery — call (614) 377-8297',
+    text: `Mobile market & Ohio delivery — call ${storePhonesPlain()}`,
     href: '/#mobile-market',
   },
   {

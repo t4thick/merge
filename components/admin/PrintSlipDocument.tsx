@@ -97,7 +97,9 @@ export function PrintSlipDocument({ order, items }: Props) {
         <p>
           {STORE.shipFrom.city}, {STORE.shipFrom.state} {STORE.shipFrom.zip}
         </p>
-        <p>{STORE.phone}</p>
+        <p>
+          {STORE.phone} · {STORE.phoneAlt}
+        </p>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-4 border-t border-neutral-300 pt-4 text-sm">
