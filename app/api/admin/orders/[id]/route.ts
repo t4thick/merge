@@ -121,3 +121,43 @@ export async function PATCH(
     return NextResponse.json({ error: 'Server error.' }, { status: 500 })
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const originCheck = assertSameOrigin(req)
+  if (!originCheck.ok) return originCheck.response
+
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
+  try {
+    const { id } = await params
+
+    const { data: existing, error: lookupErr } = await supabaseAdmin
+      .from('orders')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (lookupErr) {
+      console.error('[orders DELETE] lookup failed:', lookupErr.message)
+      return NextResponse.json({ error: 'Could not load order.' }, { status: 500 })
+    }
+    if (!existing) {
+      return NextResponse.json({ error: 'Order not found.' }, { status: 404 })
+    }
+
+    // order_items + order_status_logs cascade via FK on delete.
+    const { error } = await supabaseAdmin.from('orders').delete().eq('id', id)
+    if (error) {
+      console.error('[orders DELETE] failed:', error.message)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch {
+    return NextResponse.json({ error: 'Server error.' }, { status: 500 })
+  }
+}

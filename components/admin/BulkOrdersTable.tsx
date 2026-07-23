@@ -83,6 +83,36 @@ export function BulkOrdersTable({ orders }: { orders: Order[] }) {
     }
   }
 
+  async function deleteSelected() {
+    if (!selected.size) return
+    const n = selected.size
+    if (
+      !confirm(
+        `Permanently delete ${n} order${n === 1 ? '' : 's'}? This cannot be undone and does not refund Stripe.`
+      )
+    ) {
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/admin/orders/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [...selected], action: 'delete' }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error ?? 'Bulk delete failed.')
+        return
+      }
+      setSelected(new Set())
+      router.refresh()
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-3">
       {selected.size > 0 && (
@@ -114,6 +144,14 @@ export function BulkOrdersTable({ orders }: { orders: Order[] }) {
               className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800 disabled:opacity-50 whitespace-nowrap"
             >
               {loading ? 'Updating…' : 'Apply'}
+            </button>
+            <button
+              type="button"
+              onClick={deleteSelected}
+              disabled={loading}
+              className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 whitespace-nowrap"
+            >
+              {loading ? 'Working…' : 'Delete selected'}
             </button>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}

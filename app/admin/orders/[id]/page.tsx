@@ -6,6 +6,7 @@ import { PAYMENT_LABEL, type PaymentMethod } from '@/lib/payment-methods'
 import { OrderStatusUpdater } from '@/components/admin/OrderStatusUpdater'
 import { RefundButton } from '@/components/admin/RefundButton'
 import { ManualRefundButton } from '@/components/admin/ManualRefundButton'
+import { DeleteOrderButton } from '@/components/admin/DeleteOrderButton'
 import { AdminNotePanel } from '@/components/admin/AdminNotePanel'
 import { FulfillOrderShipping } from '@/components/admin/FulfillOrderShipping'
 import { PrintAddressSlipLink } from '@/components/admin/PrintAddressSlipLink'
@@ -225,6 +226,16 @@ export default async function AdminOrderDetailPage({
               </div>
             </section>
           )}
+
+          <section className="admin-card">
+            <h2 className="admin-section-title">Remove from admin</h2>
+            <p className="mt-1 text-sm text-earth-500">
+              Permanently clears this order from your list. Does not refund the customer.
+            </p>
+            <div className="mt-4">
+              <DeleteOrderButton orderId={order.id} orderNumber={order.order_number} />
+            </div>
+          </section>
         </div>
 
         <div className="space-y-6 lg:col-span-2">

@@ -14,9 +14,20 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const ids: string[] = Array.isArray(body.ids) ? body.ids.slice(0, 100) : []
-    const status = typeof body.status === 'string' ? normalizeOrderStatus(body.status) : null
+    const action = typeof body.action === 'string' ? body.action : 'status'
 
-    if (!ids.length || !status) {
+    if (!ids.length) {
+      return NextResponse.json({ error: 'ids are required.' }, { status: 400 })
+    }
+
+    if (action === 'delete') {
+      const { error } = await supabaseAdmin.from('orders').delete().in('id', ids)
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ ok: true, deleted: ids.length })
+    }
+
+    const status = typeof body.status === 'string' ? normalizeOrderStatus(body.status) : null
+    if (!status) {
       return NextResponse.json({ error: 'ids and status are required.' }, { status: 400 })
     }
 
