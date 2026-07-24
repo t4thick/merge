@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Geist } from 'next/font/google'
+import { Montserrat, Syne } from 'next/font/google'
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { Analytics } from '@vercel/analytics/next'
@@ -12,9 +12,17 @@ import { getPublicSiteUrl } from '@/lib/site-url'
 const siteUrl = getPublicSiteUrl()
 const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim()
 
-const geist = Geist({
+/** UI / body / product chrome — AGENTS.md sans. */
+const montserrat = Montserrat({
   subsets: ['latin'],
-  variable: '--font-geist',
+  variable: '--font-montserrat',
+  display: 'swap',
+})
+
+/** Marketing H1 + wordmark only — not for body or product UI. */
+const syne = Syne({
+  subsets: ['latin'],
+  variable: '--font-syne',
   display: 'swap',
 })
 
@@ -53,8 +61,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={geist.variable}>
-      <body className="flex min-h-screen flex-col">
+    <html lang="en" className={`${montserrat.variable} ${syne.variable}`}>
+      <body className="flex min-h-screen flex-col font-sans">
         <CartProvider>
           <RecentlyViewedProvider>
             <ToastProvider>{children}</ToastProvider>

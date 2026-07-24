@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: var(--font-geist), system-ui, sans-serif;
-  --font-display: var(--font-geist), system-ui, sans-serif;
+  --font-sans: var(--font-montserrat), ui-sans-serif, sans-serif;
+  --font-display: var(--font-syne), var(--font-montserrat), ui-sans-serif, sans-serif;
 
   /* Brand — market red (Ghana flag red at 600). Primary actions, prices, accents. */
   --color-brand-50: #fef2f3;
@@ -130,12 +130,19 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
-  /* Restrained geometric wordmark; all customer UI shares one type system. */
+  /* Display lockup — Syne for brand wordmark / hero H1 only. */
   .wordmark {
     font-family: var(--font-display);
     font-style: normal;
-    font-weight: 650;
+    font-weight: 700;
+    letter-spacing: -0.06em;
+  }
+
+  .hero-brand {
+    font-family: var(--font-display);
+    font-weight: 700;
     letter-spacing: -0.055em;
+    line-height: 0.92;
   }
 
   .page-section {
