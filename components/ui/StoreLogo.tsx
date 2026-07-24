@@ -28,8 +28,8 @@ const SIZES = {
 } as const
 
 /**
- * Quiet Geist wordmark with a compact descriptor. It stays legible at
- * navigation size and lets product photography carry the visual character.
+ * Syne wordmark with a Montserrat descriptor. Stays legible at nav size;
+ * product photography carries the visual character.
  */
 function Lockup({ variant }: { variant: keyof typeof SIZES }) {
   const s = SIZES[variant]
