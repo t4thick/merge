@@ -46,7 +46,20 @@ export async function fetchProductsForShop(options?: {
       }
     }
     let query = supabase.from('products').select('id,name,price,image_url,category,in_stock,description,created_at')
-    if (options?.q) query = query.ilike('name', `%${options.q}%`)
+    if (options?.q) {
+      const q = options.q.trim()
+      if (q) {
+        const terms = expandSearchTerms(q).filter((t) => t.trim().length > 0).slice(0, 6)
+        const orFilter = terms
+          .flatMap((t) => [
+            `name.ilike.%${t}%`,
+            `category.ilike.%${t}%`,
+            `description.ilike.%${t}%`,
+          ])
+          .join(',')
+        query = query.or(orFilter)
+      }
+    }
     if (options?.category) query = query.eq('category', options.category)
     if (options?.minPrice != null && !Number.isNaN(options.minPrice)) {
       query = query.gte('price', options.minPrice)
@@ -171,22 +184,36 @@ export async function searchProductsLite(q: string, limit = 6): Promise<Product[
     // Expand search with synonyms
     const terms = expandSearchTerms(term)
 
-    // Build OR filter — filter empty terms to prevent malformed ilike.%%
-    const cleanTerms = terms.filter((t) => t.trim().length > 0)
-    const orFilter = cleanTerms.map((t) => `name.ilike.%${t}%`).join(',')
+    // Build OR filter across name, category, and description (synonym-expanded).
+    const cleanTerms = terms.filter((t) => t.trim().length > 0).slice(0, 6)
+    const orFilter = cleanTerms
+      .flatMap((t) => [
+        `name.ilike.%${t}%`,
+        `category.ilike.%${t}%`,
+        `description.ilike.%${t}%`,
+      ])
+      .join(',')
 
     const { data } = await supabase
       .from('products')
-      .select('id,name,price,image_url,category,in_stock')
+      .select('id,name,price,image_url,category,in_stock,description')
       .or(orFilter)
       .order('in_stock', { ascending: false })
       .limit(limit)
 
-    // Sort: exact matches first, then in-stock, then by name match quality
+    // Sort: exact name matches first, then category hits, then in-stock
+    const needle = term.toLowerCase()
     const sorted = ((data ?? []) as Product[]).sort((a, b) => {
-      const aExact = a.name.toLowerCase().includes(term.toLowerCase()) ? 1 : 0
-      const bExact = b.name.toLowerCase().includes(term.toLowerCase()) ? 1 : 0
-      if (bExact !== aExact) return bExact - aExact
+      const score = (p: Product) => {
+        const name = p.name.toLowerCase()
+        const cat = (p.category ?? '').toLowerCase()
+        if (name === needle) return 3
+        if (name.includes(needle)) return 2
+        if (cat.includes(needle)) return 1
+        return 0
+      }
+      const diff = score(b) - score(a)
+      if (diff !== 0) return diff
       if (b.in_stock !== a.in_stock) return b.in_stock ? 1 : -1
       return 0
     })

@@ -33,9 +33,9 @@ export function TrustStrip({ inStockCount }: { inStockCount: number }) {
   const items = trustItems(inStockCount)
 
   return (
-    <section className="border-y border-earth-200 bg-white py-12 sm:py-16">
+    <section className="border-b border-earth-200 bg-white py-8 sm:py-10">
       <div className="store-container">
-        <ul className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
           {items.map(({ icon: Icon, title, desc }) => (
             <li key={title} className="flex items-start gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-earth-200 bg-earth-50 text-earth-600">

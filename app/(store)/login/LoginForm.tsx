@@ -8,6 +8,7 @@ import { useClientSearchParams } from '@/lib/hooks/use-client-search-params'
 import { mapSignInError } from '@/lib/auth/map-auth-error'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { PasswordField } from '@/components/auth/PasswordField'
+import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -119,6 +120,10 @@ export function LoginForm() {
           {loading ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
+
+      <div className="mt-5">
+        <GoogleAuthButton next={next} />
+      </div>
 
       <p className="mt-4 text-center text-sm">
         <Link

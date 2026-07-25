@@ -187,6 +187,13 @@ export function getOpsHealth(): {
   const email = emailHealthDetail()
   const stripe = stripeHealthDetail()
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() ?? ''
+  const siteUrlOk =
+    siteUrl.startsWith('https://') &&
+    !siteUrl.includes('localhost') &&
+    !siteUrl.includes('127.0.0.1')
+  const googleAuthFlag = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === '1'
+
   const items: OpsHealthItem[] = [
     {
       id: 'sms',
@@ -210,6 +217,22 @@ export function getOpsHealth(): {
       completeBadge: email.completeBadge,
     },
     {
+      id: 'auth-urls',
+      label: 'Auth Site URL',
+      ok: siteUrlOk,
+      detail: siteUrlOk
+        ? `Public URL set (${siteUrl}) — also set Supabase Auth Site URL + /auth/callback redirects`
+        : 'Set NEXT_PUBLIC_SITE_URL to https://your-domain (needed for signup/reset links)',
+    },
+    {
+      id: 'google-auth',
+      label: 'Google login',
+      ok: googleAuthFlag,
+      detail: googleAuthFlag
+        ? 'Button enabled — confirm Google provider is on in Supabase Auth'
+        : 'Optional — enable Google in Supabase, then set NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=1',
+    },
+    {
       id: 'labels',
       label: 'Label printing',
       ok: labelsReady,
@@ -231,7 +254,9 @@ export function getOpsHealth(): {
     },
   ]
 
-  const required = items.filter((i) => i.id !== 'email' && i.id !== 'sms')
+  const required = items.filter(
+    (i) => i.id !== 'email' && i.id !== 'sms' && i.id !== 'google-auth' && i.id !== 'auth-urls'
+  )
   return {
     items,
     readyCount: required.filter((i) => i.ok).length,

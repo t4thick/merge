@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRight, Package, Settings, User } from 'lucide-react'
+import { ArrowRight, Heart, Package, Settings, User } from 'lucide-react'
 import { createClientOptional } from '@/lib/supabase/server'
 import { AccountSignOut } from '@/components/AccountSignOut'
 import { EmailVerificationBanner } from '@/components/account/EmailVerificationBanner'
@@ -83,8 +83,9 @@ export default async function AccountPage() {
         </div>
       )}
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
+          { href: '/account/wishlist', icon: Heart, label: 'Wishlist', desc: 'Saved products' },
           { href: '/account/profile', icon: User, label: 'Edit profile', desc: 'Name & phone' },
           { href: '/account/addresses', icon: Settings, label: 'Addresses', desc: 'Delivery locations' },
           { href: '/track-order', icon: Package, label: 'Track order', desc: 'Order status' },

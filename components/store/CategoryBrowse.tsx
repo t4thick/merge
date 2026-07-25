@@ -35,7 +35,7 @@ export function CategoryBrowse({ displayCategories, categoryCount }: CategoryBro
           </Link>
         </div>
 
-        <ul className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-5">
+        <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
           {displayCategories.map((cat) => {
             const imageUrl = getCategoryImage(cat)
             const count = categoryCount[cat] ?? 0

@@ -170,6 +170,24 @@ Key tables: `products`, `orders`, `order_items`, `profiles`, `addresses`, `check
 - Set Site URL and redirect URLs to production domain
 - Run pending SQL migrations
 
+**Auth emails (signup / password reset) — separate from order Gmail**
+
+Customer auth mail is sent by **Supabase Auth**, not `GMAIL_*` order alerts.
+
+1. Supabase → Authentication → URL Configuration  
+   - Site URL: `https://kintampoafricanmarket.com`  
+   - Redirect URLs: `https://kintampoafricanmarket.com/auth/callback` (+ preview URLs if needed)
+2. Authentication → Emails → SMTP settings (custom SMTP recommended; default Supabase mail is rate-limited)  
+   - Can reuse the same Gmail app password as order mail, or a dedicated transactional SMTP
+3. Prove it: sign up with a real inbox → confirm email arrives → click link → lands on `/auth/callback`
+
+**Google login**
+
+1. Google Cloud Console → OAuth client (Web) with authorized redirect URI from Supabase Google provider docs  
+2. Supabase → Authentication → Providers → Google → enable + client ID/secret  
+3. Vercel: `NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=1` → redeploy  
+4. Login/signup pages show “Continue with Google” when that flag is set
+
 ---
 
 ## 9. Operations runbook

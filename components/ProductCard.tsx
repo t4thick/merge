@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
 import { ProductImage } from '@/components/store/ProductImage'
+import { WishlistButton } from '@/components/store/WishlistButton'
 import { Button } from '@/components/ui/button'
 import { ProductStockLabel } from '@/components/store/ProductStockLabel'
 import { extractPackSize } from '@/lib/product-display'
@@ -43,6 +44,15 @@ export function ProductCard({ product, priority }: { product: Product; priority?
               Out of stock
             </span>
           )}
+          <div
+            className="absolute right-2 top-2 z-10"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+          >
+            <WishlistButton productId={product.id} compact />
+          </div>
           <div className="h-full w-full transition-transform duration-200 ease-out group-hover:scale-[1.03]">
             <ProductImage
               src={product.image_url}

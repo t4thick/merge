@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import {
+  Heart,
   KeyRound,
   LayoutDashboard,
   MapPin,
@@ -21,6 +22,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { href: '/account', label: 'Overview', icon: LayoutDashboard, exact: true },
+  { href: '/account/wishlist', label: 'Wishlist', icon: Heart },
   { href: '/account/profile', label: 'Profile', icon: UserCircle },
   { href: '/account/addresses', label: 'Addresses', icon: MapPin },
   { href: '/account/password', label: 'Password', icon: KeyRound },

@@ -9,6 +9,7 @@ import { mapSignUpError } from '@/lib/auth/map-auth-error'
 import { isPasswordAcceptableForSignup } from '@/lib/auth/password-strength'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { PasswordField } from '@/components/auth/PasswordField'
+import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton'
 import { getAuthSiteOrigin } from '@/lib/site-url-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -217,6 +218,10 @@ export function SignupForm() {
           {loading ? 'Creating account…' : 'Create account'}
         </Button>
       </form>
+
+      <div className="mt-5">
+        <GoogleAuthButton next={next} label="Sign up with Google" />
+      </div>
 
       <p className="mt-6 text-center text-sm text-earth-500">
         Already have an account?{' '}
