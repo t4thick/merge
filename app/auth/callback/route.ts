@@ -3,6 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 
 type EmailOtpType = 'signup' | 'invite' | 'magiclink' | 'recovery' | 'email_change' | 'email'
 
+/**
+ * OAuth (Google) still exchanges here immediately.
+ * Email recovery / confirm links with token_hash are sent to /auth/confirm so a
+ * human click is required — email security scanners otherwise burn one-time links.
+ */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
@@ -11,10 +16,28 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/'
   const safeNext = next.startsWith('/') ? next : '/'
 
+  // Email OTP / recovery: never auto-consume on GET (prefetchers).
+  if (tokenHash && typeRaw) {
+    const confirm = new URL('/auth/confirm', origin)
+    confirm.searchParams.set('token_hash', tokenHash)
+    confirm.searchParams.set('type', typeRaw)
+    confirm.searchParams.set('next', safeNext)
+    return NextResponse.redirect(confirm)
+  }
+
+  // PKCE email links sometimes arrive with only `code` (no OAuth session intent).
+  // Send those to the confirm button page too when `type` is present.
+  if (code && typeRaw) {
+    const confirm = new URL('/auth/confirm', origin)
+    confirm.searchParams.set('code', code)
+    confirm.searchParams.set('type', typeRaw)
+    confirm.searchParams.set('next', safeNext)
+    return NextResponse.redirect(confirm)
+  }
+
   const supabase = await createClient()
 
-  // 1) PKCE flow (same device that initiated login / signup / reset). Used by `signInWithOAuth`,
-  //    `signUp`, and `resetPasswordForEmail` when the same browser holds the code_verifier.
+  // OAuth / same-browser PKCE without email type — exchange immediately.
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
@@ -23,9 +46,7 @@ export async function GET(request: Request) {
     console.warn('[auth/callback] exchangeCodeForSession failed:', error.message)
   }
 
-  // 2) Cross-device email link (token_hash). Works when the user opens the reset / verify
-  //    email on a different device than the one that requested it (PKCE has no verifier
-  //    there). This is the modern Supabase recommendation for password recovery emails.
+  // Legacy token_hash path if somehow not redirected above
   if (tokenHash && typeRaw) {
     const type = typeRaw as EmailOtpType
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash })

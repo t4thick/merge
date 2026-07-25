@@ -33,9 +33,10 @@ export default function ForgotPasswordPage() {
     setError('')
     const supabase = createClient()
     const origin = getAuthSiteOrigin()
+    // Final page after the user clicks Continue on /auth/confirm (email scanners can't burn that).
     const resetTarget = `/reset-password?next=${encodeURIComponent(next)}`
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(resetTarget)}`,
+      redirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(resetTarget)}`,
     })
     setLoading(false)
 
