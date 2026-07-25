@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, CreditCard, MapPin, RotateCcw, Truck } from 'lucide-react'
 import { createClientOptional } from '@/lib/supabase/server'
 import { fetchFrequentlyBoughtTogether } from '@/lib/supabase/products'
+import { isHiddenFromStorefront, filterStorefrontProducts } from '@/lib/catalog/public-product-filter'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { ProductStickyBar } from '@/components/store/ProductStickyBar'
 import { ProductCard } from '@/components/ProductCard'
@@ -38,7 +39,7 @@ async function loadRelated(category: string, excludeId: string): Promise<Product
     .neq('id', excludeId)
     .eq('in_stock', true)
     .limit(4)
-  return (data as Product[]) ?? []
+  return filterStorefrontProducts((data as Product[]) ?? [])
 }
 
 export async function generateMetadata({
@@ -48,7 +49,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params
   const product = await loadProduct(id)
-  if (!product) return { title: 'Product not found', robots: { index: false } }
+  if (!product || isHiddenFromStorefront(product)) {
+    return { title: 'Product not found', robots: { index: false } }
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? ''
   const productUrl = `${siteUrl}/products/${product.id}`
@@ -124,7 +127,7 @@ export default async function ProductPage({
 }) {
   const { id } = await params
   const product = await loadProduct(id)
-  if (!product) notFound()
+  if (!product || isHiddenFromStorefront(product)) notFound()
 
   const [related, fbt] = await Promise.all([
     loadRelated(product.category, product.id),

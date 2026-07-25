@@ -1,6 +1,7 @@
 import { createClientOptional } from '@/lib/supabase/server'
 import { getSupabasePublicConfig, formatCatalogError, SupabaseConfigError } from '@/lib/supabase/config'
 import { fetchCuratedHomepageShowcase } from '@/lib/supabase/homepage-curation'
+import { filterStorefrontProducts, isHiddenFromStorefront } from '@/lib/catalog/public-product-filter'
 import type { Product } from '@/types'
 
 export type ProductsQueryResult = {
@@ -82,7 +83,7 @@ export async function fetchProductsForShop(options?: {
     }
 
     return {
-      products: (data ?? []) as Product[],
+      products: filterStorefrontProducts((data ?? []) as Product[]),
       errorMessage: null,
       configured: true,
     }
@@ -107,16 +108,15 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
   try {
     const supabase = await createClientOptional()
     if (!supabase) return {}
-    const { data } = await supabase.from('products').select('category').eq('in_stock', true)
-    return ((data ?? []) as { category: string | null }[]).reduce<Record<string, number>>(
-      (acc, row) => {
+    const { data } = await supabase.from('products').select('category,name').eq('in_stock', true)
+    return ((data ?? []) as { category: string | null; name: string | null }[])
+      .filter((row) => !isHiddenFromStorefront(row))
+      .reduce<Record<string, number>>((acc, row) => {
         const name = row.category?.trim()
         if (!name) return acc
         acc[name] = (acc[name] ?? 0) + 1
         return acc
-      },
-      {}
-    )
+      }, {})
   } catch {
     return {}
   }
@@ -218,7 +218,7 @@ export async function searchProductsLite(q: string, limit = 6): Promise<Product[
       return 0
     })
 
-    return sorted
+    return filterStorefrontProducts(sorted).slice(0, limit)
   } catch {
     return []
   }
@@ -278,7 +278,7 @@ export async function fetchFrequentlyBoughtTogether(
             .limit(limit)
 
           if (products && products.length > 0) {
-            return products as Product[]
+            return filterStorefrontProducts(products as Product[]).slice(0, limit)
           }
         }
       }
@@ -292,8 +292,8 @@ export async function fetchFrequentlyBoughtTogether(
       .eq('in_stock', true)
       .neq('id', excludeId)
       .order('created_at', { ascending: false })
-      .limit(limit)
-    return ((data ?? []) as Product[]) ?? []
+      .limit(limit * 2)
+    return filterStorefrontProducts((data ?? []) as Product[]).slice(0, limit)
   } catch {
     return []
   }
@@ -336,7 +336,7 @@ export async function fetchHomepageProducts(): Promise<{
     }
     const [showcase, catRes] = await Promise.all([
       fetchCuratedHomepageShowcase(supabase),
-      supabase.from('products').select('category').eq('in_stock', true),
+      supabase.from('products').select('category,name').eq('in_stock', true),
     ])
 
     if (catRes.error) {
@@ -347,9 +347,9 @@ export async function fetchHomepageProducts(): Promise<{
       }
     }
 
-    const categoryCount = ((catRes.data ?? []) as { category: string | null }[]).reduce<
-      Record<string, number>
-    >((acc, row) => {
+    const categoryCount = ((catRes.data ?? []) as { category: string | null; name: string | null }[])
+      .filter((row) => !isHiddenFromStorefront(row))
+      .reduce<Record<string, number>>((acc, row) => {
       const name = row.category?.trim()
       if (!name) return acc
       acc[name] = (acc[name] ?? 0) + 1

@@ -1,5 +1,6 @@
 import type { Product } from '@/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { filterStorefrontProducts, isHiddenFromStorefront } from '@/lib/catalog/public-product-filter'
 
 const PRODUCT_SELECT = 'id,name,price,image_url,category,in_stock,description,created_at'
 
@@ -66,7 +67,7 @@ async function fetchStapleShowcase(supabase: SupabaseClient): Promise<Product[]>
       .order('created_at', { ascending: false })
       .limit(32)
 
-    const rows = ((data ?? []) as Product[]).sort((a, b) => {
+    const rows = filterStorefrontProducts((data ?? []) as Product[]).sort((a, b) => {
       const aImg = a.image_url?.trim() ? 1 : 0
       const bImg = b.image_url?.trim() ? 1 : 0
       if (bImg !== aImg) return bImg - aImg
@@ -104,7 +105,11 @@ export async function fetchCuratedHomepageShowcase(
         .eq('category', slot.category)
         .order('created_at', { ascending: false })
         .limit(24)
-      return pickFromRows((data ?? []) as Product[], slot.limit, slot.keywords)
+      return pickFromRows(
+        filterStorefrontProducts((data ?? []) as Product[]),
+        slot.limit,
+        slot.keywords
+      )
     })
   )
 
@@ -128,7 +133,7 @@ export async function fetchCuratedHomepageShowcase(
       .order('created_at', { ascending: false })
       .limit(24)
 
-    for (const p of (fill ?? []) as Product[]) {
+    for (const p of filterStorefrontProducts((fill ?? []) as Product[])) {
       if (used.has(p.id)) continue
       if (!p.image_url?.trim()) continue
       used.add(p.id)
@@ -146,9 +151,10 @@ export async function fetchCuratedHomepageShowcase(
     .limit(32)
 
   const newArrivals: Product[] = []
-  for (const p of (newest ?? []) as Product[]) {
+  for (const p of filterStorefrontProducts((newest ?? []) as Product[])) {
     if (used.has(p.id)) continue
     if (!p.image_url?.trim()) continue
+    if (isHiddenFromStorefront(p)) continue
     used.add(p.id)
     newArrivals.push(p)
     if (newArrivals.length >= 4) break

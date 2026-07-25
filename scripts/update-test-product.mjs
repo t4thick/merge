@@ -15,7 +15,7 @@ const updates = {
   description: 'Live checkout test — Snack category, no sales tax. Safe for payment verification.',
   price: 0.6,
   category: 'Snack',
-  in_stock: true,
+  in_stock: false,
   image_url: SNACK_IMAGE,
 }
 

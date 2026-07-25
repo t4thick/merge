@@ -25,8 +25,8 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
               alt=""
               fill
               priority
-              quality={80}
-              sizes="50vw"
+              quality={60}
+              sizes="(max-width:640px) 100vw, 25vw"
               className="object-cover object-[center_30%] opacity-[0.34]"
             />
           </div>
@@ -36,8 +36,8 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
               alt=""
               fill
               priority
-              quality={80}
-              sizes="50vw"
+              quality={60}
+              sizes="25vw"
               className="object-cover object-center opacity-[0.34]"
             />
           </div>
@@ -99,8 +99,8 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
               alt="Real kente and African textiles on the shelf at Kintampo"
               fill
               priority
-              quality={90}
-              sizes="(max-width:1024px) 45vw, 22vw"
+              quality={75}
+              sizes="(max-width:1024px) 40vw, 20vw"
               className="object-cover object-[center_25%]"
             />
           </div>
@@ -109,8 +109,8 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
               src="/images/hero/grocery-aisle.png"
               alt="Real grocery aisle at Kintampo African Market"
               fill
-              quality={90}
-              sizes="(max-width:1024px) 45vw, 22vw"
+              quality={75}
+              sizes="(max-width:1024px) 40vw, 20vw"
               className="object-cover object-center"
             />
           </div>

@@ -25,7 +25,7 @@ const row = {
   price: 0.6,
   category: 'Snack',
   image_url: SNACK_IMAGE,
-  in_stock: true,
+  in_stock: false,
 }
 
 const { data: existing } = await supabase

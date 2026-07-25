@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { createCatalogClient } from '@/lib/supabase/catalog-client'
 import { getPublicSiteUrl } from '@/lib/site-url'
+import { isHiddenFromStorefront } from '@/lib/catalog/public-product-filter'
 
 /**
  * /sitemap.xml — generated at request time so newly added/removed products show up
@@ -29,24 +30,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const { data: products, error } = await supabase
       .from('products')
-      .select('id, category, created_at')
+      .select('id, name, category, created_at')
       .order('created_at', { ascending: false })
 
     if (error) throw error
 
-    type ProductSitemapRow = { id: string; category: string | null; created_at: string | null }
+    type ProductSitemapRow = {
+      id: string
+      name: string | null
+      category: string | null
+      created_at: string | null
+    }
 
-    productEntries =
-      (products as ProductSitemapRow[] | null)?.map((p) => ({
-        url: `${baseUrl}/products/${p.id}`,
-        lastModified: p.created_at ? new Date(p.created_at) : now,
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      })) ?? []
+    const visible =
+      (products as ProductSitemapRow[] | null)?.filter((p) => !isHiddenFromStorefront(p)) ?? []
+
+    productEntries = visible.map((p) => ({
+      url: `${baseUrl}/products/${p.id}`,
+      lastModified: p.created_at ? new Date(p.created_at) : now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }))
 
     // De-duplicate category landing pages so /shop?category=Spices etc. get crawled.
     const categories = new Set<string>()
-    ;(products as ProductSitemapRow[] | null)?.forEach((p) => {
+    visible.forEach((p) => {
       if (p.category) categories.add(p.category)
     })
     for (const category of categories) {
