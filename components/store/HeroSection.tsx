@@ -4,13 +4,10 @@ import { ArrowRight, MapPin, PackageCheck, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { STORE } from '@/lib/constants/store'
 
-const GROCERY_BG = [
-  { src: '/images/store/aisle-front.png', alt: '', className: 'object-[center_35%]' },
-  { src: '/images/store/house-drinks.png', alt: '', className: 'object-center' },
-  { src: '/images/store/pantry-shelf.png', alt: '', className: 'object-center' },
-  { src: '/images/store/beauty-oils.png', alt: '', className: 'object-center' },
-] as const
-
+/**
+ * Real in-store photos only (kente textiles aisle + grocery aisle) —
+ * light washed background, not AI/cartoon patterning.
+ */
 export function HeroSection({ inStockCount }: { inStockCount: number }) {
   const stockLabel =
     inStockCount > 0 ? `${inStockCount.toLocaleString()} products in stock` : 'Products in stock'
@@ -20,25 +17,33 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
       className="relative overflow-hidden border-b border-earth-200 bg-earth-50"
       aria-label={STORE.name}
     >
-      {/* Real grocery photos — light wash, not a dark full-bleed */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="absolute inset-0 grid grid-cols-2 lg:grid-cols-4">
-          {GROCERY_BG.map((shot) => (
-            <div key={shot.src} className="relative min-h-full">
-              <Image
-                src={shot.src}
-                alt=""
-                fill
-                priority={shot.src.includes('aisle-front')}
-                quality={75}
-                sizes="(max-width:1024px) 50vw, 25vw"
-                className={`object-cover opacity-[0.28] ${shot.className}`}
-              />
-            </div>
-          ))}
+        <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-2">
+          <div className="relative">
+            <Image
+              src="/images/hero/textiles-aisle.png"
+              alt=""
+              fill
+              priority
+              quality={80}
+              sizes="50vw"
+              className="object-cover object-[center_30%] opacity-[0.34]"
+            />
+          </div>
+          <div className="relative hidden sm:block">
+            <Image
+              src="/images/hero/grocery-aisle.png"
+              alt=""
+              fill
+              priority
+              quality={80}
+              sizes="50vw"
+              className="object-cover object-center opacity-[0.34]"
+            />
+          </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/92 to-white/72" />
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-white/80" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-white/85" />
       </div>
 
       <div className="store-container relative grid items-center gap-10 py-14 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:py-20">
@@ -90,23 +95,23 @@ export function HeroSection({ inStockCount }: { inStockCount: number }) {
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-earth-100 shadow-[var(--shadow-card)]">
             <Image
-              src="/images/store/house-drinks.png"
-              alt="House drinks on the shelf at Kintampo"
+              src="/images/hero/textiles-aisle.png"
+              alt="Real kente and African textiles on the shelf at Kintampo"
               fill
               priority
-              quality={88}
+              quality={90}
               sizes="(max-width:1024px) 45vw, 22vw"
-              className="object-cover"
+              className="object-cover object-[center_25%]"
             />
           </div>
           <div className="relative mt-6 aspect-[4/5] overflow-hidden rounded-2xl bg-earth-100 shadow-[var(--shadow-card)] sm:mt-10">
             <Image
-              src="/images/store/pantry-shelf.png"
-              alt="Pantry staples on the shelf at Kintampo"
+              src="/images/hero/grocery-aisle.png"
+              alt="Real grocery aisle at Kintampo African Market"
               fill
-              quality={88}
+              quality={90}
               sizes="(max-width:1024px) 45vw, 22vw"
-              className="object-cover"
+              className="object-cover object-center"
             />
           </div>
         </div>
