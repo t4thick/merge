@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     template: `%s · ${STORE.shortName}`,
   },
   description: STORE.tagline,
-  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
+  verification: { google: googleVerification },
   openGraph: {
     type: 'website',
     siteName: STORE.name,
