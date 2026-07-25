@@ -10,7 +10,10 @@ import { STORE } from '@/lib/constants/store'
 import { getPublicSiteUrl } from '@/lib/site-url'
 
 const siteUrl = getPublicSiteUrl()
-const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim()
+/** Public Search Console token — also set as GOOGLE_SITE_VERIFICATION on Vercel. */
+const googleVerification =
+  process.env.GOOGLE_SITE_VERIFICATION?.trim() ||
+  'e3M6PYpd4TswSqYnaJeRCbgW0x-91Jy3lYWHFKbXAwo'
 
 /** UI / body / product chrome — AGENTS.md sans. */
 const montserrat = Montserrat({
