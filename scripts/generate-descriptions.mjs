@@ -1,4 +1,7 @@
 /**
+ * LEGACY — prefer scripts/rewrite-descriptions.mjs (unique per-SKU utility copy).
+ * This older generator produced shared template blurbs and caused duplicate SEO copy.
+ *
  * Generates SEO-friendly product descriptions for all products missing one.
  * Uses built-in knowledge of African & Caribbean grocery products.
  * Run: node --env-file=.env.local scripts/generate-descriptions.mjs
