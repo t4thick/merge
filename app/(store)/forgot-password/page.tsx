@@ -2,11 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client'
 import { useClientSearchParams } from '@/lib/hooks/use-client-search-params'
-import { mapPasswordResetError } from '@/lib/auth/map-auth-error'
 import { AuthShell } from '@/components/auth/AuthShell'
-import { getAuthSiteOrigin } from '@/lib/site-url-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -25,29 +22,28 @@ export default function ForgotPasswordPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!isSupabaseBrowserConfigured()) {
-      setError('Reset is temporarily unavailable.')
-      return
-    }
     setLoading(true)
     setError('')
-    const supabase = createClient()
-    const origin = getAuthSiteOrigin()
-    // Final page after the user clicks Continue on /auth/confirm (email scanners can't burn that).
-    const resetTarget = `/reset-password?next=${encodeURIComponent(next)}`
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(resetTarget)}`,
-    })
-    setLoading(false)
-
-    if (resetError) {
-      const mapped = mapPasswordResetError(resetError.message)
-      if (mapped) {
-        setError(mapped)
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          next: next.startsWith('/') ? next : '/account',
+        }),
+      })
+      const data = (await res.json().catch(() => ({}))) as { error?: string }
+      if (!res.ok) {
+        setError(data.error || 'Could not send email. Try again.')
+        setLoading(false)
         return
       }
+      setSent(true)
+    } catch {
+      setError('Could not send email. Try again.')
     }
-    setSent(true)
+    setLoading(false)
   }
 
   return (
