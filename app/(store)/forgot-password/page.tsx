@@ -56,7 +56,8 @@ export default function ForgotPasswordPage() {
         <div role="status">
           <p className="success">If an account exists for that email, we sent a reset link.</p>
           <p className="muted mt-3">
-            Check your inbox and spam folder. We don&apos;t confirm whether an email is registered.
+            Check inbox and spam. Use the email you signed up with. Open the newest email, tap the
+            link, then tap <strong>Continue</strong> on the next page.
           </p>
         </div>
       ) : (
