@@ -10,7 +10,6 @@ import { isPasswordAcceptableForSignup } from '@/lib/auth/password-strength'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { PasswordField } from '@/components/auth/PasswordField'
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton'
-import { getAuthSiteOrigin } from '@/lib/site-url-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -34,7 +33,6 @@ export function SignupForm() {
   const [marketingOptIn, setMarketingOptIn] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
 
   useEffect(() => {
     firstRef.current?.focus()
@@ -48,7 +46,6 @@ export function SignupForm() {
     }
     setLoading(true)
     setError('')
-    setMessage('')
 
     if (!termsAccepted) {
       setLoading(false)
@@ -66,40 +63,47 @@ export function SignupForm() {
       return
     }
 
-    const supabase = createClient()
-    const origin = getAuthSiteOrigin()
-    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
+    const trimmedEmail = email.trim().toLowerCase()
 
-    const { error: signError, data } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
-        data: {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          full_name: fullName,
-          phone: phone.trim() || null,
-          marketing_opt_in: marketingOptIn,
-          terms_accepted_at: new Date().toISOString(),
-        },
-      },
-    })
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          password,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          phone: phone.trim(),
+          marketingOptIn,
+          termsAccepted,
+        }),
+      })
+      const payload = (await res.json().catch(() => ({}))) as { error?: string }
+      if (!res.ok) {
+        setLoading(false)
+        setError(payload.error || mapSignUpError('already registered'))
+        return
+      }
 
-    setLoading(false)
+      const supabase = createClient()
+      const { error: signError } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password,
+      })
+      setLoading(false)
 
-    if (signError) {
-      setError(mapSignUpError(signError.message))
-      return
-    }
+      if (signError) {
+        setError(mapSignUpError(signError.message))
+        return
+      }
 
-    if (data.session) {
       router.push(next)
       router.refresh()
-      return
+    } catch {
+      setLoading(false)
+      setError('Connection problem. Check your internet and try again.')
     }
-
-    setMessage('Check your email to confirm your account, then sign in.')
   }
 
   return (
@@ -206,11 +210,6 @@ export function SignupForm() {
         {error && (
           <p className="error" role="alert">
             {error}
-          </p>
-        )}
-        {message && (
-          <p className="success" role="status">
-            {message}
           </p>
         )}
 

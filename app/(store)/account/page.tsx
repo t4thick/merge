@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { ArrowRight, Heart, Package, Settings, User } from 'lucide-react'
 import { createClientOptional } from '@/lib/supabase/server'
 import { AccountSignOut } from '@/components/AccountSignOut'
-import { EmailVerificationBanner } from '@/components/account/EmailVerificationBanner'
 import {
   isPickupShippingMethod,
   normalizeOrderStatus,
@@ -76,12 +75,6 @@ export default async function AccountPage() {
         </div>
         <AccountSignOut />
       </div>
-
-      {!user.email_confirmed_at && (
-        <div className="mt-6">
-          <EmailVerificationBanner email={user.email} />
-        </div>
-      )}
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[

@@ -3,7 +3,7 @@ export const revalidate = 60 // Refresh homepage data every 60 seconds — keeps
 import { HeroSection } from '@/components/store/HeroSection'
 import { TrustStrip } from '@/components/store/TrustStrip'
 import { CategoryBrowse } from '@/components/store/CategoryBrowse'
-import { StoreHighlights } from '@/components/store/StoreHighlights'
+import { FeaturedCollections } from '@/components/store/FeaturedCollections'
 import { ProductShowcase } from '@/components/store/ProductShowcase'
 import { RecentlyViewed } from '@/components/store/RecentlyViewed'
 import { VisitSection } from '@/components/store/VisitSection'
@@ -37,8 +37,6 @@ export default async function Home() {
   return (
     <>
       <HeroSection inStockCount={inStockCount} />
-      <TrustStrip inStockCount={inStockCount} />
-      <StoreHighlights />
       <CategoryBrowse displayCategories={displayCategories} categoryCount={categoryCount} />
       {staples.length > 0 && (
         <ProductShowcase
@@ -59,7 +57,9 @@ export default async function Home() {
           priorityCount={2}
         />
       )}
+      <FeaturedCollections />
       <RecentlyViewed />
+      <TrustStrip inStockCount={inStockCount} />
       <AdditionalServices />
       <VisitSection />
     </>

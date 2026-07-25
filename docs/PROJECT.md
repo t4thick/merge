@@ -172,14 +172,17 @@ Key tables: `products`, `orders`, `order_items`, `profiles`, `addresses`, `check
 
 **Auth emails (signup / password reset) — separate from order Gmail**
 
-Customer auth mail is sent by **Supabase Auth**, not `GMAIL_*` order alerts.
+Customer **signup no longer requires email confirmation** — accounts are created confirmed and signed in immediately.
+
+Password-reset mail is still sent by **Supabase Auth**, not `GMAIL_*` order alerts.
 
 1. Supabase → Authentication → URL Configuration  
    - Site URL: `https://kintampoafricanmarket.com`  
    - Redirect URLs: `https://kintampoafricanmarket.com/auth/callback` (+ preview URLs if needed)
-2. Authentication → Emails → SMTP settings (custom SMTP recommended; default Supabase mail is rate-limited)  
+2. Authentication → Providers → Email → turn **Confirm email** OFF (recommended; app also confirms via service role)
+3. Authentication → Emails → SMTP settings (needed for password reset)  
    - Can reuse the same Gmail app password as order mail, or a dedicated transactional SMTP
-3. Prove it: sign up with a real inbox → confirm email arrives → click link → lands on `/auth/callback`
+4. Optional: prove reset — request forgot-password → link lands on `/auth/callback`
 
 **Google login**
 

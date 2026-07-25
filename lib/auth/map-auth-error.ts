@@ -9,7 +9,7 @@ export function mapSignInError(message: string): string {
     return 'Incorrect email or password.'
   }
   if (m.includes('email not confirmed')) {
-    return 'Please verify your email before signing in. Check your inbox or request a new link.'
+    return 'Incorrect email or password.'
   }
   if (m.includes('too many requests') || m.includes('rate limit')) {
     return 'Too many attempts. Please wait a few minutes and try again.'

@@ -1,63 +1,68 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, MapPin, PackageCheck, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { STORE } from '@/lib/constants/store'
 
 export function HeroSection({ inStockCount }: { inStockCount: number }) {
-  const stockLine =
-    inStockCount > 0
-      ? `${inStockCount.toLocaleString()} products in stock. Pickup, Ohio delivery, or ship nationwide.`
-      : 'Pickup in Columbus, Ohio delivery, or ship nationwide.'
+  const stockLabel =
+    inStockCount > 0 ? `${inStockCount.toLocaleString()} products in stock` : 'Products in stock'
 
   return (
-    <section className="border-b border-earth-200 bg-earth-950" aria-label={STORE.name}>
-      <div className="relative min-h-[78vh] w-full sm:min-h-[85vh]">
-        <Image
-          src="/images/store/aisle-front.png"
-          alt="Inside Kintampo African Market — stocked aisles with rice, drinks, and grocery shelves"
-          fill
-          priority
-          quality={92}
-          sizes="100vw"
-          className="object-cover object-[center_40%]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-earth-950 via-earth-950/50 to-earth-950/20" />
-
-        <div className="store-container relative flex min-h-[78vh] flex-col justify-end pb-12 pt-28 sm:min-h-[85vh] sm:pb-16 lg:pb-20">
-          <h1 className="hero-brand animate-fade-in text-[clamp(3.25rem,12vw,7.5rem)] text-white">
-            Kintampo<span className="text-accent-400">.</span>
+    <section className="border-b border-earth-200 bg-white" aria-label={STORE.name}>
+      <div className="store-container grid items-center gap-10 py-12 sm:py-16 lg:grid-cols-2 lg:gap-14 lg:py-20">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-earth-500">
+            {STORE.name} · Columbus, OH
+          </p>
+          <h1 className="mt-4 max-w-xl text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-earth-950 sm:text-5xl lg:text-[3.25rem]">
+            African &amp; Caribbean groceries, delivered fast.
           </h1>
-          <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.28em] text-white/70 sm:text-xs">
-            African Market
-          </p>
-          <p className="mt-6 max-w-xl text-balance text-xl font-semibold leading-snug tracking-[-0.03em] text-white sm:text-2xl lg:text-[1.75rem]">
-            Groceries from Ghana &amp; the Caribbean — online and in store.
-          </p>
-          <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-white/78 sm:text-base">
-            {stockLine}
+          <p className="mt-4 max-w-lg text-base leading-7 text-earth-600 sm:text-lg">
+            {inStockCount > 0 ? `${inStockCount.toLocaleString()} products` : 'Groceries'} from West
+            Africa &amp; the Caribbean. Pickup in Columbus or shipped nationwide.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/shop" className="w-full no-underline sm:w-auto">
-              <Button
-                size="lg"
-                className="h-12 w-full bg-brand-600 px-8 text-white transition-colors duration-150 hover:bg-brand-700 sm:w-auto"
-              >
+              <Button size="lg" className="h-12 w-full bg-brand-600 px-7 text-white hover:bg-brand-700 sm:w-auto">
                 Shop all products
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>
             </Link>
-            <Link href="#store-photos" className="w-full no-underline sm:w-auto">
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-12 w-full border-white/30 bg-white/10 px-8 text-white shadow-none transition-colors duration-150 hover:bg-white/20 sm:w-auto"
-              >
-                See the store
+            <Link href="#categories" className="w-full no-underline sm:w-auto">
+              <Button size="lg" variant="outline" className="h-12 w-full px-7 sm:w-auto">
+                Browse categories
               </Button>
             </Link>
           </div>
+
+          <ul className="mt-8 flex flex-col gap-2.5 text-sm text-earth-700 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
+            <li className="inline-flex items-center gap-2">
+              <PackageCheck className="h-4 w-4 text-brand-600" strokeWidth={1.75} aria-hidden />
+              {stockLabel}
+            </li>
+            <li className="inline-flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-brand-600" strokeWidth={1.75} aria-hidden />
+              Store pickup in Columbus
+            </li>
+            <li className="inline-flex items-center gap-2">
+              <Truck className="h-4 w-4 text-brand-600" strokeWidth={1.75} aria-hidden />
+              Ships within 24h
+            </li>
+          </ul>
+        </div>
+
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-earth-100 shadow-[var(--shadow-card)] sm:aspect-[5/4] lg:aspect-auto lg:min-h-[420px]">
+          <Image
+            src="/images/store/aisle-front.png"
+            alt="Inside Kintampo African Market — stocked grocery aisles"
+            fill
+            priority
+            quality={90}
+            sizes="(max-width:1024px) 100vw, 50vw"
+            className="object-cover object-[center_40%]"
+          />
         </div>
       </div>
     </section>

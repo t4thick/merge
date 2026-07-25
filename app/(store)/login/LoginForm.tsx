@@ -44,11 +44,26 @@ export function LoginForm() {
     setLoading(true)
     setError('')
     const supabase = createClient()
-    const trimmed = email.trim()
-    const { error: signError } = await supabase.auth.signInWithPassword({
+    const trimmed = email.trim().toLowerCase()
+
+    let { error: signError } = await supabase.auth.signInWithPassword({
       email: trimmed,
       password,
     })
+
+    // Old unconfirmed accounts: confirm once, then retry sign-in (no email step).
+    if (signError?.message?.toLowerCase().includes('email not confirmed')) {
+      await fetch('/api/auth/confirm-pending', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      }).catch(() => null)
+      ;({ error: signError } = await supabase.auth.signInWithPassword({
+        email: trimmed,
+        password,
+      }))
+    }
+
     setLoading(false)
     if (signError) {
       setError(mapSignInError(signError.message))
