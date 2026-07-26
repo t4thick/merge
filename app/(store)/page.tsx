@@ -36,7 +36,11 @@ export default async function Home() {
 
   return (
     <>
-      <HeroSection inStockCount={inStockCount} />
+      <HeroSection
+        inStockCount={inStockCount}
+        departmentCount={withStock.length}
+        categoryCount={categoryCount}
+      />
       <CategoryBrowse displayCategories={displayCategories} categoryCount={categoryCount} />
       {staples.length > 0 && (
         <ProductShowcase
