@@ -78,10 +78,16 @@ export default async function AdminOrdersPage({
     whenEnd = todayStart.plus({ days: 1 })
   }
 
-  function applyCommonFilters<T extends { gte: Function; lt: Function; or: Function }>(query: T): T {
-    let next = query
+  type FilterChain = {
+    gte: (column: string, value: string) => FilterChain
+    lt: (column: string, value: string) => FilterChain
+    or: (filters: string) => FilterChain
+  }
+
+  function applyCommonFilters<T extends FilterChain>(query: T): T {
+    let next: FilterChain = query
     if (whenStart && whenEnd) {
-      next = next.gte('created_at', whenStart.toUTC().toISO()!).lt('created_at', whenEnd.toUTC().toISO()!) as T
+      next = next.gte('created_at', whenStart.toUTC().toISO()!).lt('created_at', whenEnd.toUTC().toISO()!)
     }
     if (q?.trim()) {
       const term = q.trim()
@@ -89,16 +95,16 @@ export default async function AdminOrdersPage({
       if (ref?.type === 'number') {
         next = next.or(
           `customer_name.ilike.%${term}%,customer_email.ilike.%${term}%,order_number.eq.${ref.value}`
-        ) as T
+        )
       } else if (ref?.type === 'uuid') {
         next = next.or(
           `customer_name.ilike.%${term}%,customer_email.ilike.%${term}%,id.eq.${ref.value}`
-        ) as T
+        )
       } else {
-        next = next.or(`customer_name.ilike.%${term}%,customer_email.ilike.%${term}%`) as T
+        next = next.or(`customer_name.ilike.%${term}%,customer_email.ilike.%${term}%`)
       }
     }
-    return next
+    return next as T
   }
 
   // Lightweight status rows for pill counts (same when/q scope).

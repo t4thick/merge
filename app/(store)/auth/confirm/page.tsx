@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client'
 import { isPasswordAcceptableForSignup } from '@/lib/auth/password-strength'
@@ -17,7 +16,6 @@ type EmailOtpType = 'signup' | 'invite' | 'magiclink' | 'recovery' | 'email_chan
  * (no redirect race that drops the recovery session).
  */
 export default function AuthConfirmPage() {
-  const router = useRouter()
   const [ready, setReady] = useState(false)
   const [tokenHash, setTokenHash] = useState('')
   const [type, setType] = useState('')

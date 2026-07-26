@@ -94,7 +94,7 @@ const USE_HINTS = [
   ['soap', 'Cleansing soap for daily use.'],
 ]
 
-function useHintFor(name) {
+function hintFor(name) {
   const n = name.toLowerCase()
   const hit = USE_HINTS.find(([kw]) => n.includes(kw))
   return hit?.[1] ?? null
@@ -166,7 +166,7 @@ function buildDescription(product) {
   const name = cleanDisplayName(product.name)
   const size = extractSize(product.name)
   const perLb = extractPriceHint(product.name)
-  const hint = useHintFor(product.name)
+  const hint = hintFor(product.name)
   const cat = product.category || 'Grocery'
 
   const sizeBit = size ? `${size}` : null
