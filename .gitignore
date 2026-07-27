@@ -47,6 +47,9 @@ yarn-error.log*
 Lovely-Queen-env-reference.pdf
 .env-export-temp.html
 
+# Local scratch dumps — contains real customer data (orders/profiles/addresses), never commit
+/tmp/
+
 # vercel
 .vercel
 
