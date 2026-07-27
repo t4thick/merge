@@ -8,8 +8,10 @@ import { ProductShowcase } from '@/components/store/ProductShowcase'
 import { RecentlyViewed } from '@/components/store/RecentlyViewed'
 import { VisitSection } from '@/components/store/VisitSection'
 import { AdditionalServices } from '@/components/store/AdditionalServices'
+import { HomepageReviews } from '@/components/store/HomepageReviews'
 import { PRODUCT_CATEGORIES } from '@/lib/constants/categories'
 import { fetchHomepageProducts } from '@/lib/supabase/products'
+import { fetchHomepageReviews } from '@/lib/supabase/homepage-reviews'
 
 const HOME_CATEGORY_ORDER = [
   'Flours & Rice',
@@ -27,6 +29,7 @@ const HOME_CATEGORY_ORDER = [
 export default async function Home() {
   const { staples, trending, categoryCount, inStockCount, errorMessage } =
     await fetchHomepageProducts()
+  const { reviews, totalCount: reviewCount, averageRating } = await fetchHomepageReviews()
 
   const withStock = PRODUCT_CATEGORIES.filter((c) => (categoryCount[c] ?? 0) > 0)
   const ordered = HOME_CATEGORY_ORDER.filter((c) => (categoryCount[c] ?? 0) > 0)
@@ -64,6 +67,7 @@ export default async function Home() {
       <FeaturedCollections />
       <RecentlyViewed />
       <TrustStrip inStockCount={inStockCount} />
+      <HomepageReviews reviews={reviews} totalCount={reviewCount} averageRating={averageRating} />
       <AdditionalServices />
       <VisitSection />
     </>
