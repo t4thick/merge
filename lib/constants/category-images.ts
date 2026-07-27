@@ -29,6 +29,7 @@ function categoryLocalFiles(slug: string): readonly string[] {
 
 const CATEGORY_SLUG: Record<string, string> = {
   'African Prints': 'african-prints',
+  Alcohol: 'alcohol',
   Beverages: 'beverages',
   Bread: 'bread',
   Canned: 'canned',
@@ -51,6 +52,7 @@ const CATEGORY_SLUG: Record<string, string> = {
 /** Remote fallbacks when local files are missing */
 const CATEGORY_REMOTE: Record<string, string> = {
   'African Prints': U('photo-1586495777744-4413f21067fa'),
+  Alcohol: U('photo-1510812431401-41d2bd2722f3'),
   Beverages: U('photo-1755752919046-a6543db419cc'),
   Bread: U('photo-1725297952102-ab28892a31ab'),
   Canned: U('photo-1601598704991-eef6114775e0'),

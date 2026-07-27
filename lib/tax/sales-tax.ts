@@ -6,7 +6,7 @@ import {
 
 /**
  * Ohio grocery-style categories: no sales tax at checkout.
- * Taxable: cosmetics, non-food (sponges, household, etc.) — see TAXABLE_CATEGORY_KEYS.
+ * Taxable: alcohol, cosmetics, non-food (sponges, household, etc.) — see TAXABLE_CATEGORY_KEYS.
  */
 export const FOOD_EXEMPT_CATEGORY_KEYS = new Set(
   [
@@ -29,6 +29,7 @@ export const FOOD_EXEMPT_CATEGORY_KEYS = new Set(
 /** Categories that always collect Ohio store sales tax when tax applies. */
 export const TAXABLE_CATEGORY_KEYS = new Set(
   [
+    'Alcohol',
     'Cosmetics',
     'Non food',
     'African Prints',
@@ -53,6 +54,9 @@ export function isCategoryTaxable(category: string): boolean {
   if (FOOD_EXEMPT_CATEGORY_KEYS.has(key)) return false
 
   // Future admin-entered labels (non-food merchandise).
+  if (key.includes('alcohol') || key.includes('liquor') || key.includes('wine') || key.includes('beer')) {
+    return true
+  }
   if (key.includes('cosmetic') || key.includes('beauty') || key.includes('personal care')) {
     return true
   }

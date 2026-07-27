@@ -12,12 +12,14 @@ import {
   Sparkles,
   Layers,
   Wheat,
+  Wine,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ICON_MAP: Record<string, LucideIcon> = {
   'African Prints': Layers,
+  Alcohol: Wine,
   Beverages: Coffee,
   Bread: Wheat,
   Canned: Package,

@@ -1,9 +1,10 @@
 /**
  * Tax: most categories are grocery-exempt.
- * Taxable: Cosmetics, Non food, fashion & hair (see lib/tax/sales-tax.ts).
+ * Taxable: Alcohol, Cosmetics, Non food, fashion & hair (see lib/tax/sales-tax.ts).
  */
 export const PRODUCT_CATEGORIES = [
   'African Prints',
+  'Alcohol',
   'Beverages',
   'Bread',
   'Canned',
@@ -37,6 +38,7 @@ export type FashionCategory = (typeof FASHION_CATEGORIES)[number]
 
 /** Short labels for category chips on home / shop. */
 export const CATEGORY_ICONS: Record<string, string> = {
+  Alcohol: '🍷',
   Beverages: '🥤',
   Bread: '🍞',
   Spices: '🌶️',

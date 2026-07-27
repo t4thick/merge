@@ -13,9 +13,10 @@ test.describe('Ohio category sales tax', () => {
     expect(isCategoryTaxable('Spices')).toBe(false)
   })
 
-  test('cosmetics, non-food, and fashion are taxable', () => {
+  test('cosmetics, non-food, alcohol, and fashion are taxable', () => {
     expect(isCategoryTaxable('Cosmetics')).toBe(true)
     expect(isCategoryTaxable('Non food')).toBe(true)
+    expect(isCategoryTaxable('Alcohol')).toBe(true)
     expect(isCategoryTaxable('African Prints')).toBe(true)
     expect(isCategoryTaxable('Lace')).toBe(true)
     expect(isCategoryTaxable('Ready-to-wear')).toBe(true)
