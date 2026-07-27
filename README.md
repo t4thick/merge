@@ -24,3 +24,7 @@ Open http://localhost:3000 (or the port shown in the terminal).
 ## Notes
 
 Private credentials belong in Vercel and `.env.local` only — never commit secrets.
+
+## Deployment
+
+Connected to Vercel via GitHub — pushes to `main` deploy to production automatically.
