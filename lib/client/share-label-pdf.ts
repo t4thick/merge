@@ -15,6 +15,12 @@ export function asPdfFile(blob: Blob, filename: string): File {
   return new File([blob], name, { type: 'application/pdf' })
 }
 
+function bytesToPdfBlob(bytes: Uint8Array): Blob {
+  const copy = new Uint8Array(bytes.byteLength)
+  copy.set(bytes)
+  return new Blob([copy], { type: 'application/pdf' })
+}
+
 export async function pdfFileFromUrl(url: string, filename: string): Promise<File> {
   const res = await fetch(url)
   if (!res.ok) throw new Error('Could not load label PDF.')
@@ -23,7 +29,7 @@ export async function pdfFileFromUrl(url: string, filename: string): Promise<Fil
 
 export async function pdfFileFromBase64(base64: string, filename: string): Promise<File> {
   const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
-  return asPdfFile(new Blob([bytes], { type: 'application/pdf' }), filename)
+  return asPdfFile(bytesToPdfBlob(bytes), filename)
 }
 
 export function isPublicPdfUrl(url: string | null | undefined): url is string {
@@ -48,8 +54,11 @@ export async function sharePdfWithFlashLabel(opts: {
     return 'unsupported'
   }
 
-  const publicUrl = opts.publicUrl?.trim() || ''
-  if (isPublicPdfUrl(publicUrl) || (publicUrl.startsWith('https://') && publicUrl.includes('pdf'))) {
+  const publicUrl = (opts.publicUrl ?? '').trim()
+  const canShareUrl =
+    publicUrl.startsWith('https://') &&
+    (/\.pdf(\?|$)/i.test(publicUrl) || publicUrl.toLowerCase().includes('/pdf') || publicUrl.includes('pdf'))
+  if (canShareUrl) {
     try {
       const urlPayload = { url: publicUrl, title: opts.file.name }
       if (typeof navigator.canShare !== 'function' || navigator.canShare(urlPayload)) {
@@ -149,7 +158,7 @@ export function buildTextLabelPdfFile(
     out.set(p, o)
     o += p.length
   }
-  return asPdfFile(new Blob([out], { type: 'application/pdf' }), filename)
+  return asPdfFile(bytesToPdfBlob(out), filename)
 }
 
 export function canSharePdfFiles(): boolean {
@@ -239,7 +248,7 @@ export async function canvasToPdfFile(
   })
   const jpeg = new Uint8Array(await blob.arrayBuffer())
   const pdf = jpegBytesToPdf(jpeg, canvas.width, canvas.height)
-  return asPdfFile(new Blob([pdf], { type: 'application/pdf' }), filename)
+  return asPdfFile(bytesToPdfBlob(pdf), filename)
 }
 
 /** Upload a client-built PDF so FlashLabel can open a public https PDF link. */
