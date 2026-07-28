@@ -1,8 +1,9 @@
 'use client'
 
-import { Download } from 'lucide-react'
+import { useState } from 'react'
+import { Download, Share2 } from 'lucide-react'
 import { StoreIntegratedShippingPanel } from '@/components/admin/StoreIntegratedShippingPanel'
-import { buttonVariants } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -25,6 +26,12 @@ type Props = {
   initialService?: string | null
 }
 
+function isAbortError(err: unknown): boolean {
+  return err instanceof DOMException
+    ? err.name === 'AbortError'
+    : err instanceof Error && err.name === 'AbortError'
+}
+
 export function FulfillOrderShipping({
   orderId,
   isPickup,
@@ -39,6 +46,41 @@ export function FulfillOrderShipping({
   initialService,
 }: Props) {
   const hasShipment = Boolean(initialTracking || initialLabelUrl)
+  const [sharing, setSharing] = useState(false)
+  const [shareError, setShareError] = useState('')
+
+  async function shareSavedLabel() {
+    if (!initialLabelUrl) return
+    setSharing(true)
+    setShareError('')
+    try {
+      const res = await fetch(initialLabelUrl)
+      if (!res.ok) throw new Error('fetch failed')
+      const blob = await res.blob()
+      const file = new File([blob], `shipping-label-${initialTracking || orderId}.pdf`, {
+        type: 'application/pdf',
+      })
+      const payload = {
+        files: [file],
+        title: 'Shipping label',
+        text: initialTracking ? `Tracking ${initialTracking}` : 'Shipping label PDF',
+      }
+      if (typeof navigator.share !== 'function') {
+        window.open(initialLabelUrl, '_blank', 'noopener,noreferrer')
+        return
+      }
+      if (typeof navigator.canShare === 'function' && !navigator.canShare(payload)) {
+        window.open(initialLabelUrl, '_blank', 'noopener,noreferrer')
+        return
+      }
+      await navigator.share(payload)
+    } catch (err) {
+      if (isAbortError(err)) return
+      setShareError('Could not share. Try Open PDF instead.')
+    } finally {
+      setSharing(false)
+    }
+  }
 
   if (isPickup) {
     return <p className="text-sm text-earth-600">Pickup order — no shipping label needed.</p>
@@ -59,16 +101,27 @@ export function FulfillOrderShipping({
               Tracking: <span className="font-semibold">{initialTracking}</span>
             </p>
           ) : null}
+          {shareError ? (
+            <p className="text-sm font-medium text-red-700" role="alert">
+              {shareError}
+            </p>
+          ) : null}
           {initialLabelUrl ? (
-            <a
-              href={initialLabelUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-            >
-              <Download className="h-4 w-4" aria-hidden />
-              Download saved label PDF
-            </a>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button type="button" size="sm" onClick={() => void shareSavedLabel()} disabled={sharing}>
+                <Share2 className="h-4 w-4" aria-hidden />
+                {sharing ? 'Opening share…' : 'Share PDF'}
+              </Button>
+              <a
+                href={initialLabelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+              >
+                <Download className="h-4 w-4" aria-hidden />
+                Open PDF
+              </a>
+            </div>
           ) : null}
         </div>
       ) : null}

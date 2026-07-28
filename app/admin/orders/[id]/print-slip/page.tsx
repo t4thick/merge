@@ -3,6 +3,8 @@ import { PrintSlipActions } from '@/components/admin/PrintSlipActions'
 import { PrintSlipDocument } from '@/components/admin/PrintSlipDocument'
 import { requireAdminPage } from '@/lib/auth/require-admin-page'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { STORE, storePhonesPlain } from '@/lib/constants/store'
+import { formatOrderNumber } from '@/lib/orders/order-number'
 import './print-slip.css'
 
 export default async function AdminOrderPrintSlipPage({
@@ -38,9 +40,31 @@ export default async function AdminOrderPrintSlipPage({
     )
   }
 
+  const orderLabel = formatOrderNumber(order.order_number) || order.id.slice(0, 8)
+  const cityLine = [
+    order.city,
+    order.state ? `, ${order.state}` : '',
+    order.postal_code ? ` ${order.postal_code}` : '',
+  ]
+    .join('')
+    .trim()
+
+  const sharePayload = {
+    name: order.customer_name,
+    lines: [order.address_line, cityLine, order.country].filter(Boolean),
+    orderLabel,
+    phone: order.customer_phone,
+    shipFromLines: [
+      STORE.name,
+      STORE.shipFrom.street1,
+      `${STORE.shipFrom.city}, ${STORE.shipFrom.state} ${STORE.shipFrom.zip}`,
+      storePhonesPlain(),
+    ],
+  }
+
   return (
     <div className="print-slip-page">
-      <PrintSlipActions orderId={id} autoPrint={print === '1'} />
+      <PrintSlipActions orderId={id} autoPrint={print === '1'} sharePayload={sharePayload} />
       <PrintSlipDocument order={order} items={items ?? []} />
     </div>
   )
