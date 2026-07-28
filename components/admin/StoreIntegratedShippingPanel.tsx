@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { Printer } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { UspsPrintLabelPanel } from '@/components/admin/UspsPrintLabelPanel'
 
 type Props = {
@@ -44,23 +43,13 @@ export function StoreIntegratedShippingPanel({
   }
 
   return (
-    <div className="rounded-xl border border-earth-200 bg-earth-50 px-5 py-6">
+    <div className="rounded-xl border border-earth-200 bg-earth-50 px-5 py-6 text-center">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-earth-100">
         <Printer className="h-6 w-6 text-earth-500" aria-hidden />
       </div>
-      <p className="mt-3 text-center text-sm font-medium text-earth-800">
-        Print labels from Click-N-Ship, then paste tracking on this order.
-      </p>
-      <p className="mt-1 text-center text-xs text-earth-500">
-        Default box: {defaultParcel.weightLb} lb · {defaultParcel.lengthIn}×{defaultParcel.widthIn}×
-        {defaultParcel.heightIn} in
-      </p>
-      <div className="mt-4 flex justify-center">
-        <Button type="button" size="lg" className="h-11 w-full max-w-xs" disabled>
-          Label printing unavailable
-        </Button>
-      </div>
-      <p className="mt-3 text-center">
+      <p className="mt-3 text-sm font-medium text-earth-800">Label printing unavailable</p>
+      <p className="mt-1 text-xs text-earth-500">Add tracking on this order after you ship.</p>
+      <p className="mt-3">
         <Link
           href="/admin/shipping"
           className="text-sm font-medium text-brand-700 no-underline hover:text-brand-800"

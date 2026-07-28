@@ -169,7 +169,7 @@ export function FeedbackForm() {
           maxLength={2000}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="What should we improve? Be specific — page, product, or feature."
+          placeholder="Your feedback"
           className="form-input min-h-[140px] resize-y"
         />
         <p className="mt-1 text-xs text-earth-500">{message.length}/2000</p>

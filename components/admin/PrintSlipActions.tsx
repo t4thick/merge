@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -40,8 +40,6 @@ export function PrintSlipActions({
   autoPrint?: boolean
   sharePayload?: SlipSharePayload
 }) {
-  const [printHint, setPrintHint] = useState(false)
-
   useEffect(() => {
     document.body.classList.add('admin-print-slip-page')
     return () => document.body.classList.remove('admin-print-slip-page')
@@ -49,10 +47,7 @@ export function PrintSlipActions({
 
   useEffect(() => {
     if (!autoPrint) return
-    const t = window.setTimeout(() => {
-      window.print()
-      window.setTimeout(() => setPrintHint(true), 1200)
-    }, 600)
+    const t = window.setTimeout(() => window.print(), 600)
     return () => window.clearTimeout(t)
   }, [autoPrint])
 
@@ -66,16 +61,9 @@ export function PrintSlipActions({
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Back to order
         </Link>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            window.print()
-            setPrintHint(true)
-          }}
-        >
+        <Button type="button" variant="outline" onClick={() => window.print()}>
           <Printer className="mr-1.5 h-4 w-4" aria-hidden />
-          Print slip (office printer)
+          Print
         </Button>
       </div>
 
@@ -87,10 +75,6 @@ export function PrintSlipActions({
           getFile={async () => slipToPdfFile(sharePayload)}
         />
       ) : null}
-
-      {printHint && (
-        <p className="text-sm text-earth-600">No print dialog? Tap Print slip again.</p>
-      )}
     </div>
   )
 }

@@ -145,9 +145,7 @@ export default async function AdminOrderDetailPage({
             <PrintAddressSlipLink orderId={order.id} isPickup={shippingMethod === 'pickup'} />
             <div>
               <h2 className="admin-section-title">Ship this order</h2>
-              <p className="mt-1 text-sm text-earth-500">
-                One-click Shippo label — postage billed to your Shippo account.
-              </p>
+              <p className="mt-1 text-sm text-earth-500">Create a label or add tracking.</p>
               <div className="mt-4">
                 <FulfillOrderShipping
                   orderId={order.id}

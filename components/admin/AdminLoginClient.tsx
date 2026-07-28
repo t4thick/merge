@@ -119,7 +119,7 @@ export function AdminLoginClient({
     if (res.status === 503) {
       setError(
         typeof data.error === 'string'
-          ? `${data.error} If this is a Preview deployment, add ADMIN_PASSWORD for the Preview environment in Vercel.`
+          ? data.error
           : 'Admin login is not configured on this deployment.'
       )
       return
@@ -361,33 +361,9 @@ export function AdminLoginClient({
                     Can&apos;t sign in?
                   </summary>
                   <ul className="mt-2 space-y-1.5 pl-1">
-                    <li>• The password is case-sensitive — check Caps Lock.</li>
-                    {devMode ? (
-                      <>
-                        <li>
-                          • Locally: just click the amber{' '}
-                          <em>&quot;Skip password&quot;</em> button above — no
-                          rate-limit in dev mode.
-                        </li>
-                        <li>
-                          • Or paste this URL in the browser to sign in instantly:{' '}
-                          <code className="rounded bg-earth-100 px-1 py-0.5">
-                            /api/admin/dev-login
-                          </code>
-                        </li>
-                      </>
-                    ) : (
-                      <>
-                        <li>• If you typed it wrong 5 times, you&apos;re locked out for 15 minutes from this device.</li>
-                        <li>• Contact the store owner if you need the password reset.</li>
-                      </>
-                    )}
-                    {devMode && (
-                      <li className="text-amber-700">
-                        • Check the dev terminal — failed logins log a length/first-last-char hint
-                        so you can spot a typo vs. a stale env var.
-                      </li>
-                    )}
+                    <li>• Passwords are case-sensitive.</li>
+                    <li>• After 5 failed attempts, wait 15 minutes and try again.</li>
+                    <li>• Contact the store owner to reset access.</li>
                   </ul>
                 </details>
               </form>

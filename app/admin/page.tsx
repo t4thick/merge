@@ -168,10 +168,10 @@ export default async function AdminDashboard({
     <div className="mx-auto max-w-[1500px] space-y-6 sm:space-y-8">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-xs font-medium text-slate-500">Store operations</p>
-          <h1 className="admin-page-title mt-1">Overview</h1>
+          <p className="text-xs font-medium text-slate-500">Overview</p>
+          <h1 className="admin-page-title mt-1">Dashboard</h1>
           <p className="mt-1.5 text-sm text-slate-500">
-            Sales, fulfillment, inventory, and customer activity in one place.
+            Sales, fulfillment, and inventory.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -193,11 +193,11 @@ export default async function AdminDashboard({
       <section className="admin-card p-0 sm:p-0">
         <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="admin-section-title">Tasks to complete</h2>
-            <p className="mt-0.5 text-xs text-slate-500">Daily actions that need attention.</p>
+            <h2 className="admin-section-title">Needs attention</h2>
+            <p className="mt-0.5 text-xs text-slate-500">Open work across the store.</p>
           </div>
           <span className="inline-flex w-fit items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-            Live
+            Today
           </span>
         </div>
         <div className="grid grid-cols-2 xl:grid-cols-4">

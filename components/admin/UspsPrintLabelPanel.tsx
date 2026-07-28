@@ -131,7 +131,7 @@ export function UspsPrintLabelPanel({
       <div>
         <p className="text-base font-semibold text-earth-900">Create shipping label</p>
         <p className="mt-0.5 text-sm text-earth-500">
-          {mailClass.replace(/_/g, ' ')} via Shippo · then download PDF into FlashLabel Pro
+          {mailClass.replace(/_/g, ' ')}
         </p>
       </div>
 

@@ -21,7 +21,7 @@ export default async function AdminShippingPage() {
           Shipping
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-earth-600">
-          Print labels from each order page. Tracking is saved on the order automatically.
+          Label printing and ship-from address for fulfillment.
         </p>
       </div>
 
@@ -29,8 +29,8 @@ export default async function AdminShippingPage() {
         <h2 className="admin-section-title">Label printing</h2>
         <p className="mt-2 text-sm text-earth-700">
           {activeProvider
-            ? `Active: ${activeProvider}. Open any shipped order to print a label.`
-            : 'Label printing is not connected. Use Click-N-Ship and paste tracking on the order.'}
+            ? `Provider: ${activeProvider}`
+            : 'Label printing is not configured.'}
         </p>
       </section>
 
@@ -48,14 +48,14 @@ export default async function AdminShippingPage() {
             </p>
           </div>
         ) : (
-          <p className="mt-2 text-sm text-earth-600">Store ship-from address is not set.</p>
+          <p className="mt-2 text-sm text-earth-600">Ship-from address is not set.</p>
         )}
         <p className="mt-4">
           <Link
             href="/admin/orders?queue=needs_action"
             className="text-sm font-medium text-brand-700 no-underline hover:underline"
           >
-            Go to orders needing action →
+            Orders needing action →
           </Link>
         </p>
       </section>

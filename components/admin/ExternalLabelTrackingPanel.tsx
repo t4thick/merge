@@ -13,17 +13,15 @@ const PROVIDER = {
     name: 'USPS Click-N-Ship',
     href: 'https://cns.usps.com/label-manager/new-label/shipping-info',
     openLabel: 'Open Click-N-Ship',
-    trackingLabel: 'USPS tracking number',
-    note: 'Tracking added — label from USPS Click-N-Ship',
-    step2: 'Buy and print the label in USPS Click-N-Ship (your business rates).',
+    trackingLabel: 'Tracking number',
+    note: 'Tracking added — USPS Click-N-Ship',
   },
   shippo: {
     name: 'Shippo',
     href: 'https://apps.goshippo.com/',
     openLabel: 'Open Shippo',
     trackingLabel: 'Tracking number',
-    note: 'Tracking added — label from Shippo',
-    step2: 'Create the label in Shippo (USPS Ground Advantage or your carrier).',
+    note: 'Tracking added — Shippo',
   },
 } as const
 
@@ -83,12 +81,6 @@ export function ExternalLabelTrackingPanel({
 
   return (
     <div className="space-y-4">
-      <ol className="list-inside list-decimal space-y-1.5 text-sm text-earth-600">
-        <li>Print the packing slip from this order (button above).</li>
-        <li>{cfg.step2}</li>
-        <li>Paste tracking below → save and mark shipped.</li>
-      </ol>
-
       <a
         href={cfg.href}
         target="_blank"
@@ -109,7 +101,7 @@ export function ExternalLabelTrackingPanel({
             type="text"
             value={tracking}
             onChange={(e) => setTracking(e.target.value)}
-            placeholder="9400 1000 0000 0000 0000 00"
+            placeholder="Tracking number"
             className="font-mono text-sm"
             autoComplete="off"
           />
@@ -122,7 +114,7 @@ export function ExternalLabelTrackingPanel({
         {saved ? (
           <p className="inline-flex items-center gap-1 text-sm font-medium text-emerald-700">
             <Check className="h-4 w-4" aria-hidden />
-            Saved — customer can track this order
+            Tracking saved
           </p>
         ) : null}
         <Button type="submit" disabled={loading || (!dirty && Boolean(initialTracking))}>

@@ -297,7 +297,7 @@ export function ProductForm({ initialData, productId }: Props) {
       <div className="space-y-1.5">
         <label className="form-label">
           Extra photos
-          <span className="ml-1.5 font-normal text-earth-400">(optional — customers can swipe through these)</span>
+          <span className="ml-1.5 font-normal text-earth-400">(optional)</span>
         </label>
         <div className="flex flex-wrap gap-2">
           {form.image_urls.map((url, i) => (

@@ -107,7 +107,7 @@ export function OrderStatusUpdater({
 
       <div className="space-y-1.5">
         <label className="form-label" htmlFor="note">
-          Note (optional, recorded in audit log)
+          Note (optional)
         </label>
         <textarea
           id="note"

@@ -38,7 +38,7 @@ export function PrintSlipDocument({ order, items }: Props) {
   return (
     <article className="print-slip-doc mx-auto max-w-lg bg-white p-6 text-black sm:p-8">
       <p className="text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
-        Attach to package · pay postage at USPS or UPS
+        Shipping label
       </p>
 
       <div className="mt-4 rounded-lg border-2 border-black p-5">
