@@ -5,6 +5,7 @@ import { assertSameOrigin } from '@/lib/security/same-origin'
 import { applyUspsLabelToOrder } from '@/lib/shipping/apply-usps-label'
 import { getDefaultParcel, getShipFromAddress } from '@/lib/shipping/label-config'
 import { isShippoConfigured, createShippoDomesticLabel, type ShippoLabelResult } from '@/lib/shipping/shippo-client'
+import { ensureShippoTrackWebhook } from '@/lib/shipping/shippo-webhooks'
 import { createUspsDomesticLabel } from '@/lib/shipping/usps-client'
 import { isUspsConfigured } from '@/lib/shipping/usps-config'
 import { supabaseAdmin } from '@/lib/supabase-admin'
@@ -97,6 +98,13 @@ export async function POST(
     const applied = await applyUspsLabelToOrder(id, label, { provider })
     if (!applied.ok) {
       return NextResponse.json({ error: applied.error }, { status: 500 })
+    }
+
+    if (provider === 'shippo') {
+      // Best-effort: register track_updated webhook so Delivered updates flow back.
+      void ensureShippoTrackWebhook().catch((err) => {
+        console.error('[shippo] webhook ensure after label failed:', err)
+      })
     }
 
     return NextResponse.json({

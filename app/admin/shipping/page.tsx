@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import { Truck } from 'lucide-react'
 import { requireAdminPage } from '@/lib/auth/require-admin-page'
+import { ShippoTrackingConnect } from '@/components/admin/ShippoTrackingConnect'
 import { getShippingLabelConfigPublic } from '@/lib/shipping/label-config'
 import { isShippoConfigured, isUspsLabelsLive } from '@/lib/shipping/admin-ship-methods'
+import { isShippoTestMode } from '@/lib/shipping/shippo-client'
+import { getShippoTrackWebhookUrl } from '@/lib/shipping/shippo-webhooks'
 import { getUspsConfigPublic } from '@/lib/shipping/usps-config'
 
 export default async function AdminShippingPage() {
@@ -33,6 +36,14 @@ export default async function AdminShippingPage() {
             : 'Label printing is unavailable.'}
         </p>
       </section>
+
+      {shippoReady ? (
+        <ShippoTrackingConnect
+          configured={shippoReady}
+          testMode={isShippoTestMode()}
+          webhookUrl={getShippoTrackWebhookUrl()}
+        />
+      ) : null}
 
       <section className="admin-card">
         <h2 className="admin-section-title">Ship-from address</h2>

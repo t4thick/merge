@@ -19,15 +19,24 @@ export function isShippoConfigured(): boolean {
   return Boolean(process.env.SHIPPO_API_TOKEN?.trim())
 }
 
-async function shippoPost<T>(path: string, body: unknown): Promise<T> {
+export function isShippoTestMode(): boolean {
+  const token = process.env.SHIPPO_API_TOKEN?.trim() ?? ''
+  return token.startsWith('shippo_test_')
+}
+
+async function shippoRequest<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
   const res = await fetch(`https://api.goshippo.com${path}`, {
-    method: 'POST',
+    method,
     headers: {
       Authorization: `ShippoToken ${getToken()}`,
-      'Content-Type': 'application/json',
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
     },
-    body: JSON.stringify(body),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   })
+
+  if (res.status === 204) {
+    return undefined as T
+  }
 
   const json = (await res.json()) as T & { message?: string; detail?: string }
 
@@ -40,6 +49,14 @@ async function shippoPost<T>(path: string, body: unknown): Promise<T> {
   }
 
   return json
+}
+
+export async function shippoPost<T>(path: string, body: unknown): Promise<T> {
+  return shippoRequest<T>('POST', path, body)
+}
+
+export async function shippoGet<T>(path: string): Promise<T> {
+  return shippoRequest<T>('GET', path)
 }
 
 export async function getShippoDomesticRate(input: {
