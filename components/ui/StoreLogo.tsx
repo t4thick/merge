@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ShoppingBasket } from 'lucide-react'
+import Image from 'next/image'
 import { STORE } from '@/lib/constants/store'
 import { cn } from '@/lib/utils'
 
@@ -12,22 +12,19 @@ type StoreLogoProps = {
 
 const SIZES = {
   nav: {
-    badge: 'h-8 w-8 rounded-[9px]',
-    icon: 'h-4 w-4',
+    mark: 32,
     name: 'text-[22px] sm:text-[25px]',
     sub: 'text-[7.5px] tracking-[0.28em] sm:text-[8.5px]',
     tagline: false,
   },
   mark: {
-    badge: 'h-10 w-10 rounded-xl',
-    icon: 'h-5 w-5',
+    mark: 40,
     name: 'text-[28px]',
     sub: 'text-[9px] tracking-[0.28em]',
     tagline: false,
   },
   footer: {
-    badge: 'h-11 w-11 rounded-xl',
-    icon: 'h-5 w-5',
+    mark: 44,
     name: 'text-[26px]',
     sub: 'text-[9px] tracking-[0.28em]',
     tagline: true,
@@ -35,23 +32,20 @@ const SIZES = {
 } as const
 
 /**
- * Brand mark (basket glyph, inline SVG via lucide — no image request) + Syne
- * wordmark with a Montserrat descriptor. Stays legible at nav size; product
- * photography carries the rest of the visual character.
+ * Brand mark (Kintampo K) + Syne wordmark with Montserrat descriptor.
  */
 function Lockup({ variant }: { variant: keyof typeof SIZES }) {
   const s = SIZES[variant]
   return (
     <span className="inline-flex items-center gap-2.5">
-      <span
-        className={cn(
-          'inline-flex shrink-0 items-center justify-center bg-brand-600',
-          s.badge
-        )}
-        aria-hidden
-      >
-        <ShoppingBasket className={cn(s.icon, 'text-white')} strokeWidth={2.25} />
-      </span>
+      <Image
+        src="/brand/logo-mark.png"
+        alt=""
+        width={s.mark}
+        height={s.mark}
+        className="shrink-0 rounded-[9px]"
+        priority={variant === 'nav'}
+      />
       <span className="inline-flex flex-col">
         <span className={cn('wordmark leading-[0.9]', s.name, 'text-earth-900')}>
           Kintampo<span className="text-brand-600">.</span>
