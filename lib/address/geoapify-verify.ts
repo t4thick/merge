@@ -78,7 +78,7 @@ export async function verifyUsAddressGeoapify(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const key = apiKey()
   if (!key) {
-    return { ok: false, error: 'Geoapify is not configured.' }
+    return { ok: false, error: 'Address verification is temporarily unavailable.' }
   }
 
   const line1 = input.line1.trim()

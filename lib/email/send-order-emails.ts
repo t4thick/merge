@@ -214,7 +214,6 @@ function merchantHtml(order: OrderRowForEmail, items: AuthoritativeOrderItem[]):
     <p style="margin:20px 0 0;">
       <a href="${adminUrl.startsWith('http') ? adminUrl : '#'}" style="display:inline-block;background:#0f3d2e;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;">Open in admin</a>
     </p>
-    ${!base ? `<p style="font-size:12px;color:#888;">Set NEXT_PUBLIC_SITE_URL for working links in email.</p>` : ''}
   </div>
 </body></html>`
 }

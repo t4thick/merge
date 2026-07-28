@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   if (!originCheck.ok) return originCheck.response
 
   if (!isUspsAddressApiConfigured()) {
-    return NextResponse.json({ error: 'USPS address API is not configured.' }, { status: 503 })
+    return NextResponse.json({ error: 'Address lookup is temporarily unavailable.' }, { status: 503 })
   }
 
   const zip =

@@ -157,7 +157,7 @@ function inputsMatch(a: AddressInput, b: ParsedAddress): boolean {
 export async function verifyUsAddressUsps(input: AddressInput): Promise<UspsAddressVerifyResult> {
   const creds = getUspsOAuthCredentials()
   if (!creds) {
-    return { ok: false, error: 'USPS address API is not configured.', corrections: [], warnings: [] }
+    return { ok: false, error: 'Address verification is temporarily unavailable.', corrections: [], warnings: [] }
   }
 
   const state = normalizeUsStateCode(input.state)

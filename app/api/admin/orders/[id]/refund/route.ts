@@ -17,7 +17,7 @@ export async function POST(
 
   const secret = process.env.STRIPE_SECRET_KEY
   if (!secret) {
-    return NextResponse.json({ error: 'STRIPE_SECRET_KEY is not configured.' }, { status: 500 })
+    return NextResponse.json({ error: 'Refunds are temporarily unavailable.' }, { status: 500 })
   }
   const stripe = new Stripe(secret)
 

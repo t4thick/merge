@@ -45,7 +45,7 @@ async function uspsAddressesFetch(
 ): Promise<{ ok: true; data: unknown } | { ok: false; error: string }> {
   const creds = getUspsOAuthCredentials()
   if (!creds) {
-    return { ok: false, error: 'USPS address API is not configured.' }
+    return { ok: false, error: 'Address lookup is temporarily unavailable.' }
   }
 
   try {

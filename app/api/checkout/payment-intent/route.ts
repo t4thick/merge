@@ -245,9 +245,7 @@ export async function POST(req: NextRequest) {
     if (secretAcct && publishableAcct && secretAcct !== publishableAcct) {
       return NextResponse.json(
         {
-          error:
-            'Stripe key mismatch: STRIPE_SECRET_KEY and NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY are from different Stripe accounts. ' +
-            'Copy both keys from the SAME account at dashboard.stripe.com/test/apikeys.',
+          error: 'Online payments are temporarily unavailable. Please try again shortly or contact the store.',
         },
         { status: 503 },
       )
@@ -285,7 +283,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: missingTable
-            ? 'Checkout is not fully set up yet. The store database is missing the checkout_snapshots table — contact support or retry in a few minutes.'
+            ? 'Checkout is temporarily unavailable. Please try again shortly or contact the store.'
             : 'Could not prepare checkout.',
         },
         { status: 500 }

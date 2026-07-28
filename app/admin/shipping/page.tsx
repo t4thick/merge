@@ -30,7 +30,7 @@ export default async function AdminShippingPage() {
         <p className="mt-2 text-sm text-earth-700">
           {activeProvider
             ? `Provider: ${activeProvider}`
-            : 'Label printing is not configured.'}
+            : 'Label printing is unavailable.'}
         </p>
       </section>
 

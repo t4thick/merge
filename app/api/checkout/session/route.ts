@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
 
     const stripeKey = process.env.STRIPE_SECRET_KEY?.trim()
     if (!stripeKey) {
-      return NextResponse.json({ error: 'Payments are not configured (STRIPE_SECRET_KEY).' }, { status: 503 })
+      return NextResponse.json({ error: 'Online payments are temporarily unavailable.' }, { status: 503 })
     }
 
     const stripe = getStripe()
