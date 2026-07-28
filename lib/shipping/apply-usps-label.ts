@@ -19,10 +19,19 @@ async function uploadLabelPdf(orderId: string, trackingNumber: string, pdf: Buff
   return data.publicUrl ?? null
 }
 
+export type ApplyLabelOptions = {
+  /** Label broker used for purchase (affects admin notes only). */
+  provider?: 'shippo' | 'usps'
+}
+
 export async function applyUspsLabelToOrder(
   orderId: string,
-  label: UspsLabelResult
-): Promise<{ ok: true; labelUrl: string | null } | { ok: false; error: string }> {
+  label: UspsLabelResult,
+  options: ApplyLabelOptions = {}
+): Promise<
+  | { ok: true; labelUrl: string | null; customerNotified: boolean }
+  | { ok: false; error: string }
+> {
   const { data: order, error: fetchErr } = await supabaseAdmin
     .from('orders')
     .select(
@@ -46,8 +55,16 @@ export async function applyUspsLabelToOrder(
 
   const labelUrl = await uploadLabelPdf(orderId, label.trackingNumber, label.pdf)
   const fromStatus = normalizeOrderStatus(order.status)
-  const toStatus = fromStatus === 'ordered' || fromStatus === 'processing' ? 'shipped' : fromStatus
+  // Buying a label means the package is going out — move to shipped unless already past that.
+  const toStatus =
+    fromStatus === 'shipped' ||
+    fromStatus === 'out_for_delivery' ||
+    fromStatus === 'delivered' ||
+    fromStatus === 'cancelled'
+      ? fromStatus
+      : 'shipped'
   const nowIso = new Date().toISOString()
+  const providerLabel = options.provider === 'shippo' ? 'Shippo' : 'USPS'
 
   const updatePayload: Record<string, unknown> = {
     tracking_number: label.trackingNumber,
@@ -78,7 +95,7 @@ export async function applyUspsLabelToOrder(
     return { ok: false, error: updateResult.error.message }
   }
 
-  const note = `USPS ${label.mailClass.replace(/_/g, ' ')} — $${label.postage.toFixed(2)} · Tracking: ${label.trackingNumber}`
+  const note = `${providerLabel} ${label.mailClass.replace(/_/g, ' ')} — $${label.postage.toFixed(2)} · Tracking: ${label.trackingNumber}`
 
   await supabaseAdmin.from('order_status_logs').insert({
     order_id: orderId,
@@ -88,6 +105,7 @@ export async function applyUspsLabelToOrder(
     note,
   })
 
+  let customerNotified = false
   if (fromStatus !== toStatus && order.customer_email) {
     try {
       await sendOrderStatusEmail(
@@ -98,14 +116,16 @@ export async function applyUspsLabelToOrder(
           customer_email: order.customer_email,
           total_amount: Number(order.total_amount ?? 0),
           tracking_number: label.trackingNumber,
+          shipping_method: order.shipping_method ?? null,
         },
         toStatus,
         note
       )
+      customerNotified = true
     } catch (e) {
       console.error('[applyUspsLabel] status email failed:', e)
     }
   }
 
-  return { ok: true, labelUrl }
+  return { ok: true, labelUrl, customerNotified }
 }

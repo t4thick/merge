@@ -36,6 +36,7 @@ export function UspsPrintLabelPanel({
   const [tracking, setTracking] = useState(initialTracking ?? '')
   const [pdfBase64, setPdfBase64] = useState<string | null>(null)
   const [postage, setPostage] = useState<number | null>(null)
+  const [customerNotified, setCustomerNotified] = useState(false)
   const [estimate, setEstimate] = useState<{ price: number; description: string } | null>(null)
   const [rateError, setRateError] = useState('')
   const [rateLoading, setRateLoading] = useState(false)
@@ -96,6 +97,7 @@ export function UspsPrintLabelPanel({
 
       setTracking(typeof data.trackingNumber === 'string' ? data.trackingNumber : '')
       setPostage(typeof data.postage === 'number' ? data.postage : null)
+      setCustomerNotified(data.customerNotified === true)
       if (typeof data.labelUrl === 'string') setLabelUrl(data.labelUrl)
       if (typeof data.labelPdfBase64 === 'string') setPdfBase64(data.labelPdfBase64)
       router.refresh()
@@ -114,6 +116,9 @@ export function UspsPrintLabelPanel({
             Tracking: <span className="font-semibold">{tracking}</span>
           </p>
         ) : null}
+        {customerNotified ? (
+          <p className="text-sm text-emerald-800">Customer emailed with tracking.</p>
+        ) : null}
         <FlashLabelPdfActions
           orderId={orderId}
           labelUrl={labelUrl}
@@ -131,7 +136,7 @@ export function UspsPrintLabelPanel({
       <div>
         <p className="text-base font-semibold text-earth-900">Create shipping label</p>
         <p className="mt-0.5 text-sm text-earth-500">
-          {mailClass.replace(/_/g, ' ')}
+          {mailClass.replace(/_/g, ' ')} · Marks order shipped and emails the customer with tracking
         </p>
       </div>
 

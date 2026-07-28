@@ -94,8 +94,12 @@ export async function createShippoDomesticLabel(input: {
     city: string
     state: string
     zip: string
+    email?: string | null
+    phone?: string | null
   }
   parcel: DefaultParcel
+  /** Shown in Shippo dashboard / packing references (e.g. LQ-1042). */
+  orderReference?: string | null
 }): Promise<ShippoLabelResult> {
   type TransactionResponse = {
     tracking_number?: string
@@ -109,7 +113,12 @@ export async function createShippoDomesticLabel(input: {
     }
   }
 
-  // First create a shipment to get live rates, then purchase the cheapest USPS ground rate
+  const toEmail = input.to.email?.trim() || undefined
+  const toPhone = input.to.phone?.trim() || undefined
+  const orderRef = input.orderReference?.trim() || undefined
+
+  // First create a shipment to get live rates, then purchase the cheapest USPS ground rate.
+  // Recipient email is required for Shippo's optional tracking emails (if enabled in Shippo).
   const shipment = await shippoPost<{
     object_id?: string
     rates?: Array<{
@@ -137,6 +146,8 @@ export async function createShippoDomesticLabel(input: {
       state: input.to.state,
       zip: input.to.zip,
       country: 'US',
+      ...(toEmail ? { email: toEmail } : {}),
+      ...(toPhone ? { phone: toPhone } : {}),
     },
     parcels: [
       {
@@ -148,6 +159,12 @@ export async function createShippoDomesticLabel(input: {
         mass_unit: 'lb',
       },
     ],
+    ...(orderRef
+      ? {
+          metadata: orderRef,
+          extra: { reference_1: orderRef },
+        }
+      : {}),
     async: false,
   })
 

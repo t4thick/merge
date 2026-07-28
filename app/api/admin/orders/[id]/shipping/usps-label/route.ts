@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminApi } from '@/lib/auth/require-admin-api'
+import { formatOrderNumber } from '@/lib/orders/order-number'
 import { assertSameOrigin } from '@/lib/security/same-origin'
 import { applyUspsLabelToOrder } from '@/lib/shipping/apply-usps-label'
 import { getDefaultParcel, getShipFromAddress } from '@/lib/shipping/label-config'
@@ -53,7 +54,7 @@ export async function POST(
     const { data: order, error } = await supabaseAdmin
       .from('orders')
       .select(
-        'id, customer_name, address_line, city, state, postal_code, country, shipping_method'
+        'id, order_number, customer_name, customer_email, customer_phone, address_line, city, state, postal_code, country, shipping_method'
       )
       .eq('id', id)
       .single()
@@ -66,23 +67,34 @@ export async function POST(
       return NextResponse.json({ error: 'Pickup orders do not need a label.' }, { status: 400 })
     }
 
+    const orderReference =
+      typeof order.order_number === 'number' ? formatOrderNumber(order.order_number) : id.slice(0, 8)
+
     const to = {
       name: order.customer_name ?? 'Customer',
       street1: order.address_line ?? '',
       city: order.city ?? '',
       state: order.state ?? '',
       zip: order.postal_code ?? '',
+      email: order.customer_email ?? null,
+      phone: order.customer_phone ?? null,
     }
 
     let label: ShippoLabelResult | Awaited<ReturnType<typeof createUspsDomesticLabel>>
+    const provider: 'shippo' | 'usps' = useShippo ? 'shippo' : 'usps'
 
     if (useShippo) {
-      label = await createShippoDomesticLabel({ from, to, parcel })
+      label = await createShippoDomesticLabel({
+        from,
+        to,
+        parcel,
+        orderReference,
+      })
     } else {
       label = await createUspsDomesticLabel({ from, to, parcel })
     }
 
-    const applied = await applyUspsLabelToOrder(id, label)
+    const applied = await applyUspsLabelToOrder(id, label, { provider })
     if (!applied.ok) {
       return NextResponse.json({ error: applied.error }, { status: 500 })
     }
@@ -94,7 +106,8 @@ export async function POST(
       mailClass: label.mailClass,
       labelUrl: applied.labelUrl,
       labelPdfBase64: label.pdf.toString('base64'),
-      provider: useShippo ? 'shippo' : 'usps',
+      provider,
+      customerNotified: applied.customerNotified,
     })
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Could not create shipping label.'
