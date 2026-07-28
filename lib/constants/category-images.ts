@@ -24,7 +24,8 @@ function localCategoryImage(filenames: readonly string[], minBytes = 10_000): st
 }
 
 function categoryLocalFiles(slug: string): readonly string[] {
-  return [`${slug}.jpg`, `${slug}.webp`, `${slug}.png`] as const
+  // Prefer png/webp so freshly uploaded photos win over older jpg placeholders.
+  return [`${slug}.png`, `${slug}.webp`, `${slug}.jpg`] as const
 }
 
 const CATEGORY_SLUG: Record<string, string> = {
