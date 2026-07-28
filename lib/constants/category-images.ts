@@ -1,56 +1,32 @@
-import { existsSync, statSync } from 'fs'
-import path from 'path'
-
 // Remote fallbacks: 960px source for sharp tiles on retina.
 const U = (cdnId: string) =>
   `https://images.unsplash.com/${cdnId}?w=960&h=960&fit=crop&q=90&auto=format`
 
 const LOCAL = (filename: string) => `/images/categories/${filename}`
 
-const CATEGORIES_DIR = path.join(process.cwd(), 'public', 'images', 'categories')
-
-function localCategoryImage(filenames: readonly string[], minBytes = 10_000): string | null {
-  for (const file of filenames) {
-    const localPath = path.join(CATEGORIES_DIR, file)
-    try {
-      if (existsSync(localPath) && statSync(localPath).size >= minBytes) {
-        return LOCAL(file)
-      }
-    } catch {
-      /* try next */
-    }
-  }
-  return null
+/**
+ * Explicit public/ assets — do NOT probe the filesystem at runtime.
+ * On Vercel, `public/` is not always readable via fs in server components,
+ * so existsSync wrongly fell back to Unsplash and hid uploaded photos.
+ */
+const CATEGORY_LOCAL: Partial<Record<string, string>> = {
+  Beverages: LOCAL('beverages.png'),
+  Bread: LOCAL('bread.png'),
+  Canned: LOCAL('canned.jpg'),
+  'Caribbean product': LOCAL('caribbean-product.jpg'),
+  Cosmetics: LOCAL('cosmetics.jpg'),
+  'Dairy And Tea': LOCAL('dairy-and-tea.png'),
+  'Flours & Rice': LOCAL('flours-rice.jpg'),
+  'Fresh Produce': LOCAL('fresh-produce.jpg'),
+  'Frozen foods': LOCAL('frozen-foods.jpg'),
+  'Meat and Seafood': LOCAL('meat-seafood.jpg'),
+  Motherland: LOCAL('motherland.png'),
+  'Non food': LOCAL('non-food.png'),
+  Snack: LOCAL('snack.jpg'),
+  Spices: LOCAL('spices.jpg'),
 }
 
-function categoryLocalFiles(slug: string): readonly string[] {
-  // Prefer png/webp so freshly uploaded photos win over older jpg placeholders.
-  return [`${slug}.png`, `${slug}.webp`, `${slug}.jpg`] as const
-}
-
-const CATEGORY_SLUG: Record<string, string> = {
-  'African Prints': 'african-prints',
-  Alcohol: 'alcohol',
-  Beverages: 'beverages',
-  Bread: 'bread',
-  Canned: 'canned',
-  'Caribbean product': 'caribbean-product',
-  Cosmetics: 'cosmetics',
-  'Dairy And Tea': 'dairy-and-tea',
-  'Flours & Rice': 'flours-rice',
-  'Fresh Produce': 'fresh-produce',
-  'Frozen foods': 'frozen-foods',
-  'Hair & Braiding': 'hair-braiding',
-  Lace: 'lace',
-  'Meat and Seafood': 'meat-seafood',
-  Motherland: 'motherland',
-  'Non food': 'non-food',
-  'Ready-to-wear': 'ready-to-wear',
-  Snack: 'snack',
-  Spices: 'spices',
-}
-
-/** Remote fallbacks when local files are missing */
+/** Remote fallbacks when no local asset is listed above */
 const CATEGORY_REMOTE: Record<string, string> = {
   'African Prints': U('photo-1586495777744-4413f21067fa'),
   Alcohol: U('photo-1510812431401-41d2bd2722f3'),
@@ -76,14 +52,8 @@ const CATEGORY_REMOTE: Record<string, string> = {
 /** @deprecated Use getCategoryImage — kept for any direct imports */
 export const CATEGORY_IMAGES: Record<string, string> = { ...CATEGORY_REMOTE }
 
-function resolveCategoryImage(category: string, minBytes = 10_000): string | undefined {
-  const slug = CATEGORY_SLUG[category]
-  const remote = CATEGORY_REMOTE[category]
-  if (!slug || !remote) return undefined
-
-  const local = localCategoryImage(categoryLocalFiles(slug), minBytes)
-
-  return local ?? remote
+function resolveCategoryImage(category: string): string | undefined {
+  return CATEGORY_LOCAL[category] ?? CATEGORY_REMOTE[category]
 }
 
 export function getCategoryImage(category: string): string | undefined {
