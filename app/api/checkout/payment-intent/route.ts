@@ -225,7 +225,7 @@ export async function POST(req: NextRequest) {
     const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim()
     if (!publishableKey) {
       return NextResponse.json(
-        { error: 'Payments are not configured: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is missing. Set it in .env.local and on Vercel.' },
+        { error: 'Online payments are temporarily unavailable. Please contact the store to complete your order.' },
         { status: 503 },
       )
     }

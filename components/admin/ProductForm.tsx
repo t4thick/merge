@@ -161,7 +161,7 @@ export function ProductForm({ initialData, productId }: Props) {
           id="name"
           required
           maxLength={200}
-          placeholder="e.g. Golden Tropics Plantain Fufu 700g"
+          placeholder="Product name"
           value={form.name}
           onChange={(e) => update('name', e.target.value)}
         />
@@ -179,7 +179,7 @@ export function ProductForm({ initialData, productId }: Props) {
           rows={4}
           maxLength={5000}
           className="form-input"
-          placeholder="e.g. Ready-to-cook fufu flour for smooth, stretchy fufu. Serve with soup or stew. Great for making pounded yam swallow."
+          placeholder="Short product description"
           value={form.description}
           onChange={(e) => update('description', e.target.value)}
         />

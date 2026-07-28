@@ -747,14 +747,12 @@ export function CheckoutClient({
                       name="pickupName"
                       value={form.pickupName}
                       onChange={handleChange}
-                      placeholder={`e.g. ${form.name || 'a friend'} or "Uber driver"`}
+                      placeholder="Name of person picking up"
                       autoComplete="off"
                       maxLength={120}
                     />
                     <p className="mt-2 text-xs leading-relaxed text-earth-500">
-                      Sending an Uber, DoorDash, or a friend? Pay now and have them show your
-                      order number at the counter — we&apos;ll email you the moment it&apos;s
-                      ready.
+                      Optional — if someone else is collecting the order.
                     </p>
                   </div>
                 </div>

@@ -73,7 +73,7 @@ export function BulkDescriptionEditor({ products }: { products: Product[] }) {
             <textarea
               rows={3}
               className="form-input w-full text-sm"
-              placeholder={`Describe ${product.name} — ingredients, weight, origin, how to use…`}
+              placeholder={`Describe ${product.name}`}
               value={descriptions[product.id] ?? ''}
               onChange={(e) => setDescriptions((d) => ({ ...d, [product.id]: e.target.value }))}
               maxLength={5000}

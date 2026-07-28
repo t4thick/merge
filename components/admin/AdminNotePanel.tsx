@@ -53,7 +53,7 @@ export function AdminNotePanel({
       <textarea
         rows={3}
         className="form-input w-full"
-        placeholder="e.g. Customer called — wants express delivery next time"
+        placeholder="Internal note"
         value={note}
         onChange={(e) => setNote(e.target.value)}
         maxLength={500}

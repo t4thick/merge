@@ -14,7 +14,7 @@ export function friendlyShippingError(raw: string | null | undefined): string {
     return 'USPS could not confirm this address for delivery. Double-check the street number and apartment/suite, or use the suggested format below.'
   }
   if (lower.includes('standardized') || lower.includes('suggested')) {
-    return 'USPS has a standardized version of this address. Tap “Use suggested address” to continue.'
+    return 'USPS has a standardized version of this address. Use the suggested address to continue.'
   }
   if (lower.includes('deliverable') || lower.includes('undeliverable')) {
     return 'This address may not receive USPS delivery. Try a different address or choose Store Pickup if you are in Columbus.'

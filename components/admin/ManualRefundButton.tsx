@@ -63,7 +63,7 @@ export function ManualRefundButton({
         <input
           type="text"
           className="form-input"
-          placeholder="e.g. Cash returned in store"
+          placeholder="Reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           maxLength={200}

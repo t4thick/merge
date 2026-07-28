@@ -99,7 +99,7 @@ export function OrderStatusUpdater({
               type="text"
               value={tracking}
               onChange={(e) => setTracking(e.target.value)}
-              placeholder="e.g. LQAM-2026-00124"
+              placeholder="Tracking number"
             />
           </div>
         )}

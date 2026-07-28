@@ -27,7 +27,7 @@ export async function POST(
     return NextResponse.json(
       {
         error:
-          'No shipping provider configured. Add SHIPPO_API_TOKEN (recommended) or USPS API credentials in Vercel.',
+          'Shipping labels are not available right now. Add tracking after you ship, or contact support.',
       },
       { status: 503 }
     )

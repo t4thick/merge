@@ -136,7 +136,7 @@ export default function AuthConfirmPage() {
       subtitle={
         step === 'password'
           ? 'Choose a strong new password.'
-          : 'Tap Continue. This stops email scanners from using your link first.'
+          : 'Continue to confirm this link.'
       }
     >
       {!hasParams ? (

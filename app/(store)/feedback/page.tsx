@@ -18,7 +18,7 @@ export default function FeedbackPage() {
       <PageHeader
         eyebrow="Help us improve"
         title="Website feedback"
-        subtitle="Suggestions for the online store only — not for placing or changing orders."
+        subtitle="Suggestions for the website."
       />
       <div className="store-container max-w-xl py-8 sm:py-10">
         <div className="rounded-xl border border-earth-200 bg-white p-5 shadow-[var(--shadow-card)] sm:p-6">

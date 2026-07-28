@@ -158,7 +158,7 @@ export function TrackOrderClient() {
       <PageHeader
         eyebrow="Orders"
         title="Track your order"
-        subtitle="Enter your order number and checkout email. Signed-in customers can also search by email only."
+        subtitle="Enter your order number and checkout email."
       />
 
       <div className="store-container py-8 sm:py-10">

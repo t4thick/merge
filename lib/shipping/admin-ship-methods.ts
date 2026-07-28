@@ -9,19 +9,19 @@ export const ADMIN_SHIP_METHODS: {
   {
     id: 'click-n-ship',
     title: 'USPS Click-N-Ship',
-    subtitle: 'Your USPS business account · paste tracking',
+    subtitle: 'Buy labels, then add tracking here',
     badge: 'ready',
   },
   {
     id: 'shippo',
     title: 'Shippo',
-    subtitle: 'Discounted labels · paste tracking',
+    subtitle: 'Buy labels, then add tracking here',
     badge: 'ready',
   },
   {
     id: 'integrated',
     title: 'Print in admin',
-    subtitle: 'One-click Shippo label',
+    subtitle: 'Create and download labels here',
     badge: 'ready',
   },
 ]

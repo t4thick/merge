@@ -156,7 +156,7 @@ export function ProductReviews({ productId }: { productId: string }) {
               <input
                 type="text"
                 className="form-input w-full"
-                placeholder="e.g. Amma"
+                placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={60}

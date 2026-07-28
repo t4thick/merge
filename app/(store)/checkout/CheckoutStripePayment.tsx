@@ -265,11 +265,10 @@ export function CheckoutStripePayment({ clientSecret, returnUrl, totalLabel }: P
     return (
       <div className="space-y-3">
         <p className="text-sm font-medium text-red-700">
-          Payments are not configured: <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> is missing.
+          Online payments are temporarily unavailable.
         </p>
         <p className="text-sm text-earth-500">
-          Set it in Vercel → Environment Variables using the publishable key from the same Stripe
-          account as <code>STRIPE_SECRET_KEY</code>.
+          Please try again shortly or contact the store to complete your order.
         </p>
       </div>
     )

@@ -42,7 +42,7 @@ export default async function WishlistPage() {
         </h1>
         <p className="section-subtitle mt-2">
           {products.length === 0
-            ? 'No saved products yet. Tap the heart on a product to save it here.'
+            ? 'No saved products yet. Save items from a product page to see them here.'
             : `${products.length} saved product${products.length === 1 ? '' : 's'}.`}
         </p>
       </div>
