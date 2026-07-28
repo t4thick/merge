@@ -3,8 +3,13 @@
 import { useState } from 'react'
 import { Download, Share2 } from 'lucide-react'
 import { StoreIntegratedShippingPanel } from '@/components/admin/StoreIntegratedShippingPanel'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import {
+  downloadPdfFile,
+  isAbortError,
+  pdfFileFromUrl,
+  sharePdfFile,
+} from '@/lib/client/share-label-pdf'
 
 type Props = {
   orderId: string
@@ -26,12 +31,6 @@ type Props = {
   initialService?: string | null
 }
 
-function isAbortError(err: unknown): boolean {
-  return err instanceof DOMException
-    ? err.name === 'AbortError'
-    : err instanceof Error && err.name === 'AbortError'
-}
-
 export function FulfillOrderShipping({
   orderId,
   isPickup,
@@ -48,35 +47,44 @@ export function FulfillOrderShipping({
   const hasShipment = Boolean(initialTracking || initialLabelUrl)
   const [sharing, setSharing] = useState(false)
   const [shareError, setShareError] = useState('')
+  const [hint, setHint] = useState('')
 
   async function shareSavedLabel() {
     if (!initialLabelUrl) return
     setSharing(true)
     setShareError('')
+    setHint('')
     try {
-      const res = await fetch(initialLabelUrl)
-      if (!res.ok) throw new Error('fetch failed')
-      const blob = await res.blob()
-      const file = new File([blob], `shipping-label-${initialTracking || orderId}.pdf`, {
-        type: 'application/pdf',
-      })
-      const payload = {
-        files: [file],
-        title: 'Shipping label',
-        text: initialTracking ? `Tracking ${initialTracking}` : 'Shipping label PDF',
+      const file = await pdfFileFromUrl(
+        initialLabelUrl,
+        `shipping-label-${initialTracking || orderId}.pdf`
+      )
+      const result = await sharePdfFile(file)
+      if (result === 'unsupported') {
+        downloadPdfFile(file)
+        setHint('PDF saved. FlashLabel Pro → PDF Print → Import PDF.')
       }
-      if (typeof navigator.share !== 'function') {
-        window.open(initialLabelUrl, '_blank', 'noopener,noreferrer')
-        return
-      }
-      if (typeof navigator.canShare === 'function' && !navigator.canShare(payload)) {
-        window.open(initialLabelUrl, '_blank', 'noopener,noreferrer')
-        return
-      }
-      await navigator.share(payload)
     } catch (err) {
       if (isAbortError(err)) return
-      setShareError('Could not share. Try Open PDF instead.')
+      setShareError('Could not share. Use Save PDF, then Import PDF in FlashLabel Pro.')
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  async function saveSavedLabel() {
+    if (!initialLabelUrl) return
+    setSharing(true)
+    setShareError('')
+    try {
+      const file = await pdfFileFromUrl(
+        initialLabelUrl,
+        `shipping-label-${initialTracking || orderId}.pdf`
+      )
+      downloadPdfFile(file)
+      setHint('PDF saved. FlashLabel Pro → PDF Print → Import PDF.')
+    } catch {
+      setShareError('Could not save PDF.')
     } finally {
       setSharing(false)
     }
@@ -106,21 +114,27 @@ export function FulfillOrderShipping({
               {shareError}
             </p>
           ) : null}
+          {hint ? (
+            <p className="text-sm font-medium text-emerald-900" role="status">
+              {hint}
+            </p>
+          ) : null}
           {initialLabelUrl ? (
             <div className="flex flex-wrap gap-2 pt-1">
               <Button type="button" size="sm" onClick={() => void shareSavedLabel()} disabled={sharing}>
                 <Share2 className="h-4 w-4" aria-hidden />
-                {sharing ? 'Opening share…' : 'Share PDF'}
+                {sharing ? 'Preparing PDF…' : 'Share PDF'}
               </Button>
-              <a
-                href={initialLabelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void saveSavedLabel()}
+                disabled={sharing}
               >
                 <Download className="h-4 w-4" aria-hidden />
-                Open PDF
-              </a>
+                Save PDF
+              </Button>
             </div>
           ) : null}
         </div>

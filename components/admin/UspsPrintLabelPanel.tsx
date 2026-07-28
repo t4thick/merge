@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation'
 import { Download, Printer, RefreshCw, Share2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import {
+  canSharePdfFiles,
+  downloadPdfFile,
+  isAbortError,
+  pdfFileFromBase64,
+  pdfFileFromUrl,
+  sharePdfFile,
+} from '@/lib/client/share-label-pdf'
 
 type Parcel = {
   weightLb: number
@@ -21,41 +29,6 @@ type Props = {
   initialTracking?: string | null
 }
 
-function isAbortError(err: unknown): boolean {
-  return err instanceof DOMException
-    ? err.name === 'AbortError'
-    : err instanceof Error && err.name === 'AbortError'
-}
-
-async function pdfFileFromUrl(url: string, filename: string): Promise<File> {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error('Could not load label PDF.')
-  const blob = await res.blob()
-  return new File([blob], filename, { type: 'application/pdf' })
-}
-
-async function pdfFileFromBase64(base64: string, filename: string): Promise<File> {
-  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
-  const blob = new Blob([bytes], { type: 'application/pdf' })
-  return new File([blob], filename, { type: 'application/pdf' })
-}
-
-async function sharePdfFile(file: File, tracking?: string): Promise<'shared' | 'unsupported'> {
-  const payload = {
-    files: [file],
-    title: 'Shipping label',
-    text: tracking ? `Tracking ${tracking}` : 'Shipping label PDF',
-  }
-  if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
-    return 'unsupported'
-  }
-  if (typeof navigator.canShare === 'function' && !navigator.canShare(payload)) {
-    return 'unsupported'
-  }
-  await navigator.share(payload)
-  return 'shared'
-}
-
 export function UspsPrintLabelPanel({
   orderId,
   mailClass,
@@ -67,6 +40,7 @@ export function UspsPrintLabelPanel({
   const [loading, setLoading] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [error, setError] = useState('')
+  const [hint, setHint] = useState('')
   const [labelUrl, setLabelUrl] = useState(initialLabelUrl ?? '')
   const [tracking, setTracking] = useState(initialTracking ?? '')
   const [postage, setPostage] = useState<number | null>(null)
@@ -74,22 +48,10 @@ export function UspsPrintLabelPanel({
   const [rateError, setRateError] = useState('')
   const [rateLoading, setRateLoading] = useState(false)
   const [canShareFiles, setCanShareFiles] = useState(false)
-
   const [parcel, setParcel] = useState<Parcel>(defaultParcel)
 
   useEffect(() => {
-    try {
-      const probe = new File([new Blob(['%PDF'], { type: 'application/pdf' })], 'probe.pdf', {
-        type: 'application/pdf',
-      })
-      setCanShareFiles(
-        typeof navigator !== 'undefined' &&
-          typeof navigator.share === 'function' &&
-          (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [probe] }))
-      )
-    } catch {
-      setCanShareFiles(false)
-    }
+    setCanShareFiles(canSharePdfFiles())
   }, [])
 
   function updateParcel(field: keyof Parcel, raw: string) {
@@ -136,15 +98,32 @@ export function UspsPrintLabelPanel({
     if (!labelUrl) return
     setSharing(true)
     setError('')
+    setHint('')
     try {
       const file = await pdfFileFromUrl(labelUrl, filename)
-      const result = await sharePdfFile(file, tracking || undefined)
+      const result = await sharePdfFile(file)
       if (result === 'unsupported') {
-        window.open(labelUrl, '_blank', 'noopener,noreferrer')?.focus()
+        downloadPdfFile(file)
+        setHint('PDF saved. Open FlashLabel Pro → PDF Print → Import PDF.')
       }
     } catch (err) {
       if (isAbortError(err)) return
-      setError('Could not open Share. Tap Open PDF, then use Share → FlashLabel Pro.')
+      setError('Could not share PDF. Tap Save PDF, then Import PDF in FlashLabel Pro.')
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  async function saveExistingLabel() {
+    if (!labelUrl) return
+    setSharing(true)
+    setError('')
+    try {
+      const file = await pdfFileFromUrl(labelUrl, filename)
+      downloadPdfFile(file)
+      setHint('PDF saved. Open FlashLabel Pro → PDF Print → Import PDF → pick this file.')
+    } catch {
+      setError('Could not save PDF.')
     } finally {
       setSharing(false)
     }
@@ -153,6 +132,7 @@ export function UspsPrintLabelPanel({
   async function printLabel() {
     setLoading(true)
     setError('')
+    setHint('')
     try {
       const res = await fetch(`/api/admin/orders/${orderId}/shipping/usps-label`, {
         method: 'POST',
@@ -169,37 +149,31 @@ export function UspsPrintLabelPanel({
       setTracking(nextTracking)
       setPostage(typeof data.postage === 'number' ? data.postage : null)
       if (data.labelUrl) setLabelUrl(data.labelUrl)
-
       router.refresh()
 
       const labelName = `shipping-label-${nextTracking || orderId}.pdf`
 
-      // On phones: open native Share sheet (FlashLabel Pro, Files, etc.)
       if (typeof data.labelPdfBase64 === 'string' && data.labelPdfBase64.length > 0) {
         try {
           const file = await pdfFileFromBase64(data.labelPdfBase64, labelName)
-          const result = await sharePdfFile(file, nextTracking || undefined)
+          const result = await sharePdfFile(file)
           if (result === 'shared') return
+          downloadPdfFile(file)
+          setHint('PDF saved. Open FlashLabel Pro → PDF Print → Import PDF.')
+          return
         } catch (err) {
-          if (!isAbortError(err)) {
-            /* fall through to open */
-          } else {
-            return
-          }
+          if (isAbortError(err)) return
         }
-        const bytes = Uint8Array.from(atob(data.labelPdfBase64), (c) => c.charCodeAt(0))
-        const blob = new Blob([bytes], { type: 'application/pdf' })
-        const url = URL.createObjectURL(blob)
-        window.open(url, '_blank', 'noopener,noreferrer')?.focus()
-        window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
-        return
       }
 
       if (data.labelUrl) {
         try {
           const file = await pdfFileFromUrl(data.labelUrl, labelName)
-          const result = await sharePdfFile(file, nextTracking || undefined)
+          const result = await sharePdfFile(file)
           if (result === 'shared') return
+          downloadPdfFile(file)
+          setHint('PDF saved. Open FlashLabel Pro → PDF Print → Import PDF.')
+          return
         } catch (err) {
           if (isAbortError(err)) return
         }
@@ -226,38 +200,47 @@ export function UspsPrintLabelPanel({
           </p>
         ) : null}
         <p className="text-xs text-emerald-800">
-          On Samsung: tap <strong>Share PDF</strong> → choose <strong>FlashLabel Pro</strong>.
+          Share sends a real PDF file. If FlashLabel says “no PDF link”, use <strong>Save PDF</strong>{' '}
+          then Import PDF inside the app.
         </p>
         {error ? (
           <p className="text-sm font-medium text-red-700" role="alert">
             {error}
           </p>
         ) : null}
+        {hint ? (
+          <p className="text-sm font-medium text-emerald-900" role="status">
+            {hint}
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           {labelUrl ? (
             <>
-              {(canShareFiles || typeof navigator !== 'undefined') && (
-                <Button type="button" onClick={() => void shareExistingLabel()} disabled={sharing}>
-                  <Share2 className="mr-1.5 h-4 w-4" aria-hidden />
-                  {sharing ? 'Opening share…' : 'Share PDF'}
-                </Button>
-              )}
+              <Button type="button" onClick={() => void shareExistingLabel()} disabled={sharing}>
+                <Share2 className="mr-1.5 h-4 w-4" aria-hidden />
+                {sharing ? 'Preparing PDF…' : 'Share PDF'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void saveExistingLabel()}
+                disabled={sharing}
+              >
+                <Download className="mr-1.5 h-4 w-4" aria-hidden />
+                Save PDF
+              </Button>
               <Button type="button" variant="outline" onClick={openPdf}>
                 <Printer className="mr-1.5 h-4 w-4" aria-hidden />
                 Open PDF
               </Button>
-              <a
-                href={labelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(buttonVariants({ variant: 'outline' }))}
-              >
-                <Download className="h-4 w-4" aria-hidden />
-                Save PDF
-              </a>
             </>
           ) : null}
         </div>
+        {!canShareFiles ? (
+          <p className="text-xs text-amber-800">
+            Share may be limited in this browser — prefer Save PDF → Import in FlashLabel Pro.
+          </p>
+        ) : null}
       </div>
     )
   }
@@ -270,7 +253,7 @@ export function UspsPrintLabelPanel({
           {mailClass.replace(/_/g, ' ')} via Shippo · adjust box size below then get rate
         </p>
         <p className="mt-2 text-xs text-earth-500">
-          After creating a label on your phone, use Share → FlashLabel Pro to print.
+          Creates a PDF you can share to FlashLabel Pro (or Save PDF → Import PDF).
         </p>
       </div>
 
@@ -322,6 +305,11 @@ export function UspsPrintLabelPanel({
           {error}
         </p>
       )}
+      {hint && (
+        <p className="text-sm font-medium text-emerald-800" role="status">
+          {hint}
+        </p>
+      )}
 
       <Button
         type="button"
@@ -331,7 +319,7 @@ export function UspsPrintLabelPanel({
         disabled={loading}
       >
         <Share2 className="mr-2 h-5 w-5" aria-hidden />
-        {loading ? 'Creating label…' : 'Create & share label'}
+        {loading ? 'Creating label…' : 'Create & share PDF'}
       </Button>
     </div>
   )

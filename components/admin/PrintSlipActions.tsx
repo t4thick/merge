@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Printer, Share2 } from 'lucide-react'
+import { ArrowLeft, Download, Printer, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  canSharePdfFiles,
+  canvasToPdfFile,
+  downloadPdfFile,
+  isAbortError,
+  sharePdfFile,
+} from '@/lib/client/share-label-pdf'
 
 export type SlipSharePayload = {
   name: string
@@ -13,14 +20,25 @@ export type SlipSharePayload = {
   shipFromLines: string[]
 }
 
-function isAbortError(err: unknown): boolean {
-  return err instanceof DOMException
-    ? err.name === 'AbortError'
-    : err instanceof Error && err.name === 'AbortError'
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.trim().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return ['']
+  const lines: string[] = []
+  let current = words[0]
+  for (let i = 1; i < words.length; i++) {
+    const test = `${current} ${words[i]}`
+    if (ctx.measureText(test).width <= maxWidth) {
+      current = test
+    } else {
+      lines.push(current)
+      current = words[i]
+    }
+  }
+  lines.push(current)
+  return lines
 }
 
-/** Build a crisp label image FlashLabel Pro can import (approx 4×6"). */
-async function buildSlipPng(payload: SlipSharePayload): Promise<File> {
+function drawSlipCanvas(payload: SlipSharePayload): HTMLCanvasElement {
   const width = 800
   const height = 1200
   const canvas = document.createElement('canvas')
@@ -31,7 +49,6 @@ async function buildSlipPng(payload: SlipSharePayload): Promise<File> {
 
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, width, height)
-
   ctx.strokeStyle = '#000000'
   ctx.lineWidth = 6
   ctx.strokeRect(24, 24, width - 48, height - 48)
@@ -44,8 +61,7 @@ async function buildSlipPng(payload: SlipSharePayload): Promise<File> {
   y += 70
   ctx.fillStyle = '#000000'
   ctx.font = 'bold 56px system-ui, sans-serif'
-  const nameLines = wrapText(ctx, payload.name, width - 112)
-  for (const line of nameLines) {
+  for (const line of wrapText(ctx, payload.name, width - 112)) {
     ctx.fillText(line, 56, y)
     y += 66
   }
@@ -95,29 +111,12 @@ async function buildSlipPng(payload: SlipSharePayload): Promise<File> {
     y += 40
   }
 
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not export label image.'))), 'image/png')
-  })
-
-  return new File([blob], `address-slip-${payload.orderLabel}.png`, { type: 'image/png' })
+  return canvas
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-  const words = text.trim().split(/\s+/).filter(Boolean)
-  if (words.length === 0) return ['']
-  const lines: string[] = []
-  let current = words[0]
-  for (let i = 1; i < words.length; i++) {
-    const test = `${current} ${words[i]}`
-    if (ctx.measureText(test).width <= maxWidth) {
-      current = test
-    } else {
-      lines.push(current)
-      current = words[i]
-    }
-  }
-  lines.push(current)
-  return lines
+async function buildSlipPdf(payload: SlipSharePayload): Promise<File> {
+  const canvas = drawSlipCanvas(payload)
+  return canvasToPdfFile(canvas, `address-slip-${payload.orderLabel}.pdf`)
 }
 
 export function PrintSlipActions({
@@ -140,18 +139,7 @@ export function PrintSlipActions({
   }, [])
 
   useEffect(() => {
-    try {
-      const probe = new File([new Blob(['x'], { type: 'image/png' })], 'probe.png', {
-        type: 'image/png',
-      })
-      setCanShare(
-        typeof navigator !== 'undefined' &&
-          typeof navigator.share === 'function' &&
-          (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [probe] }))
-      )
-    } catch {
-      setCanShare(Boolean(typeof navigator !== 'undefined' && typeof navigator.share === 'function'))
-    }
+    setCanShare(canSharePdfFiles())
   }, [])
 
   useEffect(() => {
@@ -173,24 +161,34 @@ export function PrintSlipActions({
     setSharing(true)
     setShareError('')
     try {
-      const file = await buildSlipPng(sharePayload)
-      const payload = {
-        files: [file],
-        title: 'Address slip',
-        text: `Ship to ${sharePayload.name} · ${sharePayload.orderLabel}`,
+      const file = await buildSlipPdf(sharePayload)
+      const result = await sharePdfFile(file)
+      if (result === 'unsupported') {
+        downloadPdfFile(file)
+        setShareError(
+          'Saved PDF to your phone. Open FlashLabel Pro → PDF Print → Import PDF → pick this file.'
+        )
       }
-      if (typeof navigator.share !== 'function') {
-        setShareError('Share is not available in this browser. Use Print slip instead.')
-        return
-      }
-      if (typeof navigator.canShare === 'function' && !navigator.canShare(payload)) {
-        setShareError('This phone cannot share image files from the browser.')
-        return
-      }
-      await navigator.share(payload)
     } catch (err) {
       if (isAbortError(err)) return
-      setShareError('Could not open Share. Try again, or use Print slip.')
+      setShareError('Could not share PDF. Use Save PDF, then Import PDF in FlashLabel Pro.')
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  async function handleSavePdf() {
+    if (!sharePayload) return
+    setSharing(true)
+    setShareError('')
+    try {
+      const file = await buildSlipPdf(sharePayload)
+      downloadPdfFile(file)
+      setShareError(
+        'PDF saved. In FlashLabel Pro: PDF Print → Import PDF → choose the saved file.'
+      )
+    } catch {
+      setShareError('Could not save PDF.')
     } finally {
       setSharing(false)
     }
@@ -207,10 +205,21 @@ export function PrintSlipActions({
           Back to order
         </Link>
         {sharePayload ? (
-          <Button type="button" onClick={() => void handleShare()} disabled={sharing || !canShare}>
-            <Share2 className="mr-1.5 h-4 w-4" aria-hidden />
-            {sharing ? 'Opening share…' : 'Share to FlashLabel'}
-          </Button>
+          <>
+            <Button type="button" onClick={() => void handleShare()} disabled={sharing}>
+              <Share2 className="mr-1.5 h-4 w-4" aria-hidden />
+              {sharing ? 'Preparing PDF…' : 'Share PDF'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleSavePdf()}
+              disabled={sharing}
+            >
+              <Download className="mr-1.5 h-4 w-4" aria-hidden />
+              Save PDF
+            </Button>
+          </>
         ) : null}
         <Button type="button" variant="outline" onClick={handlePrint}>
           <Printer className="mr-1.5 h-4 w-4" aria-hidden />
@@ -218,24 +227,25 @@ export function PrintSlipActions({
         </Button>
       </div>
       <div className="rounded-lg border border-earth-200 bg-earth-50 px-4 py-3 text-sm text-earth-700">
-        <p className="font-medium text-earth-900">Phone (FlashLabel Pro)</p>
+        <p className="font-medium text-earth-900">FlashLabel Pro (phone)</p>
         <p className="mt-1">
-          Tap <strong>Share to FlashLabel</strong> → choose <strong>FlashLabel Pro</strong> → print the
-          address label, then pay postage at the counter.
+          Tap <strong>Share PDF</strong> → FlashLabel Pro. If it says no PDF link, tap{' '}
+          <strong>Save PDF</strong>, then in FlashLabel: <strong>PDF Print → Import PDF</strong>.
         </p>
-        <p className="mt-2 font-medium text-earth-900">Office printer</p>
-        <p className="mt-1">
-          Use <strong>Print slip</strong> for letter-size paper, tape it on the box, then buy postage.
-        </p>
+        {!canShare ? (
+          <p className="mt-1 text-amber-800">
+            This browser may not support Share — use <strong>Save PDF</strong> instead.
+          </p>
+        ) : null}
       </div>
       {shareError ? (
-        <p className="text-sm font-medium text-red-700" role="alert">
+        <p className="text-sm font-medium text-earth-800" role="status">
           {shareError}
         </p>
       ) : null}
       {printHint && (
         <p className="text-sm text-earth-600">
-          No dialog? Tap <strong>Print slip</strong> again, or use your browser&apos;s share/print menu.
+          No dialog? Tap <strong>Print slip</strong> again, or use your browser&apos;s print menu.
         </p>
       )}
     </div>
