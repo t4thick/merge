@@ -33,7 +33,7 @@ import {
   type PeriodOrderRow,
 } from '@/lib/admin/period-stats'
 import { formatOrderNumber } from '@/lib/orders/order-number'
-import { getOpsHealth, NEEDS_ACTION_STATUSES } from '@/lib/admin/ops-health'
+import { NEEDS_ACTION_STATUSES } from '@/lib/admin/ops-health'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -117,7 +117,6 @@ export default async function AdminDashboard({
     { count: customersCount },
     { count: ordersAllTime },
     { data: recentOrders },
-    { count: openOrdersCount },
     { count: pendingReviewsCount },
     { count: readyPickupCount },
     { count: needsActionCount },
@@ -139,10 +138,6 @@ export default async function AdminDashboard({
       .order('created_at', { ascending: false })
       .limit(8),
     supabaseAdmin
-      .from('orders')
-      .select('id', { count: 'exact', head: true })
-      .in('status', ['ordered', 'processing']),
-    supabaseAdmin
       .from('product_reviews')
       .select('id', { count: 'exact', head: true })
       .eq('approved', false),
@@ -156,7 +151,6 @@ export default async function AdminDashboard({
       .in('status', [...NEEDS_ACTION_STATUSES]),
   ])
 
-  const opsHealth = getOpsHealth()
   const periodStats = computePeriodStats(currOrders, currItems)
   const prevStats = computePeriodStats(prev.orders as PeriodOrderRow[], prev.items)
 
@@ -236,53 +230,6 @@ export default async function AdminDashboard({
             tone="violet"
           />
         </div>
-      </section>
-
-      <section className="admin-card p-0 sm:p-0">
-        <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="admin-section-title">Ops readiness</h2>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {opsHealth.smsReady ? (
-                <span className="font-medium text-emerald-700">SMS ready</span>
-              ) : (
-                <span className="font-medium text-amber-700">Set up phone alerts first</span>
-              )}
-              {' · '}
-              {opsHealth.readyCount}/{opsHealth.totalCount} shipping/payment systems ready
-              {openOrdersCount ? ` · ${openOrdersCount} processing` : ''}
-            </p>
-          </div>
-          <Link href="/admin/shipping" className="text-xs font-medium text-slate-600 no-underline hover:text-slate-950">
-            Shipping setup →
-          </Link>
-        </div>
-        <ul className="divide-y divide-slate-100">
-          {opsHealth.items.map((item) => (
-            <li key={item.id} className="flex items-start gap-3 px-5 py-3.5">
-              <span
-                className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${
-                  item.ok ? 'bg-emerald-500' : item.id === 'email' ? 'bg-slate-300' : 'bg-amber-500'
-                }`}
-                aria-hidden
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-slate-900">{item.label}</p>
-                <p className="mt-0.5 text-xs text-slate-500">{item.detail}</p>
-              </div>
-              {item.ok && item.completeBadge ? (
-                <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
-                  Complete
-                </span>
-              ) : null}
-              {item.href && !item.ok ? (
-                <Link href={item.href} className="shrink-0 text-xs font-medium text-brand-700 no-underline hover:underline">
-                  Fix
-                </Link>
-              ) : null}
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:flex-row sm:items-center sm:justify-between">

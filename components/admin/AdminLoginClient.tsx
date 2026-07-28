@@ -379,22 +379,9 @@ export function AdminLoginClient({
                     ) : (
                       <>
                         <li>• If you typed it wrong 5 times, you&apos;re locked out for 15 minutes from this device.</li>
-                        <li>
-                          • On Vercel, set{' '}
-                          <code className="rounded bg-earth-100 px-1 py-0.5">
-                            ADMIN_PASSWORD
-                          </code>{' '}
-                          under Settings → Environment Variables (Production + Preview), then redeploy.
-                        </li>
+                        <li>• Contact the store owner if you need the password reset.</li>
                       </>
                     )}
-                    <li>
-                      • Your password lives in{' '}
-                      <code className="rounded bg-earth-100 px-1 py-0.5">
-                        ADMIN_PASSWORD
-                      </code>{' '}
-                      ({devMode ? '.env.local' : 'Vercel env vars'}). Change the value and restart / redeploy to rotate it.
-                    </li>
                     {devMode && (
                       <li className="text-amber-700">
                         • Check the dev terminal — failed logins log a length/first-last-char hint

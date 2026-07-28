@@ -16,7 +16,6 @@ import { getReportTimeZone } from '@/lib/admin/revenue-stats'
 import { NEEDS_ACTION_STATUSES } from '@/lib/admin/ops-health'
 import { BulkOrdersTable } from '@/components/admin/BulkOrdersTable'
 import { Pagination } from '@/components/admin/Pagination'
-import { CreateTestShippingOrderButton } from '@/components/admin/CreateTestShippingOrderButton'
 
 const STATUS_PILL_COLORS: Record<OrderStatus, string> = {
   ordered: 'bg-blue-50 text-blue-700',
@@ -199,7 +198,6 @@ export default async function AdminOrdersPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <CreateTestShippingOrderButton />
           <Link href={exportHref} className="no-underline">
             <Button size="sm" variant="outline" className="gap-1.5">
               <Download className="h-4 w-4" aria-hidden />
