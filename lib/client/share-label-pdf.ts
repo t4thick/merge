@@ -1,6 +1,7 @@
 /**
- * Client-side helpers for sharing label PDFs to apps like FlashLabel Pro.
- * FlashLabel expects a real .pdf file — not a PNG and not a URL.
+ * Share label PDFs with FlashLabel Pro.
+ * FlashLabel on Android expects a public https PDF link ("no available pdf link"
+ * means it did not receive a fetchable .pdf URL).
  */
 
 export function isAbortError(err: unknown): boolean {
@@ -11,15 +12,13 @@ export function isAbortError(err: unknown): boolean {
 
 export function asPdfFile(blob: Blob, filename: string): File {
   const name = filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`
-  // Always force PDF MIME — some CDNs return application/octet-stream.
   return new File([blob], name, { type: 'application/pdf' })
 }
 
 export async function pdfFileFromUrl(url: string, filename: string): Promise<File> {
   const res = await fetch(url)
   if (!res.ok) throw new Error('Could not load label PDF.')
-  const blob = await res.blob()
-  return asPdfFile(blob, filename)
+  return asPdfFile(await res.blob(), filename)
 }
 
 export async function pdfFileFromBase64(base64: string, filename: string): Promise<File> {
@@ -27,17 +26,53 @@ export async function pdfFileFromBase64(base64: string, filename: string): Promi
   return asPdfFile(new Blob([bytes], { type: 'application/pdf' }), filename)
 }
 
-/** Share only the file — no text/URL (FlashLabel Pro errors on "pdf link"). */
-export async function sharePdfFile(file: File): Promise<'shared' | 'unsupported'> {
+export function isPublicPdfUrl(url: string | null | undefined): url is string {
+  if (!url) return false
+  try {
+    const u = new URL(url)
+    return u.protocol === 'https:' && /\.pdf(\?|$)/i.test(u.pathname + u.search)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Prefer sharing a public https://…pdf URL (FlashLabel Pro).
+ * Fall back to sharing the file bytes.
+ */
+export async function sharePdfWithFlashLabel(opts: {
+  file: File
+  publicUrl?: string | null
+}): Promise<'shared-url' | 'shared-file' | 'unsupported'> {
   if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
     return 'unsupported'
   }
-  const payload = { files: [file] }
-  if (typeof navigator.canShare === 'function' && !navigator.canShare(payload)) {
+
+  const publicUrl = opts.publicUrl?.trim() || ''
+  if (isPublicPdfUrl(publicUrl) || (publicUrl.startsWith('https://') && publicUrl.includes('pdf'))) {
+    try {
+      const urlPayload = { url: publicUrl, title: opts.file.name }
+      if (typeof navigator.canShare !== 'function' || navigator.canShare(urlPayload)) {
+        await navigator.share(urlPayload)
+        return 'shared-url'
+      }
+    } catch (err) {
+      if (isAbortError(err)) return 'shared-url'
+      // fall through to file share
+    }
+  }
+
+  const filePayload = { files: [opts.file] }
+  if (typeof navigator.canShare === 'function' && !navigator.canShare(filePayload)) {
     return 'unsupported'
   }
-  await navigator.share(payload)
-  return 'shared'
+  try {
+    await navigator.share(filePayload)
+    return 'shared-file'
+  } catch (err) {
+    if (isAbortError(err)) return 'shared-file'
+    throw err
+  }
 }
 
 export function downloadPdfFile(file: File) {
@@ -60,17 +95,18 @@ export function canSharePdfFiles(): boolean {
     return (
       typeof navigator !== 'undefined' &&
       typeof navigator.share === 'function' &&
-      (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [probe] }))
+      (typeof navigator.canShare !== 'function' ||
+        navigator.canShare({ files: [probe] }) ||
+        navigator.canShare({ url: 'https://example.com/label.pdf' }))
     )
   } catch {
-    return false
+    return typeof navigator !== 'undefined' && typeof navigator.share === 'function'
   }
 }
 
-/** Embed a JPEG into a one-page PDF sized ~4×6" (FlashLabel friendly). */
 export function jpegBytesToPdf(jpeg: Uint8Array, imgW: number, imgH: number): Uint8Array {
-  const pageW = 288 // 4 in
-  const pageH = 432 // 6 in
+  const pageW = 288
+  const pageH = 432
   const enc = (s: string) => new TextEncoder().encode(s)
 
   const objects: Uint8Array[] = []
@@ -139,4 +175,28 @@ export async function canvasToPdfFile(
   const jpeg = new Uint8Array(await blob.arrayBuffer())
   const pdf = jpegBytesToPdf(jpeg, canvas.width, canvas.height)
   return asPdfFile(new Blob([pdf], { type: 'application/pdf' }), filename)
+}
+
+/** Upload a client-built PDF so FlashLabel can open a public https PDF link. */
+export async function uploadPdfForShare(
+  orderId: string,
+  file: File,
+  kind: 'label' | 'address-slip' = 'label'
+): Promise<string> {
+  const buf = await file.arrayBuffer()
+  const bytes = new Uint8Array(buf)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  const base64 = btoa(binary)
+
+  const res = await fetch(`/api/admin/orders/${orderId}/shipping/upload-pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pdfBase64: base64, filename: file.name, kind }),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok || typeof data.publicUrl !== 'string') {
+    throw new Error(typeof data.error === 'string' ? data.error : 'Could not upload PDF.')
+  }
+  return data.publicUrl
 }

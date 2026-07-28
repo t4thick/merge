@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Download, Printer, RefreshCw, Share2 } from 'lucide-react'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
   canSharePdfFiles,
@@ -11,7 +11,8 @@ import {
   isAbortError,
   pdfFileFromBase64,
   pdfFileFromUrl,
-  sharePdfFile,
+  sharePdfWithFlashLabel,
+  uploadPdfForShare,
 } from '@/lib/client/share-label-pdf'
 
 type Parcel = {
@@ -92,23 +93,53 @@ export function UspsPrintLabelPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const filename = `shipping-label-${tracking || orderId}.pdf`
+  async function ensurePublicPdf(opts: {
+    url?: string | null
+    base64?: string | null
+    filename: string
+  }): Promise<{ file: File; publicUrl: string }> {
+    let file: File
+    if (opts.base64) {
+      file = await pdfFileFromBase64(opts.base64, opts.filename)
+    } else if (opts.url) {
+      file = await pdfFileFromUrl(opts.url, opts.filename)
+    } else {
+      throw new Error('No PDF available yet.')
+    }
+
+    // Prefer existing public storage/Shippo URL; otherwise upload so FlashLabel gets a link.
+    let publicUrl = opts.url?.startsWith('https://') ? opts.url : ''
+    if (!publicUrl || !publicUrl.includes('pdf')) {
+      publicUrl = await uploadPdfForShare(orderId, file, 'label')
+    }
+    return { file, publicUrl }
+  }
 
   async function shareExistingLabel() {
     if (!labelUrl) return
     setSharing(true)
     setError('')
-    setHint('')
+    setHint('Preparing PDF link for FlashLabel…')
     try {
-      const file = await pdfFileFromUrl(labelUrl, filename)
-      const result = await sharePdfFile(file)
+      const { file, publicUrl } = await ensurePublicPdf({
+        url: labelUrl,
+        filename: `shipping-label-${tracking || orderId}.pdf`,
+      })
+      setLabelUrl(publicUrl)
+      const result = await sharePdfWithFlashLabel({ file, publicUrl })
       if (result === 'unsupported') {
         downloadPdfFile(file)
-        setHint('PDF saved. Open FlashLabel Pro → PDF Print → Import PDF.')
+        setHint(`PDF saved. Also copy this link into FlashLabel if needed:\n${publicUrl}`)
+      } else {
+        setHint('Shared PDF link. Pick FlashLabel Pro in the share sheet.')
       }
     } catch (err) {
-      if (isAbortError(err)) return
-      setError('Could not share PDF. Tap Save PDF, then Import PDF in FlashLabel Pro.')
+      if (isAbortError(err)) {
+        setHint('')
+        return
+      }
+      setError(err instanceof Error ? err.message : 'Could not share PDF.')
+      setHint('')
     } finally {
       setSharing(false)
     }
@@ -119,11 +150,15 @@ export function UspsPrintLabelPanel({
     setSharing(true)
     setError('')
     try {
-      const file = await pdfFileFromUrl(labelUrl, filename)
+      const { file, publicUrl } = await ensurePublicPdf({
+        url: labelUrl,
+        filename: `shipping-label-${tracking || orderId}.pdf`,
+      })
+      setLabelUrl(publicUrl)
       downloadPdfFile(file)
-      setHint('PDF saved. Open FlashLabel Pro → PDF Print → Import PDF → pick this file.')
-    } catch {
-      setError('Could not save PDF.')
+      setHint(`PDF saved. FlashLabel → PDF Print → Import PDF.\n${publicUrl}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save PDF.')
     } finally {
       setSharing(false)
     }
@@ -152,33 +187,28 @@ export function UspsPrintLabelPanel({
       router.refresh()
 
       const labelName = `shipping-label-${nextTracking || orderId}.pdf`
+      setHint('Preparing PDF link for FlashLabel…')
 
-      if (typeof data.labelPdfBase64 === 'string' && data.labelPdfBase64.length > 0) {
-        try {
-          const file = await pdfFileFromBase64(data.labelPdfBase64, labelName)
-          const result = await sharePdfFile(file)
-          if (result === 'shared') return
-          downloadPdfFile(file)
-          setHint('PDF saved. Open FlashLabel Pro → PDF Print → Import PDF.')
-          return
-        } catch (err) {
-          if (isAbortError(err)) return
-        }
-      }
+      const { file, publicUrl } = await ensurePublicPdf({
+        url: typeof data.labelUrl === 'string' ? data.labelUrl : null,
+        base64: typeof data.labelPdfBase64 === 'string' ? data.labelPdfBase64 : null,
+        filename: labelName,
+      })
+      setLabelUrl(publicUrl)
 
-      if (data.labelUrl) {
-        try {
-          const file = await pdfFileFromUrl(data.labelUrl, labelName)
-          const result = await sharePdfFile(file)
-          if (result === 'shared') return
-          downloadPdfFile(file)
-          setHint('PDF saved. Open FlashLabel Pro → PDF Print → Import PDF.')
-          return
-        } catch (err) {
-          if (isAbortError(err)) return
-        }
-        window.open(data.labelUrl, '_blank', 'noopener,noreferrer')?.focus()
+      const result = await sharePdfWithFlashLabel({ file, publicUrl })
+      if (result === 'unsupported') {
+        downloadPdfFile(file)
+        setHint(`PDF saved for FlashLabel Import.\n${publicUrl}`)
+      } else {
+        setHint('Shared PDF link — choose FlashLabel Pro.')
       }
+    } catch (err) {
+      if (isAbortError(err)) {
+        setHint('')
+        return
+      }
+      setError(err instanceof Error ? err.message : 'Could not share label PDF.')
     } finally {
       setLoading(false)
     }
@@ -200,8 +230,8 @@ export function UspsPrintLabelPanel({
           </p>
         ) : null}
         <p className="text-xs text-emerald-800">
-          Share sends a real PDF file. If FlashLabel says “no PDF link”, use <strong>Save PDF</strong>{' '}
-          then Import PDF inside the app.
+          Share sends a public <strong>PDF link</strong> FlashLabel Pro can open (not just a phone
+          file).
         </p>
         {error ? (
           <p className="text-sm font-medium text-red-700" role="alert">
@@ -209,7 +239,7 @@ export function UspsPrintLabelPanel({
           </p>
         ) : null}
         {hint ? (
-          <p className="text-sm font-medium text-emerald-900" role="status">
+          <p className="whitespace-pre-wrap break-all text-sm font-medium text-emerald-900" role="status">
             {hint}
           </p>
         ) : null}
@@ -218,7 +248,7 @@ export function UspsPrintLabelPanel({
             <>
               <Button type="button" onClick={() => void shareExistingLabel()} disabled={sharing}>
                 <Share2 className="mr-1.5 h-4 w-4" aria-hidden />
-                {sharing ? 'Preparing PDF…' : 'Share PDF'}
+                {sharing ? 'Preparing…' : 'Share PDF to FlashLabel'}
               </Button>
               <Button
                 type="button"
@@ -237,9 +267,7 @@ export function UspsPrintLabelPanel({
           ) : null}
         </div>
         {!canShareFiles ? (
-          <p className="text-xs text-amber-800">
-            Share may be limited in this browser — prefer Save PDF → Import in FlashLabel Pro.
-          </p>
+          <p className="text-xs text-amber-800">Use Save PDF → FlashLabel Import PDF on this phone.</p>
         ) : null}
       </div>
     )
@@ -253,7 +281,7 @@ export function UspsPrintLabelPanel({
           {mailClass.replace(/_/g, ' ')} via Shippo · adjust box size below then get rate
         </p>
         <p className="mt-2 text-xs text-earth-500">
-          Creates a PDF you can share to FlashLabel Pro (or Save PDF → Import PDF).
+          Creates a public PDF link, then opens Share for FlashLabel Pro.
         </p>
       </div>
 
@@ -299,14 +327,13 @@ export function UspsPrintLabelPanel({
         </p>
       )}
       {rateError && <p className="text-xs font-medium text-amber-800">{rateError}</p>}
-
       {error && (
         <p className="text-sm font-medium text-red-700" role="alert">
           {error}
         </p>
       )}
       {hint && (
-        <p className="text-sm font-medium text-emerald-800" role="status">
+        <p className="whitespace-pre-wrap break-all text-sm font-medium text-emerald-800" role="status">
           {hint}
         </p>
       )}
