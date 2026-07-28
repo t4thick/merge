@@ -76,15 +76,80 @@ export async function sharePdfWithFlashLabel(opts: {
 }
 
 export function downloadPdfFile(file: File) {
-  const url = URL.createObjectURL(file)
+  // Guard: never download an image disguised as a PDF
+  const name = file.name.toLowerCase().endsWith('.pdf') ? file.name : `${file.name}.pdf`
+  const pdfFile =
+    file.type === 'application/pdf' ? file : new File([file], name, { type: 'application/pdf' })
+
+  const url = URL.createObjectURL(pdfFile)
   const a = document.createElement('a')
   a.href = url
-  a.download = file.name
+  a.download = name
   a.rel = 'noopener'
+  a.type = 'application/pdf'
   document.body.appendChild(a)
   a.click()
   a.remove()
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+}
+
+/** Build a real text PDF (not an image) — FlashLabel-safe. */
+export function buildTextLabelPdfFile(
+  lines: string[],
+  filename: string,
+  opts?: { pageW?: number; pageH?: number }
+): File {
+  const pageW = opts?.pageW ?? 288 // 4"
+  const pageH = opts?.pageH ?? 432 // 6"
+  const enc = (s: string) => new TextEncoder().encode(s)
+
+  // Escape PDF string literals
+  const esc = (s: string) =>
+    s.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
+
+  const contentLines: string[] = ['BT', '/F1 14 Tf', '1 0 0 1 36 390 Tm', '18 TL']
+  lines.forEach((line, i) => {
+    if (i === 0) contentLines.push(`(${esc(line)}) Tj`)
+    else contentLines.push(`T* (${esc(line)}) Tj`)
+  })
+  contentLines.push('ET')
+  const content = contentLines.join('\n')
+
+  const objects: string[] = []
+  objects.push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n')
+  objects.push('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n')
+  objects.push(
+    `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`
+  )
+  objects.push('4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n')
+  objects.push(`5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}\nendstream\nendobj\n`)
+
+  const header = '%PDF-1.4\n'
+  const parts: Uint8Array[] = [enc(header)]
+  const offsets = [0]
+  let offset = header.length
+  for (const obj of objects) {
+    offsets.push(offset)
+    const bytes = enc(obj)
+    parts.push(bytes)
+    offset += bytes.length
+  }
+
+  let xref = `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
+  for (let i = 1; i <= objects.length; i++) {
+    xref += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`
+  }
+  xref += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${offset}\n%%EOF\n`
+  parts.push(enc(xref))
+
+  const total = parts.reduce((n, p) => n + p.length, 0)
+  const out = new Uint8Array(total)
+  let o = 0
+  for (const p of parts) {
+    out.set(p, o)
+    o += p.length
+  }
+  return asPdfFile(new Blob([out], { type: 'application/pdf' }), filename)
 }
 
 export function canSharePdfFiles(): boolean {
