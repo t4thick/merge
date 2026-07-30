@@ -22,7 +22,8 @@ export async function POST(
   const { id: orderId } = await params
   const body = await req.json().catch(() => ({}))
   const pdfBase64 = typeof body.pdfBase64 === 'string' ? body.pdfBase64 : ''
-  const kind = body.kind === 'address-slip' ? 'address-slip' : 'label'
+  const kind =
+    body.kind === 'address-slip' || body.kind === 'pickup-ticket' ? body.kind : 'label'
   const rawName = typeof body.filename === 'string' ? body.filename : `${kind}.pdf`
   const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80)
   const filename = safeName.toLowerCase().endsWith('.pdf') ? safeName : `${safeName}.pdf`

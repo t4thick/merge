@@ -6,6 +6,10 @@ import { ArrowLeft, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FlashLabelPdfActions } from '@/components/admin/FlashLabelPdfActions'
 import { buildTextLabelPdfFile } from '@/lib/client/share-label-pdf'
+import {
+  buildPickupTicketPdfFile,
+  type PickupTicketPdfData,
+} from '@/lib/client/pickup-ticket-pdf'
 import { cn } from '@/lib/utils'
 
 export type SlipSharePayload = {
@@ -55,11 +59,13 @@ export function PrintSlipActions({
   orderId,
   autoPrint,
   sharePayload,
+  ticketPayload,
   defaultPaper = 'letter',
 }: {
   orderId: string
   autoPrint?: boolean
   sharePayload?: SlipSharePayload
+  ticketPayload?: PickupTicketPdfData
   defaultPaper?: PaperSize
 }) {
   const [paper, setPaper] = useState<PaperSize>(defaultPaper)
@@ -149,6 +155,20 @@ export function PrintSlipActions({
           kind="address-slip"
           getFile={async () => slipToPdfFile(sharePayload)}
         />
+      ) : null}
+
+      {ticketPayload ? (
+        <div className="rounded-lg border border-earth-200 bg-earth-50/60 p-3">
+          <p className="mb-2 text-xs font-medium text-earth-600">
+            Exact 4×6 PDF — prints at true size with no dialog scaling.
+          </p>
+          <FlashLabelPdfActions
+            orderId={orderId}
+            tracking={ticketPayload.orderLabel}
+            kind="pickup-ticket"
+            getFile={async () => buildPickupTicketPdfFile(ticketPayload)}
+          />
+        </div>
       ) : null}
     </div>
   )

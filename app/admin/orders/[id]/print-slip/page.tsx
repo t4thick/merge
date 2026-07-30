@@ -6,6 +6,8 @@ import { requireAdminPage } from '@/lib/auth/require-admin-page'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { STORE, storePhonesPlain } from '@/lib/constants/store'
 import { formatOrderNumber } from '@/lib/orders/order-number'
+import { PICKUP_HOLD_HOURS, getPickupHold } from '@/lib/orders/pickup-hold'
+import { formatPhoneDisplay } from '@/lib/phone-link'
 import './print-slip.css'
 
 export default async function AdminOrderPrintSlipPage({
@@ -28,10 +30,28 @@ export default async function AdminOrderPrintSlipPage({
   if (!order) notFound()
 
   if (order.shipping_method === 'pickup') {
+    const ticketItems = items ?? []
+    const hold = getPickupHold(order.ready_for_pickup_at)
+    const ticketPayload = {
+      orderLabel: formatOrderNumber(order.order_number) || order.id.slice(0, 8),
+      customerName: order.customer_name,
+      phone: order.customer_phone ? formatPhoneDisplay(order.customer_phone) : null,
+      placedLabel: new Date(order.created_at).toLocaleString(),
+      holdLabel: `Hold (${PICKUP_HOLD_HOURS}h)`,
+      holdValue: hold ? `until ${hold.dueAt.toLocaleString()}` : 'starts when staged',
+      itemCount: ticketItems.reduce((n, i) => n + i.quantity, 0),
+      items: ticketItems.map((i) => ({ name: i.product_name, quantity: i.quantity })),
+    }
+
     return (
       <div className="print-slip-page">
-        <PrintSlipActions orderId={id} autoPrint={print === '1'} defaultPaper="label" />
-        <PickupTicketDocument order={order} items={items ?? []} />
+        <PrintSlipActions
+          orderId={id}
+          autoPrint={print === '1'}
+          defaultPaper="label"
+          ticketPayload={ticketPayload}
+        />
+        <PickupTicketDocument order={order} items={ticketItems} />
       </div>
     )
   }

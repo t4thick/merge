@@ -16,9 +16,17 @@ type Props = {
   labelUrl?: string | null
   pdfBase64?: string | null
   tracking?: string | null
-  kind?: 'label' | 'address-slip'
+  kind?: PdfKind
   getFile?: () => Promise<File>
   className?: string
+}
+
+type PdfKind = 'label' | 'address-slip' | 'pickup-ticket'
+
+const FILENAME_PREFIX: Record<PdfKind, string> = {
+  label: 'shipping-label',
+  'address-slip': 'address-slip',
+  'pickup-ticket': 'pickup-ticket',
 }
 
 const PRINTER_APP_PACKAGE = 'com.flashlabel.flashlabelpro'
@@ -42,9 +50,7 @@ export function FlashLabelPdfActions({
   const [publicUrl, setPublicUrl] = useState(labelUrl?.startsWith('https://') ? labelUrl : '')
   const [copied, setCopied] = useState(false)
 
-  const filename = `${kind === 'address-slip' ? 'address-slip' : 'shipping-label'}-${
-    tracking || orderId.slice(0, 8)
-  }.pdf`
+  const filename = `${FILENAME_PREFIX[kind]}-${tracking || orderId.slice(0, 8)}.pdf`
 
   async function resolveFile(): Promise<File> {
     if (getFile) return getFile()

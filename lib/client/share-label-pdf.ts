@@ -255,7 +255,7 @@ export async function canvasToPdfFile(
 export async function uploadPdfForShare(
   orderId: string,
   file: File,
-  kind: 'label' | 'address-slip' = 'label'
+  kind: 'label' | 'address-slip' | 'pickup-ticket' = 'label'
 ): Promise<string> {
   const buf = await file.arrayBuffer()
   const bytes = new Uint8Array(buf)
