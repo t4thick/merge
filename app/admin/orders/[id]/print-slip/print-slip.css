@@ -29,9 +29,50 @@
     print-color-adjust: exact;
   }
 
-  @page {
-    margin: 0.5in;
-    size: letter portrait;
+  /* ---------------------------------------------------------------
+     4x6 thermal label (100mm x 150mm).
+     Only what staff need to match a bag to a customer survives here —
+     the store address and email are dropped so the order number and
+     contents can stay large on a small label.
+     --------------------------------------------------------------- */
+  body.paper-label .pickup-ticket-store,
+  body.paper-label .pickup-ticket-email {
+    display: none !important;
+  }
+
+  body.paper-label .pickup-ticket-eyebrow {
+    font-size: 8pt !important;
+  }
+
+  body.paper-label .pickup-ticket-hero {
+    padding: 3mm !important;
+    margin-top: 2mm !important;
+  }
+
+  body.paper-label .pickup-ticket-number {
+    font-size: 34pt !important;
+    line-height: 1 !important;
+  }
+
+  body.paper-label .pickup-ticket-name {
+    font-size: 15pt !important;
+    margin-top: 2mm !important;
+  }
+
+  body.paper-label .pickup-ticket-phone {
+    font-size: 12pt !important;
+  }
+
+  body.paper-label .pickup-ticket-meta,
+  body.paper-label .pickup-ticket-contents {
+    margin-top: 2.5mm !important;
+    padding-top: 2mm !important;
+    gap: 1mm !important;
+    font-size: 9.5pt !important;
+  }
+
+  body.paper-label .pickup-ticket-contents li {
+    font-size: 10.5pt !important;
   }
 }
 

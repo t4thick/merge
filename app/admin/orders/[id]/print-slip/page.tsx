@@ -30,7 +30,7 @@ export default async function AdminOrderPrintSlipPage({
   if (order.shipping_method === 'pickup') {
     return (
       <div className="print-slip-page">
-        <PrintSlipActions orderId={id} autoPrint={print === '1'} />
+        <PrintSlipActions orderId={id} autoPrint={print === '1'} defaultPaper="label" />
         <PickupTicketDocument order={order} items={items ?? []} />
       </div>
     )

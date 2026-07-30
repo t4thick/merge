@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FlashLabelPdfActions } from '@/components/admin/FlashLabelPdfActions'
 import { buildTextLabelPdfFile } from '@/lib/client/share-label-pdf'
+import { cn } from '@/lib/utils'
 
 export type SlipSharePayload = {
   name: string
@@ -14,6 +15,25 @@ export type SlipSharePayload = {
   phone?: string | null
   shipFromLines: string[]
 }
+
+export type PaperSize = 'label' | 'letter'
+
+/**
+ * `@page` size cannot be switched with a class, so the rule is injected as its
+ * own stylesheet. Without this the browser lays out US Letter and the printer
+ * shrinks the whole page onto a 4x6 label, which is why tickets came out tiny.
+ */
+const PAGE_RULE: Record<PaperSize, string> = {
+  label: '@media print { @page { size: 100mm 150mm; margin: 3mm; } }',
+  letter: '@media print { @page { size: letter portrait; margin: 0.5in; } }',
+}
+
+const PAPER_LABEL: Record<PaperSize, string> = {
+  label: '4×6 label',
+  letter: 'Letter',
+}
+
+const STORAGE_KEY = 'lq_admin_print_paper'
 
 function slipToPdfFile(payload: SlipSharePayload): File {
   const lines = [
@@ -35,15 +55,43 @@ export function PrintSlipActions({
   orderId,
   autoPrint,
   sharePayload,
+  defaultPaper = 'letter',
 }: {
   orderId: string
   autoPrint?: boolean
   sharePayload?: SlipSharePayload
+  defaultPaper?: PaperSize
 }) {
+  const [paper, setPaper] = useState<PaperSize>(defaultPaper)
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(`${STORAGE_KEY}_${defaultPaper}`)
+    if (stored === 'label' || stored === 'letter') setPaper(stored)
+  }, [defaultPaper])
+
   useEffect(() => {
     document.body.classList.add('admin-print-slip-page')
     return () => document.body.classList.remove('admin-print-slip-page')
   }, [])
+
+  useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = PAGE_RULE[paper]
+    document.head.appendChild(style)
+
+    const bodyClass = paper === 'label' ? 'paper-label' : 'paper-letter'
+    document.body.classList.add(bodyClass)
+
+    return () => {
+      style.remove()
+      document.body.classList.remove(bodyClass)
+    }
+  }, [paper])
+
+  function choosePaper(next: PaperSize) {
+    setPaper(next)
+    window.localStorage.setItem(`${STORAGE_KEY}_${defaultPaper}`, next)
+  }
 
   useEffect(() => {
     if (!autoPrint) return
@@ -65,6 +113,33 @@ export function PrintSlipActions({
           <Printer className="mr-1.5 h-4 w-4" aria-hidden />
           Print
         </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-earth-500">Paper</span>
+        <div className="flex gap-1 rounded-lg border border-earth-200 p-1">
+          {(['label', 'letter'] as PaperSize[]).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => choosePaper(option)}
+              aria-pressed={paper === option}
+              className={cn(
+                'min-h-9 rounded-md px-3 text-sm font-medium transition-colors duration-150',
+                paper === option
+                  ? 'bg-earth-900 text-white'
+                  : 'text-earth-600 hover:bg-earth-50 hover:text-earth-900'
+              )}
+            >
+              {PAPER_LABEL[option]}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-earth-400">
+          {paper === 'label'
+            ? 'Set the printer to 100mm × 150mm and scale to 100%.'
+            : 'Standard 8.5 × 11 sheet.'}
+        </span>
       </div>
 
       {sharePayload ? (
