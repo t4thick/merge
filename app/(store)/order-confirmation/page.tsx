@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { CheckCircle2, Package } from 'lucide-react'
+import { CheckCircle2, Package, Receipt } from 'lucide-react'
 import { createClientOptional } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { OrderStatusTimeline } from '@/components/account/OrderStatusTimeline'
@@ -173,10 +173,21 @@ export default async function OrderConfirmationPage({
         <div className="mx-auto mt-12 flex max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
           {order && (
             <Link
-              href={`/track-order?id=${encodeURIComponent(orderNumberLabel || order.id)}`}
+              href={`/receipt?id=${encodeURIComponent(orderNumberLabel || order.id)}`}
               className="no-underline"
             >
               <Button variant="default" className="h-12 w-full gap-2 rounded-xl sm:w-auto">
+                <Receipt className="h-4 w-4" />
+                Get receipt
+              </Button>
+            </Link>
+          )}
+          {order && (
+            <Link
+              href={`/track-order?id=${encodeURIComponent(orderNumberLabel || order.id)}`}
+              className="no-underline"
+            >
+              <Button variant="outline" className="h-12 w-full gap-2 rounded-xl sm:w-auto">
                 <Package className="h-4 w-4" />
                 Track this order
               </Button>

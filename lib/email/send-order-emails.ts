@@ -7,6 +7,7 @@ import {
   type OrderStatus,
 } from '@/lib/order-status'
 import { STORE } from '@/lib/constants/store'
+import { PICKUP_HOLD_HOURS } from '@/lib/orders/pickup-hold'
 import { PAYMENT_LABEL, normalizePaymentMethod } from '@/lib/payment-methods'
 import { getPublicSiteUrl } from '@/lib/site-url'
 import { SHIPPING_METHOD_LABEL, type ShippingMethod } from '@/lib/shipping'
@@ -433,7 +434,7 @@ function statusBody(status: OrderStatus, tracking?: string | null, pickup = fals
         ? 'Good news — we have started preparing your order for pickup.'
         : 'Good news — we have started preparing your order.'
     case 'ready_for_pickup':
-      return `Your order is bagged and waiting at ${STORE.address} (${STORE.hours}). Sending an Uber, DoorDash, or a friend? Have them show order ${orderLabel ?? ''} at the counter.`.trim()
+      return `Your order is bagged and waiting at ${STORE.address} (${STORE.hours}). Please collect it within ${PICKUP_HOLD_HOURS} hours. Sending an Uber, DoorDash, or a friend? Have them show order ${orderLabel ?? ''} at the counter.`.trim()
     case 'shipped':
       return tracking
         ? `Your order is on its way. Tracking number: ${tracking}.`
@@ -518,6 +519,104 @@ function statusEmailText(
   return lines.join('\n')
 }
 
+// ---------------------------------------------------------------------------
+// Out-of-stock adjustment notice (sent when an order is partially fulfilled)
+// ---------------------------------------------------------------------------
+
+export type ShortfallEmailLine = {
+  productName: string
+  missingQuantity: number
+  orderedQuantity: number
+}
+
+/**
+ * Tell the customer which items were unavailable and what came back to their
+ * card. Sent immediately after the refund clears so the numbers always match.
+ */
+export async function sendShortfallEmail(input: {
+  order: OrderForStatusEmail
+  shortLines: ShortfallEmailLine[]
+  refundAmount: number
+}): Promise<boolean> {
+  const picked = pickSender()
+  if (!picked) {
+    console.warn('[email] No email transport configured — skipping shortfall notice.')
+    return false
+  }
+  const { order, shortLines, refundAmount } = input
+  if (!order.customer_email?.trim() || !shortLines.length) return false
+
+  const orderLabel = orderRefLabel(order)
+  const base = getPublicSiteUrl()
+  const trackPath = `/track-order?id=${encodeURIComponent(trackQueryValue(order))}`
+  const trackUrl = base ? `${base}${trackPath}` : trackPath
+
+  const rows = shortLines
+    .map(
+      (line) => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${escapeHtml(line.productName)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${line.missingQuantity} of ${line.orderedQuantity}</td>
+    </tr>`
+    )
+    .join('')
+
+  const refundLine =
+    refundAmount > 0
+      ? `We have refunded ${money(refundAmount)} to your original payment method. Bank posting usually takes 5–10 business days.`
+      : 'No charge was taken for these items.'
+
+  const html = `
+<!DOCTYPE html>
+<html><body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.5;color:#111;background:#f9f9f9;margin:0;padding:24px;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e5e5e5;">
+    <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#0f3d2e;font-weight:600;">${escapeHtml(STORE_NAME)}</p>
+    <h1 style="margin:0 0 12px;font-size:22px;">Some items were unavailable</h1>
+    <p style="margin:0 0 8px;color:#444;font-size:15px;">Hi ${escapeHtml(order.customer_name)},</p>
+    <p style="margin:0 0 16px;color:#333;font-size:15px;">We packed order ${escapeHtml(orderLabel)} and came up short on the items below. The rest of your order is unaffected.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px;">
+      <thead>
+        <tr style="background:#0f3d2e;color:#fff;">
+          <th style="padding:10px 12px;text-align:left;">Item</th>
+          <th style="padding:10px 12px;text-align:right;">Unavailable</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p style="margin:16px 0 0;padding:12px;background:#f4f8f6;border-radius:8px;font-size:14px;color:#0f3d2e;">${escapeHtml(refundLine)}</p>
+    <p style="margin:24px 0 0;">
+      <a href="${trackUrl}" style="display:inline-block;background:#0f3d2e;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;">View your receipt</a>
+    </p>
+  </div>
+</body></html>`
+
+  const text = [
+    `${STORE_NAME} — some items were unavailable`,
+    ``,
+    `Hi ${order.customer_name},`,
+    ``,
+    `We packed order ${orderLabel} and came up short on:`,
+    ...shortLines.map((l) => `- ${l.productName}: ${l.missingQuantity} of ${l.orderedQuantity} unavailable`),
+    ``,
+    refundLine,
+    ``,
+    `Receipt: ${trackUrl}`,
+  ].join('\n')
+
+  try {
+    await picked.sender({
+      to: order.customer_email,
+      subject: `Items unavailable on order ${orderLabel}`,
+      html,
+      text,
+    })
+    return true
+  } catch (error) {
+    console.error(`[email:${picked.label}] Shortfall notice failed:`, error)
+    return false
+  }
+}
+
 /**
  * Send a status-change notification to the customer. Called from the admin
  * "update order" API after a successful PATCH. Failures are logged and do not
@@ -527,15 +626,15 @@ export async function sendOrderStatusEmail(
   order: OrderForStatusEmail,
   status: OrderStatus,
   note?: string | null,
-): Promise<void> {
+): Promise<boolean> {
   const picked = pickSender()
   if (!picked) {
     console.warn('[email] No email transport configured — skipping status update email.')
-    return
+    return false
   }
   if (!order.customer_email?.trim()) {
     console.warn('[email] Order has no customer_email — skipping status update.')
-    return
+    return false
   }
   const { sender, label } = picked
   const orderLabel = orderRefLabel(order)
@@ -547,7 +646,9 @@ export async function sendOrderStatusEmail(
       html: statusEmailHtml(order, status, note),
       text: statusEmailText(order, status, note),
     })
+    return true
   } catch (error) {
     console.error(`[email:${label}] Status update email failed:`, error)
+    return false
   }
 }

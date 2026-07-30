@@ -109,6 +109,24 @@ export function getStatusFlow(
   return isPickupShippingMethod(shippingMethod) ? PICKUP_STATUS_FLOW : ORDER_STATUS_FLOW
 }
 
+/** Statuses that describe a carrier leg and never apply to a pickup order. */
+export const SHIPPING_ONLY_STATUSES: readonly OrderStatus[] = ['shipped', 'out_for_delivery']
+
+export function isShippingOnlyStatus(status: OrderStatus): boolean {
+  return SHIPPING_ONLY_STATUSES.includes(status)
+}
+
+/**
+ * Whether a status may be applied to an order with the given shipping method.
+ * Pickup orders reject carrier statuses so the history stays on the pickup path.
+ */
+export function isStatusAllowedFor(
+  status: OrderStatus,
+  shippingMethod: string | null | undefined
+): boolean {
+  return !(isPickupShippingMethod(shippingMethod) && isShippingOnlyStatus(status))
+}
+
 /**
  * Customer-facing label. Pickup orders reuse the `delivered` status to mean
  * "collected", so we relabel it as "Picked up" for clarity.

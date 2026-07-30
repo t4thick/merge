@@ -712,7 +712,13 @@ export function CheckoutClient({
                     onChange={handleChange}
                     required
                     autoComplete="tel"
+                    inputMode="tel"
+                    placeholder="(614) 555-0199"
+                    aria-describedby="checkout-phone-hint"
                   />
+                  <p id="checkout-phone-hint" className="mt-1 text-xs text-earth-500">
+                    We call this number at pickup or at your door.
+                  </p>
                 </div>
               </div>
             </CheckoutStep>

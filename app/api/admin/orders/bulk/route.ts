@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminApi } from '@/lib/auth/require-admin-api'
 import { assertSameOrigin } from '@/lib/security/same-origin'
-import { normalizeOrderStatus, ORDER_STATUS_TIMESTAMP_COLUMN } from '@/lib/order-status'
+import {
+  isStatusAllowedFor,
+  normalizeOrderStatus,
+  ORDER_STATUS_TIMESTAMP_COLUMN,
+} from '@/lib/order-status'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(req: NextRequest) {
@@ -34,12 +38,29 @@ export async function POST(req: NextRequest) {
     // Fetch current statuses before updating so audit log has from_status
     const { data: currentOrders } = await supabaseAdmin
       .from('orders')
-      .select('id, status')
+      .select('id, status, shipping_method')
       .in('id', ids)
 
     const fromStatusMap = new Map(
       (currentOrders ?? []).map((o) => [o.id, normalizeOrderStatus(o.status)])
     )
+
+    // A pickup order has no carrier leg, so a mixed selection must not drag it
+    // into "shipped" / "out for delivery". Those rows are skipped, not failed.
+    const shippingMethodMap = new Map(
+      (currentOrders ?? []).map((o) => [o.id, o.shipping_method as string | null])
+    )
+    const targetIds = ids.filter((id) =>
+      isStatusAllowedFor(status, shippingMethodMap.get(id) ?? null)
+    )
+    const skipped = ids.length - targetIds.length
+
+    if (!targetIds.length) {
+      return NextResponse.json(
+        { error: 'Pickup orders cannot be marked shipped or out for delivery.' },
+        { status: 400 }
+      )
+    }
 
     const nowIso = new Date().toISOString()
     const updatePayload: Record<string, unknown> = { status }
@@ -48,13 +69,13 @@ export async function POST(req: NextRequest) {
     const { error } = await supabaseAdmin
       .from('orders')
       .update(updatePayload)
-      .in('id', ids)
+      .in('id', targetIds)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
     // Log each status change with correct from_status
     await supabaseAdmin.from('order_status_logs').insert(
-      ids.map((id) => ({
+      targetIds.map((id) => ({
         order_id: id,
         from_status: fromStatusMap.get(id) ?? null,
         to_status: status,
@@ -63,7 +84,7 @@ export async function POST(req: NextRequest) {
       }))
     )
 
-    return NextResponse.json({ ok: true, updated: ids.length })
+    return NextResponse.json({ ok: true, updated: targetIds.length, skipped })
   } catch {
     return NextResponse.json({ error: 'Server error.' }, { status: 500 })
   }

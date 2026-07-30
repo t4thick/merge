@@ -40,6 +40,7 @@ type TrackOrderResponse = {
     product_price: number
     quantity: number
     subtotal: number
+    fulfilled_quantity?: number | null
   }>
   logs: Array<{
     id: string
@@ -323,22 +324,45 @@ export function TrackOrderClient() {
                 <div className="premium-card p-6">
                   <h3 className="text-base font-semibold text-earth-900">Items</h3>
                   <ul className="mt-4 space-y-3">
-                    {data.items.map((item) => (
-                      <li
-                        key={item.id}
-                        className="flex justify-between gap-3 border-b border-earth-100 pb-3 text-sm last:border-0"
-                      >
-                        <span className="text-earth-700">
-                          {item.product_name} × {item.quantity}
-                        </span>
-                        <span className="font-semibold text-earth-900">
-                          {formatMoney(item.subtotal)}
-                        </span>
-                      </li>
-                    ))}
+                    {data.items.map((item) => {
+                      const fulfilled =
+                        typeof item.fulfilled_quantity === 'number'
+                          ? item.fulfilled_quantity
+                          : item.quantity
+                      const short = item.quantity - fulfilled
+                      return (
+                        <li
+                          key={item.id}
+                          className="flex justify-between gap-3 border-b border-earth-100 pb-3 text-sm last:border-0"
+                        >
+                          <span className="text-earth-700">
+                            {item.product_name} × {fulfilled}
+                            {short > 0 && (
+                              <span className="mt-0.5 block text-xs font-medium text-red-600">
+                                {short} unavailable — refunded
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-semibold text-earth-900">
+                            {formatMoney(item.product_price * fulfilled)}
+                          </span>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               )}
+
+              <Link
+                href={`/receipt?id=${encodeURIComponent(
+                  formatOrderNumber(data.order.order_number) || data.order.id
+                )}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`}
+                className="no-underline"
+              >
+                <Button variant="outline" className="h-12 w-full rounded-xl">
+                  Download receipt
+                </Button>
+              </Link>
             </div>
           </div>
         )}

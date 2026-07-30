@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminApi } from '@/lib/auth/require-admin-api'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { normalizeOrderStatus, ORDER_STATUS_TIMESTAMP_COLUMN } from '@/lib/order-status'
+import {
+  isStatusAllowedFor,
+  normalizeOrderStatus,
+  ORDER_STATUS_TIMESTAMP_COLUMN,
+} from '@/lib/order-status'
 import { assertSameOrigin } from '@/lib/security/same-origin'
 import { sendOrderStatusEmail } from '@/lib/email/send-order-emails'
+import { DELIVERY_PROOF_LABEL, type DeliveryProof } from '@/lib/orders/delivery-proof'
 
 export async function PATCH(
   req: NextRequest,
@@ -24,6 +29,10 @@ export async function PATCH(
     const note = noteRaw
     const normalized = normalizeOrderStatus(status)
     const nowIso = new Date().toISOString()
+    const deliveryProof =
+      body.deliveryProof === 'handed' || body.deliveryProof === 'left_at_door'
+        ? (body.deliveryProof as DeliveryProof)
+        : null
 
     const { data: existingOrder, error: existingError } = await supabaseAdmin
       .from('orders')
@@ -35,6 +44,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Order not found.' }, { status: 404 })
     }
 
+    if (!isStatusAllowedFor(normalized, existingOrder.shipping_method)) {
+      return NextResponse.json(
+        { error: 'Pickup orders cannot be marked shipped or out for delivery.' },
+        { status: 400 }
+      )
+    }
+
     const fromStatus = normalizeOrderStatus(existingOrder.status)
     const updatePayload: Record<string, unknown> = {
       status: normalized,
@@ -44,6 +60,12 @@ export async function PATCH(
           : null,
     }
     updatePayload[ORDER_STATUS_TIMESTAMP_COLUMN[normalized]] = nowIso
+
+    if (deliveryProof) {
+      updatePayload.delivery_proof = deliveryProof
+      updatePayload.delivery_proof_at = nowIso
+      updatePayload.delivery_proof_note = note.trim() || null
+    }
 
     let updateResult = await supabaseAdmin
       .from('orders')
@@ -68,7 +90,11 @@ export async function PATCH(
     if (updateResult.error) return NextResponse.json({ error: updateResult.error.message }, { status: 500 })
 
     const trackingNote = updatePayload.tracking_number ? `Tracking: ${String(updatePayload.tracking_number)}` : null
-    const combinedNote = [typeof note === 'string' ? note.trim() : '', trackingNote].filter(Boolean).join(' · ') || null
+    const proofNote = deliveryProof ? DELIVERY_PROOF_LABEL[deliveryProof] : null
+    const combinedNote =
+      [typeof note === 'string' ? note.trim() : '', proofNote, trackingNote]
+        .filter(Boolean)
+        .join(' · ') || null
 
     if (fromStatus !== normalized || combinedNote) {
       const { error: logError } = await supabaseAdmin

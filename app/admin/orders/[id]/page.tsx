@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Circle } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, CheckCircle2, Circle, Package } from 'lucide-react'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { PAYMENT_LABEL, type PaymentMethod } from '@/lib/payment-methods'
 import { OrderStatusUpdater } from '@/components/admin/OrderStatusUpdater'
@@ -10,16 +11,22 @@ import { DeleteOrderButton } from '@/components/admin/DeleteOrderButton'
 import { AdminNotePanel } from '@/components/admin/AdminNotePanel'
 import { FulfillOrderShipping } from '@/components/admin/FulfillOrderShipping'
 import { PrintAddressSlipLink } from '@/components/admin/PrintAddressSlipLink'
+import { PickupFulfillmentPanel } from '@/components/admin/PickupFulfillmentPanel'
+import { OrderItemsFulfillment } from '@/components/admin/OrderItemsFulfillment'
+import { DeliveryRunPanel } from '@/components/admin/DeliveryRunPanel'
+import { normalizeDeliveryProof } from '@/lib/orders/delivery-proof'
 import {
-  ORDER_STATUS_LABEL,
   getStatusFlow,
   getStatusStepIndex,
   isPickupShippingMethod,
   isLocalDeliveryShippingMethod,
+  isShippingOnlyStatus,
   normalizeOrderStatus,
   orderStatusLabel,
   type OrderStatus,
 } from '@/lib/order-status'
+import { PICKUP_HOLD_HOURS } from '@/lib/orders/pickup-hold'
+import { formatPhoneDisplay, smsHref, telHref } from '@/lib/phone-link'
 import { STORE } from '@/lib/constants/store'
 import { SHIPPING_METHOD_LABEL, type ShippingMethod } from '@/lib/shipping'
 import { requireAdminPage } from '@/lib/auth/require-admin-page'
@@ -79,6 +86,44 @@ export default async function AdminOrderDetailPage({
   const uspsConfig = getUspsConfigPublic()
   const defaultParcel = getDefaultParcel()
   const orderRecord = order as Record<string, unknown>
+  const readyForPickupAt =
+    typeof orderRecord.ready_for_pickup_at === 'string' ? orderRecord.ready_for_pickup_at : null
+
+  // Thumbnails let staff eyeball the bag against the order before handing it over.
+  const productIds = Array.from(
+    new Set(
+      (items ?? [])
+        .map((item) => item.product_id)
+        .filter((value): value is string => typeof value === 'string')
+    )
+  )
+  const { data: productRows } = productIds.length
+    ? await supabaseAdmin.from('products').select('id, image_url').in('id', productIds)
+    : { data: [] }
+  const imageByProductId = new Map(
+    (productRows ?? []).map((p) => [p.id as string, (p.image_url as string | null) ?? null])
+  )
+
+  const fulfillmentItems = (items ?? []).map((item) => {
+    const recorded = (item as Record<string, unknown>).fulfilled_quantity
+    return {
+      id: item.id as string,
+      product_name: String(item.product_name ?? 'Item'),
+      product_price: Number(item.product_price ?? 0),
+      quantity: Number(item.quantity ?? 0),
+      fulfilled_quantity:
+        typeof recorded === 'number' && Number.isFinite(recorded) ? recorded : null,
+    }
+  })
+  const hasShortage = fulfillmentItems.some(
+    (item) => item.fulfilled_quantity !== null && item.fulfilled_quantity < item.quantity
+  )
+
+  const deliveryProof = normalizeDeliveryProof(orderRecord.delivery_proof)
+  const deliveryProofAt =
+    typeof orderRecord.delivery_proof_at === 'string' ? orderRecord.delivery_proof_at : null
+  const deliveryProofNote =
+    typeof orderRecord.delivery_proof_note === 'string' ? orderRecord.delivery_proof_note : null
 
   return (
     <div className="space-y-6">
@@ -99,9 +144,14 @@ export default async function AdminOrderDetailPage({
           </h1>
           <p className="mt-1 break-all font-mono text-xs text-earth-400">{order.id}</p>
         </div>
-        <span className={`admin-status-pill self-start ${STATUS_PILL_COLORS[normalizedStatus]}`}>
-          {orderStatusLabel(normalizedStatus, { pickup: isPickup })}
-        </span>
+        <div className="flex flex-wrap items-center gap-2 self-start">
+          {hasShortage && (
+            <span className="admin-status-pill bg-red-50 text-red-700">Partially fulfilled</span>
+          )}
+          <span className={`admin-status-pill ${STATUS_PILL_COLORS[normalizedStatus]}`}>
+            {orderStatusLabel(normalizedStatus, { pickup: isPickup })}
+          </span>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -142,7 +192,42 @@ export default async function AdminOrderDetailPage({
               })}
             </ol>
           </section>
-          {/* Shipping label */}
+          {/* Fulfilment — pickup counter or carrier label */}
+          {isPickup ? (
+            <section className="admin-card">
+              <h2 className="admin-section-title">Pickup counter</h2>
+              <p className="mt-1 text-sm text-earth-500">
+                Held {PICKUP_HOLD_HOURS} hours from the moment it is staged.
+              </p>
+              <div className="mt-4">
+                <PickupFulfillmentPanel
+                  orderId={order.id}
+                  status={normalizedStatus}
+                  readyAt={readyForPickupAt}
+                  customerPhone={order.customer_phone ?? null}
+                  customerEmail={order.customer_email ?? null}
+                />
+              </div>
+            </section>
+          ) : (
+          <>
+          <section className="admin-card">
+            <h2 className="admin-section-title">Delivery run</h2>
+            <p className="mt-1 text-sm text-earth-500">
+              For orders you drive yourself. Go en route, then close out at the door.
+            </p>
+            <div className="mt-4">
+              <DeliveryRunPanel
+                orderId={order.id}
+                status={normalizedStatus}
+                customerPhone={order.customer_phone ?? null}
+                deliveryProof={deliveryProof}
+                deliveryProofAt={deliveryProofAt}
+                deliveryProofNote={deliveryProofNote}
+              />
+            </div>
+          </section>
+
           <section className="admin-card space-y-4">
             <PrintAddressSlipLink
               orderId={order.id}
@@ -183,10 +268,14 @@ export default async function AdminOrderDetailPage({
               </div>
             </div>
           </section>
+          </>
+          )}
 
           {/* Update status */}
           <section className="admin-card">
-            <h2 className="admin-section-title">Update status</h2>
+            <h2 className="admin-section-title">
+              {isPickup ? 'Override status' : 'Update status'}
+            </h2>
             <div className="mt-4">
               <OrderStatusUpdater
                 orderId={order.id}
@@ -251,7 +340,10 @@ export default async function AdminOrderDetailPage({
               <Field label="Name" value={order.customer_name} />
               <Field label="Email" value={order.customer_email} />
               {order.customer_phone && (
-                <Field label="Phone" value={order.customer_phone} />
+                <Field
+                  label="Phone"
+                  value={<PhoneValue phone={order.customer_phone} />}
+                />
               )}
               <Field
                 label="Placed"
@@ -309,6 +401,7 @@ export default async function AdminOrderDetailPage({
                 <table className="admin-table">
                   <thead>
                     <tr>
+                      <th style={{ width: 56 }} aria-label="Photo"></th>
                       <th>Product</th>
                       <th>Price</th>
                       <th>Qty</th>
@@ -316,20 +409,57 @@ export default async function AdminOrderDetailPage({
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((item) => (
-                      <tr key={item.id}>
-                        <td className="font-medium text-earth-900">{item.product_name}</td>
-                        <td className="tabular-nums">${Number(item.product_price ?? 0).toFixed(2)}</td>
-                        <td className="tabular-nums">{item.quantity}</td>
-                        <td className="text-right tabular-nums">
-                          ${Number(item.subtotal ?? 0).toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
+                    {items.map((item) => {
+                      const image =
+                        typeof item.product_id === 'string'
+                          ? imageByProductId.get(item.product_id)
+                          : null
+                      const recorded = (item as Record<string, unknown>).fulfilled_quantity
+                      const fulfilled =
+                        typeof recorded === 'number' && Number.isFinite(recorded)
+                          ? recorded
+                          : Number(item.quantity ?? 0)
+                      const short = Number(item.quantity ?? 0) - fulfilled
+                      return (
+                        <tr key={item.id}>
+                          <td>
+                            <div className="relative h-10 w-10 overflow-hidden rounded-md border border-earth-200 bg-earth-50">
+                              {image ? (
+                                <Image src={image} alt="" fill sizes="40px" className="object-cover" />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center">
+                                  <Package className="h-4 w-4 text-earth-300" aria-hidden />
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="font-medium text-earth-900">{item.product_name}</td>
+                          <td className="tabular-nums">${Number(item.product_price ?? 0).toFixed(2)}</td>
+                          <td className="tabular-nums">
+                            {short > 0 ? (
+                              <span className="flex flex-wrap items-center gap-1.5">
+                                <span>{fulfilled}</span>
+                                <span className="text-xs text-earth-400 line-through">
+                                  {item.quantity}
+                                </span>
+                                <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">
+                                  short {short}
+                                </span>
+                              </span>
+                            ) : (
+                              item.quantity
+                            )}
+                          </td>
+                          <td className="text-right tabular-nums">
+                            ${Number(item.subtotal ?? 0).toFixed(2)}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td colSpan={3} className="text-right text-earth-600">
+                      <td colSpan={4} className="text-right text-earth-600">
                         Subtotal
                       </td>
                       <td className="text-right tabular-nums">
@@ -337,16 +467,18 @@ export default async function AdminOrderDetailPage({
                       </td>
                     </tr>
                     <tr>
-                      <td colSpan={3} className="text-right text-earth-600">
-                        Shipping
+                      <td colSpan={4} className="text-right text-earth-600">
+                        {isPickup ? 'Pickup fee' : 'Shipping'}
                       </td>
                       <td className="text-right tabular-nums">
-                        ${Number(order.shipping_fee ?? 0).toFixed(2)}
+                        {isPickup && Number(order.shipping_fee ?? 0) === 0
+                          ? '—'
+                          : `$${Number(order.shipping_fee ?? 0).toFixed(2)}`}
                       </td>
                     </tr>
                     {Number(orderRecord.tax_amount ?? 0) > 0 ? (
                       <tr>
-                        <td colSpan={3} className="text-right text-earth-600">
+                        <td colSpan={4} className="text-right text-earth-600">
                           Sales tax
                         </td>
                         <td className="text-right tabular-nums">
@@ -355,13 +487,37 @@ export default async function AdminOrderDetailPage({
                       </tr>
                     ) : null}
                     <tr className="border-t border-earth-200">
-                      <td colSpan={3} className="pt-2 text-right font-semibold text-earth-900">
+                      <td colSpan={4} className="pt-2 text-right font-semibold text-earth-900">
                         Total
                       </td>
                       <td className="pt-2 text-right tabular-nums font-semibold text-earth-900">
                         ${Number(order.total_amount ?? 0).toFixed(2)}
                       </td>
                     </tr>
+                    {Number(order.refund_amount ?? 0) > 0 ? (
+                      <>
+                        <tr>
+                          <td colSpan={4} className="text-right text-earth-600">
+                            Refunded
+                          </td>
+                          <td className="text-right tabular-nums text-red-700">
+                            −${Number(order.refund_amount).toFixed(2)}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colSpan={4} className="text-right font-semibold text-earth-900">
+                            Net charged
+                          </td>
+                          <td className="text-right tabular-nums font-semibold text-earth-900">
+                            $
+                            {Math.max(
+                              0,
+                              Number(order.total_amount ?? 0) - Number(order.refund_amount ?? 0)
+                            ).toFixed(2)}
+                          </td>
+                        </tr>
+                      </>
+                    ) : null}
                   </tfoot>
                 </table>
               </div>
@@ -369,6 +525,25 @@ export default async function AdminOrderDetailPage({
               <p className="mt-3 text-sm text-earth-500">No items.</p>
             )}
           </section>
+
+          {/* Availability — record what was handed over and refund the rest */}
+          {fulfillmentItems.length > 0 && (
+            <section className="admin-card">
+              <h2 className="admin-section-title">Availability &amp; shortfall refund</h2>
+              <p className="mt-1 text-sm text-earth-500">
+                Set what you actually handed over. The refund is priced from the missing lines
+                and their sales tax, then sent back to the customer automatically.
+              </p>
+              <div className="mt-4">
+                <OrderItemsFulfillment
+                  orderId={order.id}
+                  items={fulfillmentItems}
+                  paysByCard={pm === 'stripe'}
+                  fullyRefunded={Boolean(order.refunded_at)}
+                />
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Timeline — desktop only alongside main content */}
@@ -390,29 +565,66 @@ export default async function AdminOrderDetailPage({
                 </tr>
               </thead>
               <tbody>
-                {statusLogs.map((log) => (
-                  <tr key={log.id}>
-                    <td className="text-earth-600">
-                      {new Date(log.changed_at).toLocaleString()}
-                    </td>
-                    <td>
-                      {log.from_status
-                        ? ORDER_STATUS_LABEL[normalizeOrderStatus(log.from_status)]
-                        : '—'}
-                    </td>
-                    <td className="font-medium text-earth-900">
-                      {ORDER_STATUS_LABEL[normalizeOrderStatus(log.to_status)]}
-                    </td>
-                    <td className="text-earth-600">{log.changed_by ?? '—'}</td>
-                    <td className="text-earth-600">{log.note ?? ''}</td>
-                  </tr>
-                ))}
+                {statusLogs.map((log) => {
+                  const to = normalizeOrderStatus(log.to_status)
+                  const offPath = isPickup && isShippingOnlyStatus(to)
+                  return (
+                    <tr key={log.id}>
+                      <td className="text-earth-600">
+                        {new Date(log.changed_at).toLocaleString()}
+                      </td>
+                      <td>
+                        {log.from_status
+                          ? orderStatusLabel(normalizeOrderStatus(log.from_status), {
+                              pickup: isPickup,
+                            })
+                          : '—'}
+                      </td>
+                      <td className="font-medium text-earth-900">
+                        <span className="flex flex-wrap items-center gap-1.5">
+                          {orderStatusLabel(to, { pickup: isPickup })}
+                          {offPath && (
+                            <span className="inline-flex items-center rounded-full bg-earth-100 px-2 py-0.5 text-[11px] font-semibold text-earth-600">
+                              not a pickup step
+                            </span>
+                          )}
+                        </span>
+                      </td>
+                      <td className="text-earth-600">{log.changed_by ?? '—'}</td>
+                      <td className="text-earth-600">{log.note ?? ''}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
         </section>
       )}
     </div>
+  )
+}
+
+function PhoneValue({ phone }: { phone: string }) {
+  const tel = telHref(phone)
+  const sms = smsHref(phone)
+  const link =
+    'text-brand-700 no-underline transition-colors duration-150 hover:text-brand-800 hover:underline'
+
+  return (
+    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      {tel ? (
+        <a href={tel} className={link}>
+          {formatPhoneDisplay(phone)}
+        </a>
+      ) : (
+        <span>{phone}</span>
+      )}
+      {sms ? (
+        <a href={sms} className={`text-xs ${link}`}>
+          Text
+        </a>
+      ) : null}
+    </span>
   )
 }
 

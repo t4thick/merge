@@ -74,7 +74,9 @@ export async function GET(req: NextRequest) {
   const [{ data: items }, logsResult] = await Promise.all([
     supabaseAdmin
       .from('order_items')
-      .select('id,product_name,product_price,quantity,subtotal')
+      // `*` so fulfilled_quantity is included on installs that ran
+      // partial-fulfillment.sql, without breaking those that have not.
+      .select('*')
       .eq('order_id', order.id),
     supabaseAdmin
       .from('order_status_logs')
@@ -94,8 +96,67 @@ export async function GET(req: NextRequest) {
   const logs = missingTable ? [] : (logsResult.data ?? [])
 
   return NextResponse.json({
-    order: { ...order, status: normalizeOrderStatus(order.status as string) },
-    items: items ?? [],
+    order: publicOrderFields(order),
+    items: (items ?? []).map(publicItemFields),
     logs,
   })
+}
+
+/**
+ * The order row is fetched with `*`, which includes Stripe identifiers and
+ * internal notes. Only these fields ever reach the browser.
+ */
+const PUBLIC_ORDER_FIELDS = [
+  'id',
+  'order_number',
+  'created_at',
+  'customer_name',
+  'customer_email',
+  'customer_phone',
+  'address_line',
+  'city',
+  'state',
+  'postal_code',
+  'country',
+  'subtotal_amount',
+  'shipping_fee',
+  'tax_amount',
+  'total_amount',
+  'refund_amount',
+  'refunded_at',
+  'shipping_method',
+  'payment_method',
+  'tracking_number',
+  'pickup_contact_name',
+  'ready_for_pickup_at',
+  'delivery_proof',
+  'delivery_proof_at',
+] as const
+
+const PUBLIC_ITEM_FIELDS = [
+  'id',
+  'product_name',
+  'product_price',
+  'quantity',
+  'subtotal',
+  'fulfilled_quantity',
+] as const
+
+function pick(row: Record<string, unknown>, fields: readonly string[]) {
+  const out: Record<string, unknown> = {}
+  for (const field of fields) {
+    if (field in row) out[field] = row[field]
+  }
+  return out
+}
+
+function publicOrderFields(order: Record<string, unknown>) {
+  return {
+    ...pick(order, PUBLIC_ORDER_FIELDS),
+    status: normalizeOrderStatus(order.status as string),
+  }
+}
+
+function publicItemFields(item: Record<string, unknown>) {
+  return pick(item, PUBLIC_ITEM_FIELDS)
 }

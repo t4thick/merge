@@ -18,6 +18,7 @@ import {
   checkLocalDeliveryEligibility,
   LOCAL_DELIVERY_MAX_MINUTES,
 } from '@/lib/delivery/local-delivery-eligibility'
+import { toDialable } from '@/lib/phone-link'
 import { STORE } from '@/lib/constants/store'
 import type { CartItem } from '@/types'
 import { CHECKOUT_STRIPE_PAYMENT_METHOD_TYPES, getStripe } from '@/lib/stripe'
@@ -107,6 +108,14 @@ export async function POST(req: NextRequest) {
     if (!phoneTrim) {
       return NextResponse.json(
         { error: 'Phone number is required so we can confirm your order.' },
+        { status: 400 }
+      )
+    }
+    // Staff call the customer from the pickup counter and at the door, so the
+    // number has to actually be dialable — not just non-empty.
+    if (!toDialable(phoneTrim)) {
+      return NextResponse.json(
+        { error: 'Enter a reachable phone number, e.g. (614) 555-0199.' },
         { status: 400 }
       )
     }

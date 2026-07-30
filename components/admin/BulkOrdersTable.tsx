@@ -43,6 +43,7 @@ export function BulkOrdersTable({ orders }: { orders: Order[] }) {
   const [bulkStatus, setBulkStatus] = useState<OrderStatus>('shipped')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
 
   const allChecked = orders.length > 0 && selected.size === orders.length
   const someChecked = selected.size > 0 && selected.size < orders.length
@@ -65,16 +66,22 @@ export function BulkOrdersTable({ orders }: { orders: Order[] }) {
     if (!selected.size) return
     setLoading(true)
     setError('')
+    setNotice('')
     try {
       const res = await fetch('/api/admin/orders/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: [...selected], status: bulkStatus }),
       })
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
         setError(data.error ?? 'Bulk update failed.')
         return
+      }
+      if (typeof data.skipped === 'number' && data.skipped > 0) {
+        setNotice(
+          `${data.skipped} pickup order${data.skipped === 1 ? '' : 's'} skipped — pickup has no shipping step.`
+        )
       }
       setSelected(new Set())
       router.refresh()
@@ -157,6 +164,8 @@ export function BulkOrdersTable({ orders }: { orders: Order[] }) {
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
       )}
+
+      {notice && <p className="text-sm text-earth-600">{notice}</p>}
 
       <div className="admin-table-wrap hidden overflow-x-auto sm:block">
         <table className="admin-table">
