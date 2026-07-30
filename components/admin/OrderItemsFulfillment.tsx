@@ -187,7 +187,8 @@ export function OrderItemsFulfillment({
                 </Button>
                 <input
                   type="number"
-                  className="form-input h-9 w-14 text-center tabular-nums"
+                  inputMode="numeric"
+                  className="stepper-input h-9 w-14 font-semibold"
                   value={value}
                   min={0}
                   max={item.quantity}

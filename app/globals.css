@@ -195,6 +195,24 @@
     @apply w-full rounded-xl border border-earth-200 bg-white px-4 py-3 text-base text-earth-900 shadow-[var(--shadow-card)] transition duration-200 placeholder:text-earth-400 focus:border-earth-400 focus:outline-none focus:ring-4 focus:ring-earth-900/5 sm:text-sm;
   }
 
+  /*
+   * Narrow quantity field sitting between -/+ buttons. `form-input` cannot be
+   * reused: its px-4 padding plus the native spin buttons leave no room for the
+   * digits at this width, so the value renders clipped or invisible.
+   */
+  .stepper-input {
+    @apply rounded-xl border border-earth-200 bg-white px-1 text-center text-base tabular-nums text-earth-900 shadow-[var(--shadow-card)] transition duration-200 focus:border-earth-400 focus:outline-none focus:ring-4 focus:ring-earth-900/5 sm:text-sm;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .stepper-input::-webkit-outer-spin-button,
+  .stepper-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
+
   .form-select {
     @apply w-full appearance-none rounded-xl border border-earth-200 bg-white px-4 py-3 pr-10 text-base text-earth-900 shadow-[var(--shadow-card)] transition duration-200 focus:border-earth-400 focus:outline-none focus:ring-4 focus:ring-earth-900/5 sm:text-sm;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2378716c'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
