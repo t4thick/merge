@@ -187,7 +187,7 @@ export async function applyShippoTrackingUpdate(payload: ShippoTrackPayload): Pr
     }
   }
 
-  let order =
+  const order =
     (trackingNumber ? await findOrderByTracking(trackingNumber) : null) ??
     (await findOrderByMetadata(data.metadata))
 

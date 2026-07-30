@@ -14,6 +14,10 @@ import {
   verifyUsDeliveryAddress,
 } from '@/lib/address/verify-us-address'
 import { normalizeShippingCountry, normalizeShippingMethod, normalizeShippingRegion } from '@/lib/shipping'
+import {
+  checkLocalDeliveryEligibility,
+  LOCAL_DELIVERY_MAX_MINUTES,
+} from '@/lib/delivery/local-delivery-eligibility'
 import { STORE } from '@/lib/constants/store'
 import type { CartItem } from '@/types'
 import { CHECKOUT_STRIPE_PAYMENT_METHOD_TYPES, getStripe } from '@/lib/stripe'
@@ -209,6 +213,31 @@ export async function POST(req: NextRequest) {
         },
         verified
       )
+    }
+
+    // Local delivery is a real driver making a real trip — the 30-minute
+    // radius is enforced here authoritatively, never trusting the client-side
+    // pre-check alone.
+    if (shipping_method === 'local_delivery') {
+      const eligibility = await checkLocalDeliveryEligibility({
+        line1: shippingAddress.line1,
+        line2: shippingAddress.line2,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        postalCode: shippingAddress.postalCode,
+        country: String(country).trim(),
+      })
+      if (!eligibility.ok) {
+        return NextResponse.json({ error: eligibility.error }, { status: 400 })
+      }
+      if (!eligibility.eligible) {
+        return NextResponse.json(
+          {
+            error: `That address is about ${eligibility.minutes} min away by car — outside our ${LOCAL_DELIVERY_MAX_MINUTES}-min local delivery area. Choose standard shipping or store pickup instead.`,
+          },
+          { status: 400 }
+        )
+      }
     }
 
     const addressLine = formatAddressLine(shippingAddress)

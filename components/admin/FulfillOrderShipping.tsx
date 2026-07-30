@@ -6,6 +6,7 @@ import { FlashLabelPdfActions } from '@/components/admin/FlashLabelPdfActions'
 type Props = {
   orderId: string
   isPickup: boolean
+  isLocalDelivery?: boolean
   currentStatus: string
   uspsConfigured: boolean
   uspsLabelsLive: boolean
@@ -26,6 +27,7 @@ type Props = {
 export function FulfillOrderShipping({
   orderId,
   isPickup,
+  isLocalDelivery,
   uspsConfigured,
   uspsLabelsLive,
   shippoConfigured,
@@ -40,6 +42,15 @@ export function FulfillOrderShipping({
 
   if (isPickup) {
     return <p className="text-sm text-earth-600">Pickup order — no shipping label needed.</p>
+  }
+
+  if (isLocalDelivery) {
+    return (
+      <p className="text-sm text-earth-600">
+        Local delivery order — no carrier label needed. Update the status below when it&apos;s out
+        for delivery and delivered.
+      </p>
+    )
   }
 
   return (

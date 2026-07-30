@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendOrderStatusEmail } from '@/lib/email/send-order-emails'
-import { normalizeOrderStatus, ORDER_STATUS_TIMESTAMP_COLUMN } from '@/lib/order-status'
+import { normalizeOrderStatus, ORDER_STATUS_TIMESTAMP_COLUMN, requiresShippingLabel } from '@/lib/order-status'
 import type { UspsLabelResult } from '@/lib/shipping/usps-client'
 
 async function uploadLabelPdf(orderId: string, trackingNumber: string, pdf: Buffer): Promise<string | null> {
@@ -44,8 +44,8 @@ export async function applyUspsLabelToOrder(
     return { ok: false, error: 'Order not found.' }
   }
 
-  if (order.shipping_method === 'pickup') {
-    return { ok: false, error: 'Pickup orders do not need a label.' }
+  if (!requiresShippingLabel(order.shipping_method)) {
+    return { ok: false, error: 'This order does not need a shipping label.' }
   }
 
   const country = (order.country ?? 'US').toUpperCase()

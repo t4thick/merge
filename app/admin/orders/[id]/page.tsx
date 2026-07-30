@@ -15,6 +15,7 @@ import {
   getStatusFlow,
   getStatusStepIndex,
   isPickupShippingMethod,
+  isLocalDeliveryShippingMethod,
   normalizeOrderStatus,
   orderStatusLabel,
   type OrderStatus,
@@ -63,6 +64,7 @@ export default async function AdminOrderDetailPage({
   const shippingMethod =
     (order.shipping_method as ShippingMethod | null | undefined) ?? 'standard'
   const isPickup = isPickupShippingMethod(order.shipping_method)
+  const isLocalDelivery = isLocalDeliveryShippingMethod(order.shipping_method)
   const statusFlow = getStatusFlow(order.shipping_method)
   const statusIndex = getStatusStepIndex(order.status, statusFlow)
   const shippingLabel = SHIPPING_METHOD_LABEL[shippingMethod] ?? shippingMethod
@@ -142,7 +144,11 @@ export default async function AdminOrderDetailPage({
           </section>
           {/* Shipping label */}
           <section className="admin-card space-y-4">
-            <PrintAddressSlipLink orderId={order.id} isPickup={shippingMethod === 'pickup'} />
+            <PrintAddressSlipLink
+              orderId={order.id}
+              isPickup={shippingMethod === 'pickup'}
+              isLocalDelivery={isLocalDelivery}
+            />
             <div>
               <h2 className="admin-section-title">Ship this order</h2>
               <p className="mt-1 text-sm text-earth-500">Create a label or add tracking.</p>
@@ -150,6 +156,7 @@ export default async function AdminOrderDetailPage({
                 <FulfillOrderShipping
                   orderId={order.id}
                   isPickup={shippingMethod === 'pickup'}
+                  isLocalDelivery={isLocalDelivery}
                   currentStatus={normalizedStatus}
                   uspsConfigured={isUspsConfigured()}
                   uspsLabelsLive={isUspsLabelsLive()}

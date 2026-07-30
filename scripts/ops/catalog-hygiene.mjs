@@ -5,9 +5,9 @@
  * - Mark near-duplicate plantain-by-weight listings out of stock (keep one)
  *
  *   npx vercel env pull .env.vercel.production --environment=production --yes
- *   node --env-file=.env.vercel.production scripts/catalog-hygiene.mjs
+ *   node --env-file=.env.vercel.production scripts/ops/catalog-hygiene.mjs
  *
- * Or: npx vercel env run -e production -- node scripts/catalog-hygiene.mjs
+ * Or: npx vercel env run -e production -- node scripts/ops/catalog-hygiene.mjs
  */
 
 import { createClient } from '@supabase/supabase-js'

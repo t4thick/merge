@@ -1,4 +1,4 @@
-export type ShippingMethod = 'standard' | 'express' | 'pickup'
+export type ShippingMethod = 'standard' | 'express' | 'pickup' | 'local_delivery'
 
 export type ShippingQuoteInput = {
   subtotal: number
@@ -89,7 +89,11 @@ export const SHIPPING_METHOD_LABEL: Record<ShippingMethod, string> = {
   standard: 'Standard Delivery',
   express: 'Express Delivery',
   pickup: 'Store Pickup',
+  local_delivery: 'Local Delivery',
 }
+
+/** Flat fee for local mobile-market delivery within the drive-time radius. */
+export const LOCAL_DELIVERY_FEE = 5
 
 /** Subtotal for free standard US shipping at checkout */
 export const FREE_STANDARD_SHIPPING_SUBTOTAL = 120
@@ -105,7 +109,14 @@ export function freeStandardShippingProgress(subtotal: number): number {
 }
 
 export function normalizeShippingMethod(value: string | null | undefined): ShippingMethod {
-  if (value === 'express' || value === 'pickup' || value === 'standard') return value
+  if (
+    value === 'express' ||
+    value === 'pickup' ||
+    value === 'standard' ||
+    value === 'local_delivery'
+  ) {
+    return value
+  }
   return 'standard'
 }
 
@@ -154,6 +165,10 @@ export function calculateShipping(input: ShippingQuoteInput): ShippingQuote {
 
   if (method === 'pickup') {
     return { method, fee: 0, zone: 'pickup', label: SHIPPING_METHOD_LABEL[method] }
+  }
+
+  if (method === 'local_delivery') {
+    return { method, fee: LOCAL_DELIVERY_FEE, zone: 'local', label: SHIPPING_METHOD_LABEL[method] }
   }
 
   const isUnitedStates = !country || country === 'united states'

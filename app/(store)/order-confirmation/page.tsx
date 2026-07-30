@@ -4,6 +4,7 @@ import { CheckCircle2, Package } from 'lucide-react'
 import { createClientOptional } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { OrderStatusTimeline } from '@/components/account/OrderStatusTimeline'
+import { PickupReceiptActions } from '@/components/store/PickupReceiptActions'
 import { PageHeader } from '@/components/store/PageHeader'
 import { Button } from '@/components/ui/button'
 import { isPickupShippingMethod, normalizeOrderStatus, orderStatusLabel } from '@/lib/order-status'
@@ -39,13 +40,14 @@ export default async function OrderConfirmationPage({
     subtotal_amount: number | null
     tracking_number: string | null
     payment_method: string | null
+    pickup_contact_name: string | null
   } | null = null
 
   if (id) {
     let query = supabaseAdmin
       .from('orders')
       .select(
-        'id,order_number,status,shipping_method,shipping_fee,total_amount,subtotal_amount,tracking_number,payment_method'
+        'id,order_number,status,shipping_method,shipping_fee,total_amount,subtotal_amount,tracking_number,payment_method,pickup_contact_name'
       )
       .eq('id', id)
 
@@ -116,11 +118,17 @@ export default async function OrderConfirmationPage({
                 <OrderStatusTimeline status={order.status} shippingMethod={order.shipping_method} />
               </div>
               {isPickup && (
-                <p className="mt-6 rounded-lg bg-brand-50/60 p-3 text-xs leading-relaxed text-earth-600">
-                  We&apos;ll email you when your order is ready at {STORE.address}. Sending an Uber,
-                  DoorDash, or a friend? Have them show order {orderNumberLabel || ''} at the
-                  counter.
-                </p>
+                <div className="mt-6 rounded-lg bg-brand-50/60 p-3">
+                  <p className="text-xs leading-relaxed text-earth-600">
+                    We&apos;ll email you when your order is ready at {STORE.address}. Sending an
+                    Uber, DoorDash, or a friend? Give them this receipt to show at the counter.
+                  </p>
+                  <PickupReceiptActions
+                    orderNumberLabel={orderNumberLabel || order.id}
+                    pickupContactName={order.pickup_contact_name}
+                    total={Number(order.total_amount ?? 0)}
+                  />
+                </div>
               )}
             </div>
 

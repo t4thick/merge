@@ -176,6 +176,7 @@ export function CheckoutClient({
 
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('pickup')
   const isPickup = shippingMethod === 'pickup'
+  const isLocalDelivery = shippingMethod === 'local_delivery'
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -185,6 +186,11 @@ export function CheckoutClient({
   const [addressVerifyStatus, setAddressVerifyStatus] = useState<AddressVerifyStatus>('idle')
   const [suggestedAddress, setSuggestedAddress] = useState<ParsedAddress | null>(null)
   const [addressVerifyError, setAddressVerifyError] = useState('')
+  const [localEligibility, setLocalEligibility] = useState<{
+    status: 'idle' | 'checking' | 'eligible' | 'ineligible' | 'error'
+    minutes?: number
+    error?: string
+  }>({ status: 'idle' })
 
   const cartFingerprint = useMemo(
     () => items.map((i) => `${i.product.id}:${i.quantity}`).join('|'),
@@ -342,6 +348,55 @@ export function CheckoutClient({
   ])
 
   useEffect(() => {
+    if (!isLocalDelivery || !addressVerified) {
+      setLocalEligibility({ status: 'idle' })
+      return
+    }
+
+    const ctrl = new AbortController()
+    setLocalEligibility({ status: 'checking' })
+    fetch('/api/delivery/local-eligibility', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        line1: form.address1.trim(),
+        line2: form.address2.trim(),
+        city: form.city.trim(),
+        state: form.state.trim(),
+        postalCode: form.postalCode.trim(),
+        country: form.country,
+      }),
+      signal: ctrl.signal,
+    })
+      .then((r) => r.json())
+      .then((data: { ok?: boolean; eligible?: boolean; minutes?: number; error?: string }) => {
+        if (!data.ok) {
+          setLocalEligibility({ status: 'error', error: data.error || 'Could not check this address.' })
+          return
+        }
+        setLocalEligibility({
+          status: data.eligible ? 'eligible' : 'ineligible',
+          minutes: data.minutes,
+        })
+      })
+      .catch((err: { name?: string }) => {
+        if (err?.name === 'AbortError') return
+        setLocalEligibility({ status: 'error', error: 'Could not check this address.' })
+      })
+
+    return () => ctrl.abort()
+  }, [
+    isLocalDelivery,
+    addressVerified,
+    form.address1,
+    form.address2,
+    form.city,
+    form.state,
+    form.postalCode,
+    form.country,
+  ])
+
+  useEffect(() => {
     const productIds = items.map((i) => i.product.id)
     if (productIds.length === 0) {
       setCategoryByProductId({})
@@ -483,6 +538,15 @@ export function CheckoutClient({
               addressVerifyError ||
                 'Enter a deliverable US address — verification runs when street, city, state, and ZIP are filled in.'
             )
+      )
+      return
+    }
+
+    if (isLocalDelivery && localEligibility.status !== 'eligible') {
+      setError(
+        localEligibility.status === 'ineligible'
+          ? `That address is about ${localEligibility.minutes} min away by car — outside our 30-min local delivery area. Choose standard shipping or store pickup instead.`
+          : 'Checking local delivery eligibility — wait a moment and try again.'
       )
       return
     }
@@ -655,7 +719,7 @@ export function CheckoutClient({
 
             <CheckoutStep step={2} title="Shipping method">
               <div className="space-y-3">
-                {(['pickup', 'standard'] as ShippingMethod[]).map((method) => {
+                {(['pickup', 'local_delivery', 'standard'] as ShippingMethod[]).map((method) => {
                   const quote = calculateShipping({
                     subtotal: totalPrice,
                     country: form.country,
@@ -694,20 +758,48 @@ export function CheckoutClient({
                           {quote.fee === 0 ? 'Free' : `$${quote.fee.toFixed(2)}`}
                           {method === 'pickup'
                             ? ' · Ready same day · come in or send Uber with your order #'
-                            : ` · ${deliveryEta[quote.zone] ?? '5–8 business days'}`}
+                            : method === 'local_delivery'
+                              ? ' · Same-day · within 30 min drive of the store'
+                              : ` · ${deliveryEta[quote.zone] ?? '5–8 business days'}`}
                         </span>
                       </span>
                     </label>
                   )
                 })}
               </div>
+
+              {isLocalDelivery && (
+                <div className="mt-4 rounded-xl border border-earth-200 bg-earth-50 px-4 py-3 text-sm">
+                  {localEligibility.status === 'idle' && (
+                    <p className="text-earth-600">Enter your address below to check eligibility.</p>
+                  )}
+                  {localEligibility.status === 'checking' && (
+                    <p className="text-earth-600">Checking drive time…</p>
+                  )}
+                  {localEligibility.status === 'eligible' && (
+                    <p className="font-medium text-emerald-700">
+                      In range — about {localEligibility.minutes} min from the store.
+                    </p>
+                  )}
+                  {localEligibility.status === 'ineligible' && (
+                    <p className="font-medium text-red-600">
+                      About {localEligibility.minutes} min away — outside our 30-min local delivery
+                      area. Choose standard shipping or store pickup instead.
+                    </p>
+                  )}
+                  {localEligibility.status === 'error' && (
+                    <p className="text-red-600">{localEligibility.error}</p>
+                  )}
+                </div>
+              )}
+
               <p className="mt-4 rounded-xl border border-earth-200 bg-earth-50 px-4 py-3 text-sm text-earth-600">
-                Need Ohio delivery or the mobile market? Call{' '}
+                Outside our local delivery area? Call{' '}
                 <StorePhoneLinks
                   linkClassName="font-medium text-earth-900 no-underline hover:underline"
                   separator=" or "
                 />{' '}
-                to schedule — checkout here covers store pickup and nationwide shipping.
+                — checkout here covers store pickup, local delivery, and nationwide shipping.
               </p>
             </CheckoutStep>
 
@@ -1044,7 +1136,12 @@ export function CheckoutClient({
                       size="lg"
                       className="h-14 w-full rounded-xl text-base font-bold tracking-tight shadow-[var(--shadow-card-hover)]"
                       onClick={() => void preparePayment()}
-                      disabled={loading}
+                      disabled={
+                        loading ||
+                        (isLocalDelivery &&
+                          localEligibility.status !== 'eligible' &&
+                          localEligibility.status !== 'idle')
+                      }
                     >
                       {loading ? 'Preparing…' : `Continue to pay · $${grandTotal.toFixed(2)}`}
                     </Button>

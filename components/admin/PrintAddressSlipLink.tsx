@@ -6,11 +6,13 @@ import { cn } from '@/lib/utils'
 export function PrintAddressSlipLink({
   orderId,
   isPickup,
+  isLocalDelivery,
 }: {
   orderId: string
   isPickup: boolean
+  isLocalDelivery?: boolean
 }) {
-  if (isPickup) return null
+  if (isPickup || isLocalDelivery) return null
 
   return (
     <div className="rounded-lg border border-earth-200 bg-earth-50 p-4">

@@ -89,6 +89,19 @@ export function isPickupShippingMethod(method: string | null | undefined): boole
   return (method ?? '').trim().toLowerCase() === 'pickup'
 }
 
+/** True when a shipping method string represents staff-driven local delivery (no carrier). */
+export function isLocalDeliveryShippingMethod(method: string | null | undefined): boolean {
+  return (method ?? '').trim().toLowerCase() === 'local_delivery'
+}
+
+/**
+ * False for pickup and local delivery — both are fulfilled without a
+ * carrier label (customer collects, or staff drives it themselves).
+ */
+export function requiresShippingLabel(method: string | null | undefined): boolean {
+  return !isPickupShippingMethod(method) && !isLocalDeliveryShippingMethod(method)
+}
+
 /** The correct linear status flow for an order based on its shipping method. */
 export function getStatusFlow(
   shippingMethod: string | null | undefined
