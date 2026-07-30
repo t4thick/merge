@@ -26,6 +26,11 @@ export type PickupTicketPdfData = {
   holdValue: string
   itemCount: number
   items: PickupTicketPdfItem[]
+  /** Compact pickup-counter footer (store name / address / hours / phones). */
+  storeName?: string | null
+  storeAddress?: string | null
+  storeHours?: string | null
+  storePhones?: string | null
 }
 
 const PAGE_W = 288 // 4in
@@ -58,6 +63,7 @@ function sanitize(text: string): string {
     .replace(/[\u201C\u201D]/g, '"')
     .replace(/[\u2013\u2014]/g, '-')
     .replace(/\u00d7/g, 'x')
+    .replace(/\u00b7/g, '|')
     .replace(/[\u2022\u2026]/g, '-')
     .replace(/[^\x20-\x7E]/g, '')
 }
@@ -154,18 +160,22 @@ const META_LABEL_SIZE = 9.5
 const META_VALUE_SIZE = 11
 const HEADING_SIZE = 9
 const ITEM_SIZE = 13
+const FOOTER_TITLE_SIZE = 7.5
+const FOOTER_LINE_SIZE = 8
 
 /**
  * Base gaps between sections. Leftover label height is shared out between the
  * three flexible gaps and the item rows; `afterHeading` stays fixed so the
  * heading always hugs its list.
  */
-const BASE_GAPS = { afterEyebrow: 10, afterHero: 18, beforeRule: 10, afterHeading: 8 }
+const BASE_GAPS = { afterEyebrow: 10, afterHero: 14, beforeRule: 8, afterHeading: 6 }
 const FLEX_GAPS = 3
-const GAP_BONUS_CAP = 20
-const ROW_BONUS_CAP = 12
+const GAP_BONUS_CAP = 14
+const ROW_BONUS_CAP = 8
 /** Thermal printers clip near the edge, so never run the last row to the margin. */
-const BOTTOM_CLEARANCE = 10
+const BOTTOM_CLEARANCE = 8
+/** Reserved height for the pickup-counter footer (title + up to 4 lines + rule). */
+const FOOTER_HEIGHT = 60
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
@@ -194,6 +204,13 @@ export function buildPickupTicketPdfBlob(data: PickupTicketPdfData): Blob {
   const headingHeight = HEADING_SIZE + 12
   const baseItemStep = ITEM_SIZE + 6
 
+  const storeName = sanitize(data.storeName ?? '')
+  const storeAddress = sanitize(data.storeAddress ?? '')
+  const storeHours = sanitize(data.storeHours ?? '')
+  const storePhones = sanitize(data.storePhones ?? '')
+  const hasFooter = Boolean(storeName || storeAddress || storeHours || storePhones)
+  const footerReserve = hasFooter ? FOOTER_HEIGHT : BOTTOM_CLEARANCE
+
   const fixedHeight =
     EYEBROW_SIZE +
     BASE_GAPS.afterEyebrow +
@@ -202,12 +219,13 @@ export function buildPickupTicketPdfBlob(data: PickupTicketPdfData): Blob {
     metaStep * metaRows.length +
     BASE_GAPS.beforeRule +
     headingHeight +
-    BASE_GAPS.afterHeading
+    BASE_GAPS.afterHeading +
+    footerReserve
 
   // Decide how many item rows fit, then hand the unused height back to the
   // layout so a short order still reaches the bottom of the label instead of
   // floating in the top third.
-  const itemSpace = PAGE_H - MARGIN * 2 - BOTTOM_CLEARANCE - fixedHeight
+  const itemSpace = PAGE_H - MARGIN * 2 - fixedHeight
   const maxRows = Math.max(1, Math.floor(itemSpace / baseItemStep))
   const overflows = data.items.length > maxRows
   const visible = overflows ? data.items.slice(0, Math.max(0, maxRows - 1)) : data.items
@@ -275,6 +293,29 @@ export function buildPickupTicketPdfBlob(data: PickupTicketPdfData): Blob {
   if (remaining > 0) {
     y -= itemStep
     canvas.text(`+ ${remaining} more item${remaining === 1 ? '' : 's'}`, BODY_L, y, ITEM_SIZE, true)
+  }
+
+  // --- Pickup counter footer, pinned to the bottom of the label.
+  if (hasFooter) {
+    const footerTop = MARGIN + FOOTER_HEIGHT
+    canvas.rule(footerTop, 0.6)
+    let footY = footerTop - 10
+    canvas.text('PICKUP COUNTER', BODY_L, footY, FOOTER_TITLE_SIZE, true)
+    const footerLines: { text: string; bold: boolean }[] = []
+    if (storeName) footerLines.push({ text: storeName, bold: true })
+    if (storeAddress) footerLines.push({ text: storeAddress, bold: false })
+    if (storeHours) footerLines.push({ text: storeHours, bold: false })
+    if (storePhones) footerLines.push({ text: storePhones, bold: false })
+    for (const line of footerLines) {
+      footY -= FOOTER_LINE_SIZE + 2
+      canvas.text(
+        truncateToWidth(line.text, FOOTER_LINE_SIZE, line.bold, BODY_W),
+        BODY_L,
+        footY,
+        FOOTER_LINE_SIZE,
+        line.bold
+      )
+    }
   }
 
   return toPdfBlob(canvas.toStream())

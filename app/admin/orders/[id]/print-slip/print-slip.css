@@ -31,13 +31,22 @@
 
   /* ---------------------------------------------------------------
      4x6 thermal label (100mm x 150mm).
-     Only what staff need to match a bag to a customer survives here —
-     the store address and email are dropped so the order number and
-     contents can stay large on a small label.
+     Keep the pickup-counter block, but compact it so the order number
+     and bag list still fit.
      --------------------------------------------------------------- */
-  body.paper-label .pickup-ticket-store,
   body.paper-label .pickup-ticket-email {
     display: none !important;
+  }
+
+  body.paper-label .pickup-ticket-store {
+    margin-top: 2mm !important;
+    padding: 2mm !important;
+    font-size: 8pt !important;
+    line-height: 1.25 !important;
+  }
+
+  body.paper-label .pickup-ticket-store p {
+    margin: 0 !important;
   }
 
   body.paper-label .pickup-ticket-eyebrow {

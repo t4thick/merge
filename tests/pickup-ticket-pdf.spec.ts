@@ -10,6 +10,10 @@ const TICKET: PickupTicketPdfData = {
   holdValue: 'until 7/27/2026, 4:57:09 PM',
   itemCount: 4,
   items: [{ name: 'Titus Sardine', quantity: 4 }],
+  storeName: 'Kintampo African Market',
+  storeAddress: '1668 E Dublin Granville Rd, Columbus, OH 43229',
+  storeHours: 'Mon-Sat 9am-8pm | Sun 10am-6pm',
+  storePhones: '(614) 377-8297 | (614) 325-7385',
 }
 
 async function render(data: PickupTicketPdfData) {
@@ -75,8 +79,8 @@ test.describe('pickup ticket pdf', () => {
   })
 
   test('lists every item when they fit and stays inside the label', async () => {
-    const items = Array.from({ length: 6 }, (_, i) => ({ name: `Item ${i + 1}`, quantity: 1 }))
-    const { pdf } = await render({ ...TICKET, items, itemCount: 6 })
+    const items = Array.from({ length: 3 }, (_, i) => ({ name: `Item ${i + 1}`, quantity: 1 }))
+    const { pdf } = await render({ ...TICKET, items, itemCount: 3 })
     const placed = placements(pdf)
 
     items.forEach((item) => {
@@ -92,6 +96,20 @@ test.describe('pickup ticket pdf', () => {
 
     expect(pdf).toMatch(/\+ \d+ more items/)
     placements(pdf).forEach((p) => expect(p.y).toBeGreaterThan(0))
+  })
+
+  test('prints the pickup counter footer at the bottom of the label', async () => {
+    const { pdf } = await render(TICKET)
+    const placed = placements(pdf)
+
+    expect(placed.some((p) => p.text === 'PICKUP COUNTER')).toBe(true)
+    expect(placed.some((p) => p.text === 'Kintampo African Market')).toBe(true)
+    expect(placed.some((p) => p.text.includes('Dublin Granville'))).toBe(true)
+
+    const footer = placed.find((p) => p.text === 'PICKUP COUNTER')!
+    const orderNumber = placed.find((p) => p.text === 'LQ-1007')!
+    expect(footer.y).toBeLessThan(orderNumber.y)
+    expect(footer.y).toBeGreaterThan(16)
   })
 
   test('escapes parentheses and drops glyphs the base font cannot draw', async () => {

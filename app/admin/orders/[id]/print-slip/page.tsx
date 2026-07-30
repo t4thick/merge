@@ -2,9 +2,9 @@ import { notFound } from 'next/navigation'
 import { PrintSlipActions } from '@/components/admin/PrintSlipActions'
 import { PrintSlipDocument } from '@/components/admin/PrintSlipDocument'
 import { PickupTicketDocument } from '@/components/admin/PickupTicketDocument'
+import { STORE, storePhonesPlain } from '@/lib/constants/store'
 import { requireAdminPage } from '@/lib/auth/require-admin-page'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { STORE, storePhonesPlain } from '@/lib/constants/store'
 import { formatOrderNumber } from '@/lib/orders/order-number'
 import { PICKUP_HOLD_HOURS, getPickupHold } from '@/lib/orders/pickup-hold'
 import { formatPhoneDisplay } from '@/lib/phone-link'
@@ -41,6 +41,10 @@ export default async function AdminOrderPrintSlipPage({
       holdValue: hold ? `until ${hold.dueAt.toLocaleString()}` : 'starts when staged',
       itemCount: ticketItems.reduce((n, i) => n + i.quantity, 0),
       items: ticketItems.map((i) => ({ name: i.product_name, quantity: i.quantity })),
+      storeName: STORE.name,
+      storeAddress: STORE.address,
+      storeHours: STORE.hours,
+      storePhones: storePhonesPlain(),
     }
 
     return (
