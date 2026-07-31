@@ -3,10 +3,17 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, CheckCircle2, Circle, Package } from 'lucide-react'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { PAYMENT_LABEL, type PaymentMethod } from '@/lib/payment-methods'
+import { PAYMENT_LABEL, normalizeManualSettleMethod, type PaymentMethod } from '@/lib/payment-methods'
+import {
+  ORDER_SOURCE_LABEL,
+  PAYMENT_STATUS_LABEL,
+  normalizeOrderSource,
+  normalizePaymentStatus,
+} from '@/lib/orders/order-source'
 import { OrderStatusUpdater } from '@/components/admin/OrderStatusUpdater'
 import { RefundButton } from '@/components/admin/RefundButton'
 import { ManualRefundButton } from '@/components/admin/ManualRefundButton'
+import { MarkPaidPanel } from '@/components/admin/MarkPaidPanel'
 import { DeleteOrderButton } from '@/components/admin/DeleteOrderButton'
 import { AdminNotePanel } from '@/components/admin/AdminNotePanel'
 import { FulfillOrderShipping } from '@/components/admin/FulfillOrderShipping'
@@ -67,6 +74,11 @@ export default async function AdminOrderDetailPage({
 
   const pm = (order.payment_method as PaymentMethod | null | undefined) ?? 'cod'
   const paymentLabel = PAYMENT_LABEL[pm] ?? pm
+  const orderRecord = order as Record<string, unknown>
+  const paymentStatus = normalizePaymentStatus(orderRecord.payment_status)
+  const orderSource = normalizeOrderSource(orderRecord.order_source)
+  const paidAt =
+    typeof orderRecord.paid_at === 'string' ? orderRecord.paid_at : null
   const normalizedStatus = normalizeOrderStatus(order.status)
   const shippingMethod =
     (order.shipping_method as ShippingMethod | null | undefined) ?? 'standard'
@@ -85,7 +97,6 @@ export default async function AdminOrderDetailPage({
 
   const uspsConfig = getUspsConfigPublic()
   const defaultParcel = getDefaultParcel()
-  const orderRecord = order as Record<string, unknown>
   const readyForPickupAt =
     typeof orderRecord.ready_for_pickup_at === 'string' ? orderRecord.ready_for_pickup_at : null
 
@@ -145,6 +156,22 @@ export default async function AdminOrderDetailPage({
           <p className="mt-1 break-all font-mono text-xs text-earth-400">{order.id}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 self-start">
+          {orderSource !== 'online' && (
+            <span className="admin-status-pill bg-earth-100 text-earth-700">
+              {ORDER_SOURCE_LABEL[orderSource]}
+            </span>
+          )}
+          {pm !== 'stripe' && (
+            <span
+              className={`admin-status-pill ${
+                paymentStatus === 'unpaid'
+                  ? 'bg-amber-50 text-amber-800'
+                  : 'bg-emerald-50 text-emerald-800'
+              }`}
+            >
+              {PAYMENT_STATUS_LABEL[paymentStatus]}
+            </span>
+          )}
           {hasShortage && (
             <span className="admin-status-pill bg-red-50 text-red-700">Partially fulfilled</span>
           )}
@@ -294,6 +321,14 @@ export default async function AdminOrderDetailPage({
             </div>
           </section>
 
+          {pm !== 'stripe' && !order.refunded_at && (
+            <MarkPaidPanel
+              orderId={order.id}
+              paymentStatus={paymentStatus}
+              paymentMethod={normalizeManualSettleMethod(pm)}
+            />
+          )}
+
           {/* Refund — Stripe */}
           {pm === 'stripe' && !order.refunded_at && (
             <section className="admin-card">
@@ -349,7 +384,19 @@ export default async function AdminOrderDetailPage({
                 label="Placed"
                 value={new Date(order.created_at).toLocaleString()}
               />
-              <Field label="Payment" value={paymentLabel} />
+              <Field
+                label="Payment"
+                value={
+                  pm === 'stripe'
+                    ? paymentLabel
+                    : `${PAYMENT_STATUS_LABEL[paymentStatus]} · ${paymentLabel}${
+                        paidAt ? ` · ${new Date(paidAt).toLocaleString()}` : ''
+                      }`
+                }
+              />
+              {orderSource !== 'online' && (
+                <Field label="Source" value={ORDER_SOURCE_LABEL[orderSource]} />
+              )}
               <Field
                 label={isPickup ? 'Fulfillment' : 'Shipping'}
                 value={isPickup ? shippingLabel : `${shippingLabel} (zone: ${order.shipping_zone ?? 'n/a'})`}

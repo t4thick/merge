@@ -33,9 +33,13 @@ type Order = {
   status: string | null
   created_at: string
   shipping_method?: string | null
+  payment_status?: string | null
+  order_source?: string | null
 }
 
 const PICKUP_CHIP = 'inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[11px] font-semibold text-teal-700'
+const UNPAID_CHIP = 'inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800'
+const PHONE_CHIP = 'inline-flex items-center rounded-full bg-earth-100 px-2 py-0.5 text-[11px] font-semibold text-earth-700'
 
 export function BulkOrdersTable({ orders }: { orders: Order[] }) {
   const router = useRouter()
@@ -222,6 +226,19 @@ export function BulkOrdersTable({ orders }: { orders: Order[] }) {
                         {orderStatusLabel(st, { pickup })}
                       </span>
                       {pickup && <span className={PICKUP_CHIP}>Pickup</span>}
+                      {order.payment_status === 'unpaid' && (
+                        <span className={UNPAID_CHIP}>Unpaid</span>
+                      )}
+                      {order.order_source &&
+                        order.order_source !== 'online' && (
+                          <span className={PHONE_CHIP}>
+                            {order.order_source === 'whatsapp'
+                              ? 'WhatsApp'
+                              : order.order_source === 'in_store'
+                                ? 'In store'
+                                : 'Phone'}
+                          </span>
+                        )}
                     </div>
                   </td>
                   <td className="text-earth-600">
@@ -278,6 +295,18 @@ export function BulkOrdersTable({ orders }: { orders: Order[] }) {
                       {orderStatusLabel(st, { pickup })}
                     </span>
                     {pickup && <span className={PICKUP_CHIP}>Pickup</span>}
+                    {order.payment_status === 'unpaid' && (
+                      <span className={UNPAID_CHIP}>Unpaid</span>
+                    )}
+                    {order.order_source && order.order_source !== 'online' && (
+                      <span className={PHONE_CHIP}>
+                        {order.order_source === 'whatsapp'
+                          ? 'WhatsApp'
+                          : order.order_source === 'in_store'
+                            ? 'In store'
+                            : 'Phone'}
+                      </span>
+                    )}
                   </div>
                   <span className="text-xs text-earth-500">
                     {new Date(order.created_at).toLocaleDateString()}

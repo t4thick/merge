@@ -29,7 +29,7 @@ const STATUS_PILL_COLORS: Record<OrderStatus, string> = {
 
 const PAGE_SIZE = 50
 
-type OrderListRow = {
+  type OrderListRow = {
   id: string
   order_number: number | null
   customer_name: string | null
@@ -39,6 +39,8 @@ type OrderListRow = {
   status: string | null
   created_at: string
   shipping_method: string | null
+  payment_status?: string | null
+  order_source?: string | null
 }
 
 export default async function AdminOrdersPage({
@@ -127,7 +129,7 @@ export default async function AdminOrdersPage({
   let listQuery = supabaseAdmin
     .from('orders')
     .select(
-      'id, order_number, customer_name, customer_email, city, total_amount, status, created_at, shipping_method',
+      'id, order_number, customer_name, customer_email, city, total_amount, status, created_at, shipping_method, payment_status, order_source',
       { count: 'exact' }
     )
     .order('created_at', { ascending: false })
@@ -141,7 +143,32 @@ export default async function AdminOrdersPage({
 
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
-  const { data: orders, count: filteredCount } = await listQuery.range(from, to)
+  let orders: OrderListRow[] | null = null
+  let filteredCount: number | null = null
+
+  {
+    const first = await listQuery.range(from, to)
+    if (first.error && /payment_status|order_source/i.test(first.error.message)) {
+      let legacyQuery = supabaseAdmin
+        .from('orders')
+        .select(
+          'id, order_number, customer_name, customer_email, city, total_amount, status, created_at, shipping_method',
+          { count: 'exact' }
+        )
+        .order('created_at', { ascending: false })
+      legacyQuery = applyCommonFilters(legacyQuery as never) as typeof legacyQuery
+      if (activeStatus) legacyQuery = legacyQuery.eq('status', activeStatus)
+      else if (queue === 'needs_action') {
+        legacyQuery = legacyQuery.in('status', [...NEEDS_ACTION_STATUSES])
+      }
+      const legacy = await legacyQuery.range(from, to)
+      orders = (legacy.data ?? null) as OrderListRow[] | null
+      filteredCount = legacy.count
+    } else {
+      orders = (first.data ?? null) as OrderListRow[] | null
+      filteredCount = first.count
+    }
+  }
 
   const paginated = (orders ?? []) as OrderListRow[]
   const filteredTotal = filteredCount ?? paginated.length
@@ -198,6 +225,11 @@ export default async function AdminOrdersPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Link href="/admin/orders/new" className="no-underline">
+            <Button size="sm" className="gap-1.5">
+              Phone order
+            </Button>
+          </Link>
           <Link href={exportHref} className="no-underline">
             <Button size="sm" variant="outline" className="gap-1.5">
               <Download className="h-4 w-4" aria-hidden />
