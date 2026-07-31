@@ -39,6 +39,17 @@ export const STORE = {
   hours: 'Mon–Sat 9am–8pm · Sun 10am–6pm',
 } as const
 
+/**
+ * WhatsApp Business / store line. Defaults to the primary store phone.
+ * Override with NEXT_PUBLIC_WHATSAPP_NUMBER (digits or +E.164).
+ */
+export function getWhatsAppNumber(): string {
+  return process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.trim() || STORE.shipFrom.phone
+}
+
+export const ORDER_BY_PHONE_PREFILL =
+  'Hi, I would like to place an order from Kintampo African Market:'
+
 /** All public store phone lines (primary + alternates). */
 export const STORE_PHONES = [
   { label: STORE.phone, href: STORE.phoneHref },

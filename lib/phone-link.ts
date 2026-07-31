@@ -23,6 +23,22 @@ export function smsHref(raw: string | null | undefined): string | null {
   return dialable ? `sms:${dialable}` : null
 }
 
+/**
+ * WhatsApp deep link. `text` is prefilled into the compose box.
+ * Uses wa.me (works on mobile + desktop WhatsApp Web).
+ */
+export function whatsappHref(
+  raw: string | null | undefined,
+  text?: string
+): string | null {
+  const dialable = toDialable(raw)
+  if (!dialable) return null
+  const digits = dialable.replace(/\D/g, '')
+  const base = `https://wa.me/${digits}`
+  if (!text?.trim()) return base
+  return `${base}?text=${encodeURIComponent(text.trim())}`
+}
+
 /** (614) 325-7385 for 10-digit US numbers, otherwise the original string. */
 export function formatPhoneDisplay(raw: string | null | undefined): string {
   const digits = digitsOnly(raw)

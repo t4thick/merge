@@ -13,7 +13,14 @@ import {
   Truck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { STORE, STORE_PHONES, storePhonesPlain } from '@/lib/constants/store'
+import {
+  getWhatsAppNumber,
+  ORDER_BY_PHONE_PREFILL,
+  STORE,
+  STORE_PHONES,
+  storePhonesPlain,
+} from '@/lib/constants/store'
+import { whatsappHref } from '@/lib/phone-link'
 
 const SERVICE_GROUPS = [
   {
@@ -44,6 +51,8 @@ const SERVICE_GROUPS = [
 ] as const
 
 export function AdditionalServices() {
+  const whatsappOrderUrl = whatsappHref(getWhatsAppNumber(), ORDER_BY_PHONE_PREFILL)
+
   return (
     <section
       className="page-section scroll-mt-28 border-t border-earth-200 bg-white md:scroll-mt-24"
@@ -97,9 +106,24 @@ export function AdditionalServices() {
               <a href={STORE.phoneHref} className="w-full no-underline sm:w-auto">
                 <Button size="lg" className="h-12 w-full bg-white px-6 text-earth-950 hover:bg-earth-100 sm:w-auto">
                   <Phone className="h-4 w-4" aria-hidden />
-                  Call {STORE.phone}
+                  Call to order
                 </Button>
               </a>
+              {whatsappOrderUrl ? (
+                <a
+                  href={whatsappOrderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full no-underline sm:w-auto"
+                >
+                  <Button
+                    size="lg"
+                    className="h-12 w-full bg-[#128C7E] px-6 text-white hover:bg-[#0E6F64] sm:w-auto"
+                  >
+                    WhatsApp to order
+                  </Button>
+                </a>
+              ) : null}
               <Link href="/shop" className="w-full no-underline sm:w-auto">
                 <Button
                   size="lg"

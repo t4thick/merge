@@ -21,6 +21,7 @@ import { calculateSalesTax } from '@/lib/tax/sales-tax'
 import { getAuthSiteOrigin } from '@/lib/site-url-client'
 import { STORE } from '@/lib/constants/store'
 import { StorePhoneLinks } from '@/components/store/StorePhoneLinks'
+import { OrderByPhone } from '@/components/store/OrderByPhone'
 import { cn } from '@/lib/utils'
 import { PickupPromoBanner } from '@/components/store/PickupPromoBanner'
 import { friendlyShippingError } from '@/lib/checkout/shipping-errors'
@@ -799,14 +800,7 @@ export function CheckoutClient({
                 </div>
               )}
 
-              <p className="mt-4 rounded-xl border border-earth-200 bg-earth-50 px-4 py-3 text-sm text-earth-600">
-                Outside our local delivery area? Call{' '}
-                <StorePhoneLinks
-                  linkClassName="font-medium text-earth-900 no-underline hover:underline"
-                  separator=" or "
-                />{' '}
-                — checkout here covers store pickup, local delivery, and nationwide shipping.
-              </p>
+              <OrderByPhone compact className="mt-4" />
             </CheckoutStep>
 
             <CheckoutStep step={3} title={isPickup ? 'Pickup details' : 'Delivery address'}>

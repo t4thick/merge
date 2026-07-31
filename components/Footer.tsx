@@ -4,6 +4,7 @@ import { getSupportEmail, STORE } from '@/lib/constants/store'
 import { PaymentMethodIcons } from '@/components/store/PaymentMethodIcons'
 import { SocialLinks } from '@/components/store/SocialLinks'
 import { StorePhoneLinks } from '@/components/store/StorePhoneLinks'
+import { OrderByPhone } from '@/components/store/OrderByPhone'
 import { StoreLogo } from '@/components/ui/StoreLogo'
 
 const SHOP_LINKS = [
@@ -126,6 +127,8 @@ export function Footer() {
             <p className="mt-2 text-xs text-earth-500">{STORE.hours}</p>
           </div>
         </div>
+
+        <OrderByPhone compact className="mt-10" />
 
         <div className="mt-12 border-t border-earth-200 pt-8">
           <PaymentMethodIcons />
