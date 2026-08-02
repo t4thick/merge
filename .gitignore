@@ -53,6 +53,15 @@ Lovely-Queen-env-reference.pdf
 # vercel
 .vercel
 
+# Capacitor native app (sidecar — does not affect Vercel site deploy)
+/mobile/node_modules/
+/mobile/android/app/build/
+/mobile/android/.gradle/
+/mobile/android/local.properties
+/mobile/android/captures/
+/mobile/ios/App/Pods/
+/mobile/ios/DerivedData/
+
 # supabase local/cli
 supabase/.temp/
 
