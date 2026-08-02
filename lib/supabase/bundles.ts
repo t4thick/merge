@@ -1,4 +1,4 @@
-import { createClientOptional } from '@/lib/supabase/server'
+import { createCatalogClient } from '@/lib/supabase/catalog-client'
 import { filterStorefrontProducts } from '@/lib/catalog/public-product-filter'
 import type { Product } from '@/types'
 
@@ -14,7 +14,7 @@ export type ProductBundle = {
 
 export async function fetchActiveBundles(): Promise<ProductBundle[]> {
   try {
-    const supabase = await createClientOptional()
+    const supabase = createCatalogClient()
     if (!supabase) return []
     const { data: bundles, error } = await supabase
       .from('product_bundles')

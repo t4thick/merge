@@ -19,27 +19,6 @@ const NAV_LINKS = [
   { href: '/account', label: 'Account' },
 ] as const
 
-/** Utility / focused flows — hide mobile search so content reaches the fold faster. */
-const HIDE_MOBILE_SEARCH = [
-  '/faq',
-  '/shipping',
-  '/returns',
-  '/about',
-  '/recipes',
-  '/bundles',
-  '/privacy',
-  '/terms',
-  '/feedback',
-  '/checkout',
-  '/cart',
-] as const
-
-function hideMobileSearch(pathname: string): boolean {
-  return HIDE_MOBILE_SEARCH.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`)
-  )
-}
-
 const DEPARTMENT_SHORTCUTS = [
   { href: '/shop?category=Flours%20%26%20Rice', label: 'Rice & flour' },
   { href: '/shop?category=Spices', label: 'Spices' },
@@ -81,8 +60,6 @@ export function Navbar() {
   useEffect(() => {
     setOpen(false)
   }, [pathname])
-
-  const showMobileSearch = !hideMobileSearch(pathname)
 
   return (
     <>
@@ -174,12 +151,9 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Mobile search — commerce pages only; hide on FAQ/about/recipes so content hits the fold. */}
-          {showMobileSearch && (
-            <div className="pb-2.5 md:hidden">
-              <ShopSearchBar compact />
-            </div>
-          )}
+          <div className="pb-2.5 md:hidden">
+            <ShopSearchBar compact />
+          </div>
         </div>
       </header>
 

@@ -1,7 +1,7 @@
 /**
- * One-off mobile viewport audit against a base URL.
- *   node scripts/audit-mobile.mjs
- *   BASE_URL=http://127.0.0.1:3000 node scripts/audit-mobile.mjs
+ * Mobile viewport audit (storefront + optional deep links).
+ *   node scripts/ops/audit-mobile.mjs
+ *   BASE_URL=http://127.0.0.1:3000 node scripts/ops/audit-mobile.mjs
  */
 import { chromium, devices } from '@playwright/test'
 import { mkdirSync, writeFileSync } from 'fs'
@@ -24,8 +24,13 @@ const paths = [
   '/shop',
   '/cart',
   '/checkout',
+  '/checkout/success',
+  '/checkout/cancel',
   '/login',
+  '/signup',
+  '/forgot-password',
   '/track-order',
+  '/receipt',
   '/faq',
   '/shipping',
   '/returns',
@@ -33,14 +38,26 @@ const paths = [
   '/recipes',
   '/bundles',
   '/account',
+  '/account/wishlist',
+  '/account/profile',
+  '/account/addresses',
+  '/account/password',
   '/feedback',
+  '/privacy',
+  '/terms',
+  '/order-confirmation',
+  '/verify-email',
 ]
+
 const report = []
 
 async function audit(path) {
   const issues = []
-  await page.goto(BASE + path, { waitUntil: 'domcontentloaded', timeout: 60000 })
-  await page.waitForTimeout(1200)
+  const res = await page.goto(BASE + path, { waitUntil: 'domcontentloaded', timeout: 60000 })
+  await page.waitForTimeout(1000)
+
+  const status = res?.status() ?? 0
+  if (status >= 400) issues.push(`HTTP ${status}`)
 
   const metrics = await page.evaluate(() => {
     const doc = document.documentElement
@@ -68,11 +85,13 @@ async function audit(path) {
       if (r.width === 0 || r.height === 0) continue
       const style = getComputedStyle(el)
       if (style.visibility === 'hidden' || style.display === 'none' || style.opacity === '0') continue
-      // Ignore full-bleed product cards — height can be large with width < 44 in edge cases
       if (r.width < 44 || r.height < 44) {
         small.push({
           tag: el.tagName.toLowerCase(),
-          label: (el.getAttribute('aria-label') || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 50),
+          label: (el.getAttribute('aria-label') || el.textContent || '')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .slice(0, 50),
           w: Math.round(r.width),
           h: Math.round(r.height),
         })
@@ -87,6 +106,7 @@ async function audit(path) {
       wide,
       small,
       bottomNav: !!document.querySelector('nav[aria-label="Mobile navigation"]'),
+      searchBar: !!document.querySelector('header input[placeholder*="Search"], header input[type="search"]'),
       h1: document.querySelector('h1')?.textContent?.trim()?.slice(0, 80) || null,
       title: document.title,
     }
@@ -100,9 +120,9 @@ async function audit(path) {
   const shot = resolve(outDir, `${safeName || 'home'}.png`)
   await page.screenshot({ path: shot, fullPage: false })
 
-  report.push({ path, ...metrics, issues, shot })
+  report.push({ path, status, ...metrics, issues, shot })
   console.log(
-    `${path.padEnd(24)} overflow=${metrics.overflowX} bottomNav=${metrics.bottomNav} smallTargets=${metrics.small.length}`
+    `${path.padEnd(28)} http=${status} overflow=${metrics.overflowX} search=${metrics.searchBar} small=${metrics.small.length}`
   )
 }
 
@@ -110,22 +130,30 @@ for (const p of paths) {
   await audit(p)
 }
 
-await page.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 })
-await page.waitForTimeout(1000)
-const servicesHeading = page.locator('#additional-services-title')
-if (await servicesHeading.count()) {
-  await servicesHeading.scrollIntoViewIfNeeded()
-  await page.waitForTimeout(300)
-  await page.screenshot({ path: resolve(outDir, 'services-mobile.png'), fullPage: false })
-}
-
+// Deep links discovered from listings
 await page.goto(BASE + '/shop', { waitUntil: 'domcontentloaded', timeout: 60000 })
-await page.waitForTimeout(1000)
+await page.waitForTimeout(800)
 const productHref = await page.locator('a[href^="/products/"]').first().getAttribute('href')
-if (productHref) {
-  await audit(productHref)
-}
+if (productHref) await audit(productHref)
+
+await page.goto(BASE + '/recipes', { waitUntil: 'domcontentloaded', timeout: 60000 })
+await page.waitForTimeout(800)
+const recipeHref = await page.locator('a[href^="/recipes/"]').first().getAttribute('href')
+if (recipeHref && recipeHref !== '/recipes') await audit(recipeHref)
+
+await page.goto(BASE + '/bundles', { waitUntil: 'domcontentloaded', timeout: 60000 })
+await page.waitForTimeout(800)
+const bundleHref = await page.locator('a[href^="/bundles/"]').first().getAttribute('href')
+if (bundleHref && bundleHref !== '/bundles') await audit(bundleHref)
 
 await browser.close()
 writeFileSync(resolve(outDir, 'report.json'), JSON.stringify(report, null, 2))
+
+const overflowPages = report.filter((r) => r.overflowX)
+const noSearch = report.filter((r) => !r.searchBar && !r.path.startsWith('/admin'))
 console.log('\nWrote', resolve(outDir, 'report.json'))
+console.log(`Overflow pages: ${overflowPages.length}`)
+console.log(`Pages missing mobile search: ${noSearch.length}`)
+if (overflowPages.length) {
+  for (const r of overflowPages) console.log('  OVERFLOW', r.path)
+}

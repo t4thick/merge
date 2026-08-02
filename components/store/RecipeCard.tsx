@@ -1,20 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ProductImage } from '@/components/store/ProductImage'
+import { recipeFallbackImage } from '@/lib/recipes/fallback'
 import type { Recipe } from '@/lib/supabase/recipes'
-
-/** Fallback store photos when a recipe has no image and no linked product photos. */
-const RECIPE_FALLBACK_IMAGE: Record<string, string> = {
-  'egusi-soup': '/images/store/pantry-shelf.png',
-  'jollof-rice': '/images/categories/flours-rice.jpg',
-  'plantain-fufu-night': '/images/categories/fresh-produce.jpg',
-}
-
-const DEFAULT_FALLBACK = '/images/store/pantry-shelf.png'
-
-export function recipeFallbackImage(slug: string): string {
-  return RECIPE_FALLBACK_IMAGE[slug] ?? DEFAULT_FALLBACK
-}
 
 /** Recipe card with dominant image (or ingredient thumbs / store photo fallback). */
 export function RecipeCard({ recipe }: { recipe: Recipe }) {

@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/store/PageHeader'
 import { AddRecipeToCart } from '@/components/store/AddRecipeToCart'
 import { ProductImage } from '@/components/store/ProductImage'
-import { recipeFallbackImage } from '@/components/store/RecipeCard'
+import { recipeFallbackImage } from '@/lib/recipes/fallback'
 import { fetchRecipeBySlug, fetchRecipes } from '@/lib/supabase/recipes'
 
 export const revalidate = 60

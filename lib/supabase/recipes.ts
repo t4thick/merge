@@ -1,4 +1,4 @@
-import { createClientOptional } from '@/lib/supabase/server'
+import { createCatalogClient } from '@/lib/supabase/catalog-client'
 import { filterStorefrontProducts } from '@/lib/catalog/public-product-filter'
 import type { Product } from '@/types'
 
@@ -24,7 +24,7 @@ export type Recipe = {
 
 export async function fetchRecipes(): Promise<Recipe[]> {
   try {
-    const supabase = await createClientOptional()
+    const supabase = createCatalogClient()
     if (!supabase) return []
     const { data, error } = await supabase
       .from('recipes')
@@ -46,7 +46,7 @@ export async function fetchRecipes(): Promise<Recipe[]> {
 
 export async function fetchRecipeBySlug(slug: string): Promise<Recipe | null> {
   try {
-    const supabase = await createClientOptional()
+    const supabase = createCatalogClient()
     if (!supabase) return null
     const { data, error } = await supabase
       .from('recipes')
@@ -62,7 +62,7 @@ export async function fetchRecipeBySlug(slug: string): Promise<Recipe | null> {
 }
 
 async function hydrateRecipe(
-  supabase: NonNullable<Awaited<ReturnType<typeof createClientOptional>>>,
+  supabase: NonNullable<ReturnType<typeof createCatalogClient>>,
   row: Record<string, unknown>
 ): Promise<Recipe | null> {
   const { data: ingredients } = await supabase
