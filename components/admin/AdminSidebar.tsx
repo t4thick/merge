@@ -159,7 +159,7 @@ export function AdminSidebar() {
             <Link
               href="/"
               target="_blank"
-              className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg text-xs font-medium text-slate-500 no-underline hover:bg-slate-100 hover:text-slate-900"
+              className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg text-xs font-medium text-slate-500 no-underline hover:bg-slate-100 hover:text-slate-900"
             >
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
               Store
@@ -167,7 +167,7 @@ export function AdminSidebar() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-red-50 hover:text-red-700"
+              className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-red-50 hover:text-red-700"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden />
               Sign out
@@ -194,7 +194,7 @@ export function AdminSidebar() {
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/admin/products?q="
-            className="hidden h-9 w-56 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs text-slate-400 no-underline hover:border-slate-300 hover:bg-white md:flex"
+            className="hidden h-11 w-56 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs text-slate-400 no-underline hover:border-slate-300 hover:bg-white md:flex"
           >
             <Search className="h-3.5 w-3.5" aria-hidden />
             Search catalog
@@ -203,7 +203,7 @@ export function AdminSidebar() {
             href="/"
             target="_blank"
             aria-label="View storefront"
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 no-underline hover:bg-slate-50 hover:text-slate-900"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-500 no-underline hover:bg-slate-50 hover:text-slate-900"
           >
             <ExternalLink className="h-4 w-4" aria-hidden />
           </Link>

@@ -387,7 +387,6 @@ export function PhoneOrderForm() {
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="h-9 w-9"
                       aria-label={`Fewer ${line.name}`}
                       disabled={line.quantity <= 1}
                       onClick={() => setQty(line.productId, line.quantity - 1)}
@@ -397,7 +396,7 @@ export function PhoneOrderForm() {
                     <input
                       type="number"
                       inputMode="numeric"
-                      className="stepper-input h-9 w-14 font-semibold"
+                      className="stepper-input h-11 w-14 font-semibold"
                       value={line.quantity}
                       min={1}
                       max={99}
@@ -408,7 +407,6 @@ export function PhoneOrderForm() {
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="h-9 w-9"
                       aria-label={`More ${line.name}`}
                       onClick={() => setQty(line.productId, line.quantity + 1)}
                     >
@@ -416,7 +414,7 @@ export function PhoneOrderForm() {
                     </Button>
                     <button
                       type="button"
-                      className="ml-1 inline-flex h-9 w-9 items-center justify-center text-earth-400 hover:text-red-600"
+                      className="ml-1 inline-flex h-11 w-11 items-center justify-center text-earth-400 hover:text-red-600"
                       aria-label={`Remove ${line.name}`}
                       onClick={() => removeLine(line.productId)}
                     >

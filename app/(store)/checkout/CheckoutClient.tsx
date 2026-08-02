@@ -648,7 +648,7 @@ export function CheckoutClient({
       <div className="min-h-screen bg-cream">
         <PageHeader eyebrow="Checkout" title="Your cart is empty" subtitle="Add groceries before checking out." />
         <div className="store-container py-12 text-center">
-          <Link href="/shop" className="no-underline">
+          <Link href="/shop" className="inline-flex min-h-11 items-center no-underline">
             <Button size="lg" className="rounded-xl">
               Browse shop
             </Button>

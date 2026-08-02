@@ -21,24 +21,24 @@ export function Pagination({ page, totalPages, buildHref }: Props) {
         {hasPrev ? (
           <Link
             href={buildHref(page - 1)}
-            className="inline-flex items-center gap-1 rounded-lg border border-earth-200 bg-white px-3 py-1.5 font-medium text-earth-700 no-underline hover:bg-earth-50"
+            className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-earth-200 bg-white px-3 font-medium text-earth-700 no-underline hover:bg-earth-50"
           >
             <ChevronLeft className="h-4 w-4" /> Prev
           </Link>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-lg border border-earth-100 bg-earth-50 px-3 py-1.5 font-medium text-earth-300">
+          <span className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-earth-100 bg-earth-50 px-3 font-medium text-earth-300">
             <ChevronLeft className="h-4 w-4" /> Prev
           </span>
         )}
         {hasNext ? (
           <Link
             href={buildHref(page + 1)}
-            className="inline-flex items-center gap-1 rounded-lg border border-earth-200 bg-white px-3 py-1.5 font-medium text-earth-700 no-underline hover:bg-earth-50"
+            className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-earth-200 bg-white px-3 font-medium text-earth-700 no-underline hover:bg-earth-50"
           >
             Next <ChevronRight className="h-4 w-4" />
           </Link>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-lg border border-earth-100 bg-earth-50 px-3 py-1.5 font-medium text-earth-300">
+          <span className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-earth-100 bg-earth-50 px-3 font-medium text-earth-300">
             Next <ChevronRight className="h-4 w-4" />
           </span>
         )}

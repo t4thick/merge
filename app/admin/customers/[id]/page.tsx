@@ -64,7 +64,7 @@ export default async function CustomerDetail({
     <div className="space-y-6">
       <Link
         href="/admin/customers"
-        className="inline-flex items-center gap-1 text-sm text-earth-600 no-underline hover:text-earth-900"
+        className="inline-flex min-h-11 items-center gap-1 text-sm text-earth-600 no-underline hover:text-earth-900"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to customers

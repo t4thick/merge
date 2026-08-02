@@ -101,7 +101,7 @@ export function Navbar() {
               <Button
                 type="button"
                 size="sm"
-                className="relative ml-2 h-10 gap-1.5 px-3.5 lg:h-11"
+                className="relative ml-2 h-11 gap-1.5 px-3.5"
                 onClick={openCart}
               >
                 <ShoppingBag className="h-4 w-4" aria-hidden />

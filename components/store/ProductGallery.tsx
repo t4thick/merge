@@ -51,7 +51,7 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
               type="button"
               onClick={prev}
               aria-label="Previous photo"
-              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-md hover:bg-white transition-colors"
+              className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-colors hover:bg-white"
             >
               <ChevronLeft className="h-5 w-5 text-earth-700" />
             </button>
@@ -59,24 +59,29 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
               type="button"
               onClick={next}
               aria-label="Next photo"
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-md hover:bg-white transition-colors"
+              className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-colors hover:bg-white"
             >
               <ChevronRight className="h-5 w-5 text-earth-700" />
             </button>
 
             {/* Dot indicators */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-0.5">
               {allImages.map((_, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => setActive(i)}
                   aria-label={`Photo ${i + 1}`}
-                  className={cn(
-                    'h-2 rounded-full transition-all',
-                    i === active ? 'w-5 bg-brand-700' : 'w-2 bg-earth-300'
-                  )}
-                />
+                  className="flex h-11 w-11 items-center justify-center"
+                >
+                  <span
+                    className={cn(
+                      'h-2 rounded-full transition-all',
+                      i === active ? 'w-5 bg-brand-700' : 'w-2 bg-earth-300'
+                    )}
+                    aria-hidden
+                  />
+                </button>
               ))}
             </div>
           </>

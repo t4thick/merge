@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { FeedbackForm } from '@/components/store/FeedbackForm'
 import { PageHeader } from '@/components/store/PageHeader'
+import { TapLink } from '@/components/store/TapLink'
 import { getSupportEmail } from '@/lib/constants/store'
 
 export const metadata: Metadata = {
@@ -24,18 +24,14 @@ export default function FeedbackPage() {
         <div className="rounded-xl border border-earth-200 bg-white p-5 shadow-[var(--shadow-card)] sm:p-6">
           <FeedbackForm />
         </div>
-        <p className="mt-8 text-center text-sm text-earth-500">
-          Prefer email?{' '}
-          <a
+        <p className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-sm text-earth-500">
+          <span>Prefer email?</span>
+          <TapLink
             href={`mailto:${supportEmail}?subject=${encodeURIComponent('Kintampo African Market website feedback')}`}
-            className="font-medium text-brand-700 no-underline hover:text-brand-800"
           >
             {supportEmail}
-          </a>
-          <span className="mx-2 text-earth-300">·</span>
-          <Link href="/shop" className="font-medium text-brand-700 no-underline hover:text-brand-800">
-            Back to shop
-          </Link>
+          </TapLink>
+          <TapLink href="/shop">Back to shop</TapLink>
         </p>
       </div>
     </div>

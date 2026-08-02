@@ -131,7 +131,7 @@ export function FlashLabelPdfActions({
         {kind === 'label' ? (
           <a
             href={`/api/admin/orders/${orderId}/shipping/label-file`}
-            className="inline-flex h-10 items-center px-1 text-sm font-medium text-brand-700 no-underline hover:underline"
+            className="inline-flex h-11 items-center px-1 text-sm font-medium text-brand-700 no-underline hover:underline"
             download={filename}
           >
             Browser download

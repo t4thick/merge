@@ -286,7 +286,7 @@
   }
 
   .admin-status-pill {
-    @apply inline-flex min-h-7 items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold;
+    @apply inline-flex min-h-11 items-center gap-1 rounded-lg px-2.5 py-2 text-[11px] font-semibold;
   }
 
   .stack > * + * {

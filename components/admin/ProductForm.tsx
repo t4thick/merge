@@ -269,7 +269,7 @@ export function ProductForm({ initialData, productId }: Props) {
                   href={form.image_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-brand-700 hover:underline"
+                  className="inline-flex min-h-11 items-center gap-1 text-xs text-brand-700 hover:underline"
                 >
                   <ExternalLink className="h-3 w-3" /> View full image
                 </a>
@@ -376,7 +376,7 @@ export function ProductForm({ initialData, productId }: Props) {
           <Link
             href={`/products/${productId}`}
             target="_blank"
-            className="ml-auto inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
+            className="ml-auto inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             View on store

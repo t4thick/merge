@@ -184,13 +184,13 @@ export default async function AdminDashboard({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link href="/" target="_blank" className="no-underline">
-            <Button size="sm" variant="outline" className="h-10 gap-1.5 rounded-lg px-3.5">
+            <Button size="sm" variant="outline" className="gap-1.5 rounded-lg px-3.5">
               <ExternalLink className="h-4 w-4" aria-hidden />
               View store
             </Button>
           </Link>
           <Link href="/admin/products/new" className="no-underline">
-            <Button size="sm" className="h-10 gap-1.5 rounded-lg px-3.5">
+            <Button size="sm" className="gap-1.5 rounded-lg px-3.5">
               <Plus className="h-4 w-4" aria-hidden />
               Add product
             </Button>
@@ -267,7 +267,7 @@ export default async function AdminDashboard({
         <div className="flex items-center gap-2 px-1 text-xs text-slate-500">
           <span className="hidden md:inline">{range.formattedRange} · {getReportTimeZoneLabel()}</span>
           <Link href={exportHref} className="no-underline">
-            <Button size="sm" variant="ghost" className="h-8 gap-1.5 rounded-lg px-2.5">
+            <Button size="sm" variant="ghost" className="gap-1.5 rounded-lg px-2.5">
               <Download className="h-3.5 w-3.5" aria-hidden />
               Export
             </Button>
@@ -287,7 +287,7 @@ export default async function AdminDashboard({
               type="date"
               name="from"
               defaultValue={sp.from ?? ''}
-              className="mt-1 h-10 w-44"
+              className="mt-1 h-11 w-44"
               required
             />
           </label>
@@ -297,7 +297,7 @@ export default async function AdminDashboard({
               type="date"
               name="to"
               defaultValue={sp.to ?? ''}
-              className="mt-1 h-10 w-44"
+              className="mt-1 h-11 w-44"
               required
             />
           </label>
@@ -384,7 +384,7 @@ export default async function AdminDashboard({
             <h2 className="admin-section-title">Top products in this period</h2>
             <Link
               href="/admin/products"
-              className="inline-flex items-center gap-0.5 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
+            className="inline-flex min-h-11 items-center gap-0.5 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
             >
               All products <ChevronRight className="h-4 w-4" />
             </Link>
@@ -467,7 +467,7 @@ export default async function AdminDashboard({
           <h2 className="admin-section-title">Latest orders</h2>
           <Link
             href="/admin/orders?queue=all"
-            className="inline-flex items-center gap-0.5 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
+            className="inline-flex min-h-11 items-center gap-0.5 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
           >
             View all <ChevronRight className="h-4 w-4" />
           </Link>
@@ -693,7 +693,7 @@ function OpCard({
       {href && cta && (
         <Link
           href={href}
-          className="mt-3 inline-flex items-center gap-0.5 text-xs font-semibold text-brand-700 no-underline hover:text-brand-800"
+          className="mt-3 inline-flex min-h-11 items-center gap-0.5 text-xs font-semibold text-brand-700 no-underline hover:text-brand-800"
         >
           {cta} <ChevronRight className="h-3 w-3" />
         </Link>

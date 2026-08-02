@@ -185,7 +185,6 @@ export function OrderItemsFulfillment({
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9"
                   aria-label={`One less ${item.product_name}`}
                   disabled={value <= 0 || busy}
                   onClick={() => setQty(item.id, value - 1, item.quantity)}
@@ -195,7 +194,7 @@ export function OrderItemsFulfillment({
                 <input
                   type="number"
                   inputMode="numeric"
-                  className="stepper-input h-9 w-14 font-semibold"
+                  className="stepper-input h-11 w-14 font-semibold"
                   value={value}
                   min={0}
                   max={item.quantity}
@@ -206,7 +205,6 @@ export function OrderItemsFulfillment({
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9"
                   aria-label={`One more ${item.product_name}`}
                   disabled={value >= item.quantity || busy}
                   onClick={() => setQty(item.id, value + 1, item.quantity)}

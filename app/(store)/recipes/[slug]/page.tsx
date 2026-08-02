@@ -140,7 +140,7 @@ export default async function RecipeDetailPage({ params }: Props) {
                       {ing.product && (
                         <Link
                           href={`/products/${ing.product.id}`}
-                          className="text-xs font-medium text-brand-700 no-underline hover:text-brand-800"
+                          className="inline-flex min-h-11 items-center text-xs font-medium text-brand-700 no-underline hover:text-brand-800"
                         >
                           View product
                         </Link>
@@ -156,7 +156,7 @@ export default async function RecipeDetailPage({ params }: Props) {
             <p className="mt-6">
               <Link
                 href="/recipes"
-                className="text-sm font-semibold text-brand-700 no-underline hover:text-brand-800"
+                className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-700 no-underline hover:text-brand-800"
               >
                 ← All recipes
               </Link>

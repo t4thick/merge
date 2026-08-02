@@ -40,7 +40,7 @@ export function ProductCard({ product, priority }: { product: Product; priority?
   return (
     <article className="group premium-card premium-card-hover flex h-full min-w-0 flex-col">
       <Link href={`/products/${product.id}`} className="flex flex-1 flex-col no-underline">
-        <div className="product-image-frame relative">
+        <div className="relative">
           {!inStock && (
             <span className="absolute left-3 top-3 z-10 rounded-full bg-earth-900/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-white">
               Out of stock
@@ -60,15 +60,17 @@ export function ProductCard({ product, priority }: { product: Product; priority?
           >
             <WishlistButton productId={product.id} compact />
           </div>
-          <div className="h-full w-full transition-transform duration-200 ease-out group-hover:scale-[1.03]">
-            <ProductImage
-              src={product.image_url}
-              alt={product.name}
-              className="rounded-none"
-              sizes="(max-width:640px) 50vw, 25vw"
-              priority={priority}
-              showPlaceholderHint
-            />
+          <div className="product-image-frame">
+            <div className="h-full w-full transition-transform duration-200 ease-out group-hover:scale-[1.03]">
+              <ProductImage
+                src={product.image_url}
+                alt={product.name}
+                className="rounded-none"
+                sizes="(max-width:640px) 50vw, 25vw"
+                priority={priority}
+                showPlaceholderHint
+              />
+            </div>
           </div>
         </div>
         <div className="flex flex-1 flex-col p-4 sm:p-5">

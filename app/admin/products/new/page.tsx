@@ -10,7 +10,7 @@ export default async function NewProductPage() {
       <div>
         <Link
           href="/admin/products"
-          className="inline-flex items-center gap-1 text-sm font-medium text-earth-600 no-underline transition-colors hover:text-earth-900"
+          className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-earth-600 no-underline transition-colors hover:text-earth-900"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Back to products

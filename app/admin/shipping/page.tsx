@@ -64,7 +64,7 @@ export default async function AdminShippingPage() {
         <p className="mt-4">
           <Link
             href="/admin/orders?queue=needs_action"
-            className="text-sm font-medium text-brand-700 no-underline hover:underline"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-brand-700 no-underline hover:underline"
           >
             Orders needing action →
           </Link>

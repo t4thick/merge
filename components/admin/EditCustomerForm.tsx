@@ -52,7 +52,7 @@ export function EditCustomerForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800"
+        className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800"
       >
         <Pencil className="h-3.5 w-3.5" />
         Edit profile

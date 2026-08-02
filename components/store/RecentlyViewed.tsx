@@ -26,7 +26,7 @@ export function RecentlyViewed({ excludeId, limit = 8 }: Props) {
           </div>
           <Link
             href="/shop"
-            className="group inline-flex shrink-0 items-center gap-1 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
+            className="group inline-flex min-h-11 shrink-0 items-center gap-1 text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
           >
             Keep browsing
             <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" />

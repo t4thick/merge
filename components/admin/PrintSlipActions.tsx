@@ -110,7 +110,7 @@ export function PrintSlipActions({
       <div className="flex flex-wrap items-center gap-3">
         <Link
           href={`/admin/orders/${orderId}`}
-          className="inline-flex items-center gap-1 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
+          className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-earth-600 no-underline hover:text-earth-900"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Back to order
@@ -131,7 +131,7 @@ export function PrintSlipActions({
               onClick={() => choosePaper(option)}
               aria-pressed={paper === option}
               className={cn(
-                'min-h-9 rounded-md px-3 text-sm font-medium transition-colors duration-150',
+                'min-h-11 rounded-md px-3 text-sm font-medium transition-colors duration-150',
                 paper === option
                   ? 'bg-earth-900 text-white'
                   : 'text-earth-600 hover:bg-earth-50 hover:text-earth-900'
