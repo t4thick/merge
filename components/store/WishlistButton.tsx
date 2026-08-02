@@ -64,15 +64,15 @@ export function WishlistButton({
       disabled={loading}
       aria-label={saved ? 'Remove from wishlist' : 'Save to wishlist'}
       className={cn(
-        'flex items-center justify-center rounded-full border transition-colors',
-        compact ? 'h-9 w-9 shadow-sm' : 'h-11 w-11',
+        'flex min-h-11 min-w-11 items-center justify-center rounded-full border transition-colors',
+        compact ? 'h-11 w-11 shadow-sm' : 'h-11 w-11',
         saved
           ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100'
           : 'border-earth-200 bg-white/95 text-earth-400 hover:border-earth-300 hover:text-red-400'
       )}
     >
       <Heart
-        className={cn(compact ? 'h-3.5 w-3.5' : 'h-4 w-4', saved && 'fill-current')}
+        className={cn('h-4 w-4', saved && 'fill-current')}
         strokeWidth={saved ? 0 : 2}
       />
     </button>

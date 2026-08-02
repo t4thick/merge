@@ -9,8 +9,8 @@ import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const ROOT = resolve(__dirname, '..')
-const BASE = (process.env.BASE_URL || 'https://kintampo-african-market.vercel.app').replace(/\/$/, '')
+const ROOT = resolve(__dirname, '../..')
+const BASE = (process.env.BASE_URL || 'https://kintampoafricanmarket.com').replace(/\/$/, '')
 const outDir = resolve(ROOT, 'tmp', 'mobile-audit')
 mkdirSync(outDir, { recursive: true })
 
@@ -19,7 +19,22 @@ const browser = await chromium.launch()
 const context = await browser.newContext({ ...phone })
 const page = await context.newPage()
 
-const paths = ['/', '/shop', '/cart', '/login', '/track-order']
+const paths = [
+  '/',
+  '/shop',
+  '/cart',
+  '/checkout',
+  '/login',
+  '/track-order',
+  '/faq',
+  '/shipping',
+  '/returns',
+  '/about',
+  '/recipes',
+  '/bundles',
+  '/account',
+  '/feedback',
+]
 const report = []
 
 async function audit(path) {
