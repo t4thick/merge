@@ -9,6 +9,7 @@ import {
   Home,
   LogOut,
   Menu,
+  Megaphone,
   MessageSquareText,
   Package,
   Plus,
@@ -38,6 +39,7 @@ const NAV_GROUPS = [
     items: [
       { href: '/admin/shipping', label: 'Shipping', icon: Truck },
       { href: '/admin/reviews', label: 'Reviews', icon: MessageSquareText },
+      { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
     ],
   },
 ] as const
@@ -53,6 +55,7 @@ const PAGE_NAMES: Array<[string, string]> = [
   ['/admin/customers', 'Customers'],
   ['/admin/shipping', 'Shipping'],
   ['/admin/reviews', 'Reviews'],
+  ['/admin/announcements', 'Announcements'],
   ['/admin', 'Overview'],
 ]
 

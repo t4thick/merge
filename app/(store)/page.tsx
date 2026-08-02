@@ -1,5 +1,6 @@
 export const revalidate = 60 // Refresh homepage data every 60 seconds — keeps stock status current
 
+import Link from 'next/link'
 import { HeroSection } from '@/components/store/HeroSection'
 import { TrustStrip } from '@/components/store/TrustStrip'
 import { CategoryBrowse } from '@/components/store/CategoryBrowse'
@@ -9,9 +10,12 @@ import { RecentlyViewed } from '@/components/store/RecentlyViewed'
 import { VisitSection } from '@/components/store/VisitSection'
 import { AdditionalServices } from '@/components/store/AdditionalServices'
 import { HomepageReviews } from '@/components/store/HomepageReviews'
+import { BundleCard } from '@/components/store/BundleCard'
 import { PRODUCT_CATEGORIES } from '@/lib/constants/categories'
 import { fetchHomepageProducts } from '@/lib/supabase/products'
+import { fetchBestsellers } from '@/lib/supabase/bestsellers'
 import { fetchHomepageReviews } from '@/lib/supabase/homepage-reviews'
+import { fetchActiveBundles } from '@/lib/supabase/bundles'
 
 const HOME_CATEGORY_ORDER = [
   'Flours & Rice',
@@ -27,9 +31,18 @@ const HOME_CATEGORY_ORDER = [
 ] as const
 
 export default async function Home() {
-  const { staples, trending, categoryCount, inStockCount, errorMessage } =
-    await fetchHomepageProducts()
-  const { reviews, totalCount: reviewCount, averageRating } = await fetchHomepageReviews()
+  const [
+    { staples, trending, newArrivals, categoryCount, inStockCount, errorMessage },
+    bestsellers,
+    bundles,
+    reviewData,
+  ] = await Promise.all([
+    fetchHomepageProducts(),
+    fetchBestsellers(8),
+    fetchActiveBundles(),
+    fetchHomepageReviews(),
+  ])
+  const { reviews, totalCount: reviewCount, averageRating } = reviewData
 
   const withStock = PRODUCT_CATEGORIES.filter((c) => (categoryCount[c] ?? 0) > 0)
   const ordered = HOME_CATEGORY_ORDER.filter((c) => (categoryCount[c] ?? 0) > 0)
@@ -55,6 +68,24 @@ export default async function Home() {
           priorityCount={4}
         />
       )}
+      {bestsellers.length > 0 && (
+        <ProductShowcase
+          title="Bestsellers"
+          subtitle="Most ordered items from real checkout data."
+          products={bestsellers}
+          viewAllHref="/shop?sort=featured"
+          priorityCount={2}
+        />
+      )}
+      {newArrivals.length > 0 && (
+        <ProductShowcase
+          title="New arrivals"
+          subtitle="Recently added to the catalog."
+          products={newArrivals}
+          viewAllHref="/shop?sort=newest"
+          priorityCount={2}
+        />
+      )}
       {trending.length > 0 && (
         <ProductShowcase
           title="Trending this week"
@@ -63,6 +94,33 @@ export default async function Home() {
           errorMessage={errorMessage}
           priorityCount={2}
         />
+      )}
+      {bundles.length > 0 && (
+        <section className="border-t border-earth-100 bg-white py-12 sm:py-16 lg:py-20">
+          <div className="store-container">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold tracking-tight text-earth-900 sm:text-2xl">
+                  Kits &amp; bundles
+                </h2>
+                <p className="mt-1 text-sm text-earth-600">Add a full meal set in one tap.</p>
+              </div>
+              <Link
+                href="/bundles"
+                className="text-sm font-semibold text-brand-700 no-underline hover:text-brand-800"
+              >
+                View all
+              </Link>
+            </div>
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {bundles.slice(0, 3).map((bundle) => (
+                <li key={bundle.id}>
+                  <BundleCard bundle={bundle} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
       )}
       <FeaturedCollections />
       <RecentlyViewed />

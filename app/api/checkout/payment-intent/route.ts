@@ -13,7 +13,7 @@ import {
   resolveShippingAddress,
   verifyUsDeliveryAddress,
 } from '@/lib/address/verify-us-address'
-import { normalizeShippingCountry, normalizeShippingMethod, normalizeShippingRegion } from '@/lib/shipping'
+import { normalizeShippingCountry, normalizeShippingMethod, normalizeShippingRegion, LOCAL_DELIVERY_MIN_SUBTOTAL } from '@/lib/shipping'
 import {
   checkLocalDeliveryEligibility,
   LOCAL_DELIVERY_MAX_MINUTES,
@@ -30,6 +30,11 @@ import {
   GUEST_CHECKOUT_USER_ID,
   normalizeGuestEmail,
 } from '@/lib/orders/guest-checkout'
+import {
+  clampTip,
+  normalizePickupSlot,
+  normalizeSubstitutionPref,
+} from '@/lib/orders/grocery-ops'
 
 export const runtime = 'nodejs'
 
@@ -58,6 +63,9 @@ export async function POST(req: NextRequest) {
       items,
       shippingMethod: rawShippingMethod,
       pickupName,
+      substitutionPref: rawSubstitutionPref,
+      pickupSlot: rawPickupSlot,
+      tipAmount: rawTipAmount,
     } = body
 
     const guestCheckout = !user
@@ -103,6 +111,16 @@ export async function POST(req: NextRequest) {
         ? pickupName.trim().slice(0, 120)
         : null
 
+    const substitutionPref = normalizeSubstitutionPref(rawSubstitutionPref)
+    const pickupSlot = isPickup ? normalizePickupSlot(rawPickupSlot) : null
+    if (isPickup && !pickupSlot) {
+      return NextResponse.json(
+        { error: 'Choose a pickup window so we know when to stage your order.' },
+        { status: 400 }
+      )
+    }
+
+    const tipAmount = clampTip(rawTipAmount)
     const cartItems = (Array.isArray(items) ? items : []) as CartItem[]
     const phoneTrim = typeof phone === 'string' ? phone.trim() : ''
     if (!phoneTrim) {
@@ -162,15 +180,29 @@ export async function POST(req: NextRequest) {
 
     const normalizedCountry = isPickup ? 'united states' : normalizeShippingCountry(country)
     const normalizedState = isPickup ? STORE.shipFrom.state : normalizeShippingRegion(state)
+    const shippingMethodPreview = normalizeShippingMethod(rawShippingMethod)
+    // Tip only applies to local delivery (driver).
+    const tipForTotals =
+      shippingMethodPreview === 'local_delivery' ? tipAmount : 0
     const totals = computeCheckoutTotals({
       items: sanitizedItems,
       productMap,
       country: normalizedCountry,
       state: normalizedState,
       shippingMethod: rawShippingMethod,
+      tipAmount: tipForTotals,
     })
     const { subtotal, shipping, tax } = totals
     const shipping_method = shipping.method
+
+    if (shipping_method === 'local_delivery' && subtotal < LOCAL_DELIVERY_MIN_SUBTOTAL) {
+      return NextResponse.json(
+        {
+          error: `Local delivery needs a $${LOCAL_DELIVERY_MIN_SUBTOTAL.toFixed(2)} minimum (before delivery fee). Add $${(LOCAL_DELIVERY_MIN_SUBTOTAL - subtotal).toFixed(2)} more, or choose pickup / shipping.`,
+        },
+        { status: 400 }
+      )
+    }
 
     let shippingAddress = isPickup
       ? {
@@ -302,6 +334,9 @@ export async function POST(req: NextRequest) {
       shipping_zone: shipping.zone,
       account_email: accountEmail,
       pickup_contact_name: pickupContactName,
+      substitution_pref: substitutionPref,
+      pickup_slot: pickupSlot,
+      tip_amount: tipForTotals,
     }
 
     const { data: snap, error: snapErr } = await supabaseAdmin

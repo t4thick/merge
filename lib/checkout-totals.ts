@@ -22,6 +22,7 @@ export type CheckoutTotals = {
   subtotal: number
   shipping: ShippingQuote
   tax: SalesTaxQuote
+  tip: number
   total: number
 }
 
@@ -31,6 +32,7 @@ export function computeCheckoutTotals(input: {
   country?: string
   state?: string
   shippingMethod?: string
+  tipAmount?: number
 }): CheckoutTotals {
   const { orderItems, subtotal } = buildAuthoritativeOrderItems(input.items, input.productMap)
   const shipping_method = normalizeShippingMethod(input.shippingMethod)
@@ -55,7 +57,13 @@ export function computeCheckoutTotals(input: {
     shippingMethod: shipping_method as ShippingMethod,
   })
 
-  const total = Math.round((subtotal + shipping.fee + tax.taxAmount) * 100) / 100
+  const tipRaw = Number(input.tipAmount ?? 0)
+  const tip =
+    Number.isFinite(tipRaw) && tipRaw > 0
+      ? Math.round(Math.min(tipRaw, 100) * 100) / 100
+      : 0
 
-  return { orderItems, subtotal, shipping, tax, total }
+  const total = Math.round((subtotal + shipping.fee + tax.taxAmount + tip) * 100) / 100
+
+  return { orderItems, subtotal, shipping, tax, tip, total }
 }

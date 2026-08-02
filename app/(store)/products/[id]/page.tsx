@@ -16,7 +16,8 @@ import { ProductReviews } from '@/components/store/ProductReviews'
 import { ProductGallery } from '@/components/store/ProductGallery'
 import { WishlistButton } from '@/components/store/WishlistButton'
 import { ProductStockLabel } from '@/components/store/ProductStockLabel'
-import { extractPackSize } from '@/lib/product-display'
+import { VariantSizePicker } from '@/components/store/VariantSizePicker'
+import { packLabel, formatUnitPrice, effectiveInStock } from '@/lib/product-pricing'
 import { formatMoney } from '@/lib/utils'
 import type { Product } from '@/types'
 
@@ -27,6 +28,21 @@ async function loadProduct(id: string): Promise<Product | null> {
   if (!supabase) return null
   const { data } = await supabase.from('products').select('*, image_urls').eq('id', id).single()
   return (data as Product | null) ?? null
+}
+
+async function loadVariants(group: string | null | undefined): Promise<Product[]> {
+  const g = group?.trim()
+  if (!g) return []
+  const supabase = await createClientOptional()
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('variant_group', g)
+  if (error) return []
+  const all = filterStorefrontProducts((data as Product[]) ?? [])
+  // Include current product for the picker; caller may pass full list.
+  return all.length ? all : []
 }
 
 async function loadRelated(category: string, excludeId: string): Promise<Product[]> {
@@ -83,8 +99,16 @@ const TRUST = [
   { icon: RotateCcw, label: 'Easy returns' },
 ] as const
 
-function ProductPurchaseBlock({ product }: { product: Product }) {
-  const packSize = extractPackSize(product)
+function ProductPurchaseBlock({
+  product,
+  variants,
+}: {
+  product: Product
+  variants: Product[]
+}) {
+  const size = packLabel(product)
+  const unitPrice = formatUnitPrice(product)
+  const inStock = effectiveInStock(product)
 
   return (
     <>
@@ -92,13 +116,30 @@ function ProductPurchaseBlock({ product }: { product: Product }) {
         <p className="text-3xl font-semibold tracking-tight text-earth-900 tabular-nums sm:text-4xl">
           {formatMoney(product.price)}
         </p>
-        {packSize && (
-          <span className="text-sm font-medium text-earth-500">{packSize}</span>
+        {size && (
+          <span className="text-sm font-medium text-earth-500">{size}</span>
+        )}
+        {unitPrice && (
+          <span className="text-sm font-medium tabular-nums text-earth-500">{unitPrice}</span>
         )}
       </div>
 
+      {product.brand?.trim() && (
+        <p className="mt-2 text-sm text-earth-600">
+          Brand:{' '}
+          <Link
+            href={`/shop?brand=${encodeURIComponent(product.brand.trim())}`}
+            className="font-medium text-earth-900 underline-offset-2 hover:underline"
+          >
+            {product.brand.trim()}
+          </Link>
+        </p>
+      )}
+
+      <VariantSizePicker current={product} variants={variants} />
+
       <div className="mt-3">
-        <ProductStockLabel inStock={product.in_stock} />
+        <ProductStockLabel inStock={inStock} stockQuantity={product.stock_quantity} />
       </div>
 
       <div id="product-cta" className="mt-5 rounded-xl border border-earth-200 bg-white p-5 lg:sticky lg:top-24">
@@ -129,24 +170,36 @@ export default async function ProductPage({
   const product = await loadProduct(id)
   if (!product || isHiddenFromStorefront(product)) notFound()
 
-  const [related, fbt] = await Promise.all([
+  const [related, fbt, variants] = await Promise.all([
     loadRelated(product.category, product.id),
     fetchFrequentlyBoughtTogether(product.category, product.id, 3),
+    loadVariants(product.variant_group),
   ])
 
+  const variantList =
+    variants.length > 0
+      ? variants
+      : product.variant_group
+        ? [product]
+        : []
+
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? ''
+  const inStock = effectiveInStock(product)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     description: product.description ?? undefined,
     image: product.image_url ?? undefined,
+    brand: product.brand?.trim()
+      ? { '@type': 'Brand', name: product.brand.trim() }
+      : undefined,
     url: `${siteUrl}/products/${product.id}`,
     offers: {
       '@type': 'Offer',
       priceCurrency: 'USD',
       price: product.price.toFixed(2),
-      availability: product.in_stock
+      availability: inStock
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
       seller: {
@@ -199,7 +252,7 @@ export default async function ProductPage({
               <WishlistButton productId={product.id} />
             </div>
 
-            <ProductPurchaseBlock product={product} />
+            <ProductPurchaseBlock product={product} variants={variantList} />
             <ProductStickyBar product={product} sentinelId="product-cta" />
 
             {product.description && (

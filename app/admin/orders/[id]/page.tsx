@@ -33,6 +33,10 @@ import {
   type OrderStatus,
 } from '@/lib/order-status'
 import { PICKUP_HOLD_HOURS } from '@/lib/orders/pickup-hold'
+import {
+  SUBSTITUTION_OPTIONS,
+  pickupSlotLabel,
+} from '@/lib/orders/grocery-ops'
 import { formatPhoneDisplay, smsHref, telHref } from '@/lib/phone-link'
 import { STORE } from '@/lib/constants/store'
 import { SHIPPING_METHOD_LABEL, type ShippingMethod } from '@/lib/shipping'
@@ -403,6 +407,24 @@ export default async function AdminOrderDetailPage({
               />
               {isPickup && pickupContactName && (
                 <Field label="Collected by" value={pickupContactName} />
+              )}
+              {isPickup && typeof orderRecord.pickup_slot === 'string' && orderRecord.pickup_slot && (
+                <Field label="Pickup window" value={pickupSlotLabel(orderRecord.pickup_slot)} />
+              )}
+              {typeof orderRecord.substitution_pref === 'string' && orderRecord.substitution_pref && (
+                <Field
+                  label="If unavailable"
+                  value={
+                    SUBSTITUTION_OPTIONS.find((o) => o.value === orderRecord.substitution_pref)
+                      ?.label ?? String(orderRecord.substitution_pref)
+                  }
+                />
+              )}
+              {Number(orderRecord.tip_amount ?? 0) > 0 && (
+                <Field
+                  label="Driver tip"
+                  value={`$${Number(orderRecord.tip_amount).toFixed(2)}`}
+                />
               )}
               {!isPickup && <Field label="Tracking #" value={order.tracking_number ?? '—'} />}
               {order.refunded_at && (

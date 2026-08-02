@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { CheckoutStripePayment } from './CheckoutStripePayment'
 import {
   calculateShipping,
+  LOCAL_DELIVERY_MIN_SUBTOTAL,
   SHIPPING_METHOD_LABEL,
   type ShippingMethod,
 } from '@/lib/shipping'
@@ -25,6 +26,14 @@ import { OrderByPhone } from '@/components/store/OrderByPhone'
 import { cn } from '@/lib/utils'
 import { PickupPromoBanner } from '@/components/store/PickupPromoBanner'
 import { friendlyShippingError } from '@/lib/checkout/shipping-errors'
+import {
+  PICKUP_SLOT_OPTIONS,
+  SUBSTITUTION_OPTIONS,
+  TIP_PRESETS,
+  clampTip,
+  type PickupSlotId,
+  type SubstitutionPref,
+} from '@/lib/orders/grocery-ops'
 
 type CheckoutAccount = {
   email: string
@@ -178,6 +187,10 @@ export function CheckoutClient({
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('pickup')
   const isPickup = shippingMethod === 'pickup'
   const isLocalDelivery = shippingMethod === 'local_delivery'
+  const [substitutionPref, setSubstitutionPref] = useState<SubstitutionPref>('refund')
+  const [pickupSlot, setPickupSlot] = useState<PickupSlotId>('today_asap')
+  const [tipAmount, setTipAmount] = useState(0)
+  const [customTip, setCustomTip] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -466,8 +479,11 @@ export function CheckoutClient({
         form.country,
         form.state,
         shippingMethod,
+        tipAmount,
+        pickupSlot,
+        substitutionPref,
       ].join('|'),
-    [cartFingerprint, form.country, form.state, shippingMethod]
+    [cartFingerprint, form.country, form.state, shippingMethod, tipAmount, pickupSlot, substitutionPref]
   )
 
   useEffect(() => {
@@ -500,7 +516,12 @@ export function CheckoutClient({
     [items, categoryByProductId, form.country, form.state, shippingMethod]
   )
 
-  const grandTotal = totalPrice + shipping.fee + taxQuote.taxAmount
+  const tipForTotal = isLocalDelivery ? tipAmount : 0
+  const deliveryMinShort =
+    isLocalDelivery && totalPrice < LOCAL_DELIVERY_MIN_SUBTOTAL
+      ? Math.round((LOCAL_DELIVERY_MIN_SUBTOTAL - totalPrice) * 100) / 100
+      : 0
+  const grandTotal = totalPrice + shipping.fee + taxQuote.taxAmount + tipForTotal
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const name = e.target.name
@@ -552,6 +573,13 @@ export function CheckoutClient({
       return
     }
 
+    if (isLocalDelivery && deliveryMinShort > 0) {
+      setError(
+        `Local delivery needs a $${LOCAL_DELIVERY_MIN_SUBTOTAL.toFixed(2)} minimum. Add $${deliveryMinShort.toFixed(2)} more, or choose pickup / shipping.`
+      )
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -573,6 +601,9 @@ export function CheckoutClient({
           items,
           shippingMethod,
           pickupName: form.pickupName.trim(),
+          substitutionPref,
+          pickupSlot: isPickup ? pickupSlot : null,
+          tipAmount: tipForTotal,
         }),
       })
 
@@ -766,7 +797,7 @@ export function CheckoutClient({
                           {method === 'pickup'
                             ? ' · Ready same day · come in or send Uber with your order #'
                             : method === 'local_delivery'
-                              ? ' · Same-day · within 30 min drive of the store'
+                              ? ` · Same-day · $${LOCAL_DELIVERY_MIN_SUBTOTAL}+ order · within 30 min drive`
                               : ` · ${deliveryEta[quote.zone] ?? '5–8 business days'}`}
                         </span>
                       </span>
@@ -774,6 +805,13 @@ export function CheckoutClient({
                   )
                 })}
               </div>
+
+              {isLocalDelivery && deliveryMinShort > 0 && (
+                <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+                  Add ${deliveryMinShort.toFixed(2)} more for local delivery (minimum $
+                  {LOCAL_DELIVERY_MIN_SUBTOTAL.toFixed(2)}).
+                </p>
+              )}
 
               {isLocalDelivery && (
                 <div className="mt-4 rounded-xl border border-earth-200 bg-earth-50 px-4 py-3 text-sm">
@@ -799,6 +837,80 @@ export function CheckoutClient({
                   )}
                 </div>
               )}
+
+              {isLocalDelivery && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-earth-500">
+                    Driver tip
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {TIP_PRESETS.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          setTipAmount(preset)
+                          setCustomTip('')
+                        }}
+                        className={cn(
+                          'inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border px-3 text-sm font-semibold transition duration-150',
+                          tipAmount === preset && !customTip
+                            ? 'border-earth-900 bg-earth-900 text-white'
+                            : 'border-earth-200 bg-white text-earth-800 hover:border-earth-400'
+                        )}
+                      >
+                        {preset === 0 ? 'No tip' : `$${preset}`}
+                      </button>
+                    ))}
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      max={100}
+                      step="0.50"
+                      placeholder="Custom"
+                      className="h-11 w-24"
+                      value={customTip}
+                      onChange={(e) => {
+                        setCustomTip(e.target.value)
+                        setTipAmount(clampTip(e.target.value))
+                      }}
+                      aria-label="Custom tip amount"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-5 space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-earth-500">
+                  If an item is unavailable
+                </p>
+                <div className="space-y-2">
+                  {SUBSTITUTION_OPTIONS.map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={cn(
+                        'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition',
+                        substitutionPref === opt.value
+                          ? 'border-brand-400 bg-brand-50/50'
+                          : 'border-earth-200 bg-white hover:border-earth-300'
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="substitutionPref"
+                        className="mt-1"
+                        checked={substitutionPref === opt.value}
+                        onChange={() => setSubstitutionPref(opt.value)}
+                      />
+                      <span className="text-sm">
+                        <span className="font-semibold text-earth-950">{opt.label}</span>
+                        <span className="block text-earth-600">{opt.hint}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <OrderByPhone compact className="mt-4" />
             </CheckoutStep>
@@ -826,6 +938,35 @@ export function CheckoutClient({
                         </dd>
                       </div>
                     </dl>
+                  </div>
+
+                  <div>
+                    <p className="form-label">Pickup window</p>
+                    <div className="mt-2 space-y-2">
+                      {PICKUP_SLOT_OPTIONS.map((slot) => (
+                        <label
+                          key={slot.value}
+                          className={cn(
+                            'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition',
+                            pickupSlot === slot.value
+                              ? 'border-brand-400 bg-brand-50/50'
+                              : 'border-earth-200 bg-white hover:border-earth-300'
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="pickupSlot"
+                            className="mt-1"
+                            checked={pickupSlot === slot.value}
+                            onChange={() => setPickupSlot(slot.value)}
+                          />
+                          <span className="text-sm">
+                            <span className="font-semibold text-earth-950">{slot.label}</span>
+                            <span className="block text-earth-600">{slot.hint}</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
                   <div>
@@ -1114,6 +1255,12 @@ export function CheckoutClient({
                     </span>
                   </div>
                 ) : null}
+                {tipForTotal > 0 && (
+                  <div className="flex justify-between text-earth-600">
+                    <span>Driver tip</span>
+                    <span className="font-medium text-earth-900">${tipForTotal.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between border-t border-earth-100 pt-3 text-lg font-bold text-earth-950">
                   <span>Total</span>
                   <span>${grandTotal.toFixed(2)}</span>
@@ -1138,6 +1285,7 @@ export function CheckoutClient({
                       onClick={() => void preparePayment()}
                       disabled={
                         loading ||
+                        deliveryMinShort > 0 ||
                         (isLocalDelivery &&
                           localEligibility.status !== 'eligible' &&
                           localEligibility.status !== 'idle')

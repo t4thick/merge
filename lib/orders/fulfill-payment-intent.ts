@@ -7,7 +7,7 @@ import {
   computeCheckoutTotals,
   type ProductWithCategory,
 } from '@/lib/checkout-totals'
-import { normalizeShippingCountry, normalizeShippingRegion } from '@/lib/shipping'
+import { normalizeShippingCountry, normalizeShippingRegion, normalizeShippingMethod } from '@/lib/shipping'
 import { getStripe } from '@/lib/stripe'
 import type { CheckoutSnapshotPayload } from '@/lib/orders/checkout-snapshot'
 import {
@@ -116,8 +116,12 @@ export async function fulfillOrderFromPaymentIntent(
     country: normalizedCountry,
     state: normalizedState,
     shippingMethod: payload.shipping_method,
+    tipAmount:
+      normalizeShippingMethod(payload.shipping_method) === 'local_delivery'
+        ? Number(payload.tip_amount ?? 0)
+        : 0,
   })
-  const { orderItems: authoritativeItems, subtotal, shipping, tax } = totals
+  const { orderItems: authoritativeItems, subtotal, shipping, tax, tip } = totals
   const shipping_method = shipping.method
 
   const totalCents = Math.round(totals.total * 100)
@@ -130,7 +134,7 @@ export async function fulfillOrderFromPaymentIntent(
   const totalFromStripe = received / 100
   const customerEmail = payload.account_email.trim().toLowerCase()
 
-  const baseOrderInsert = {
+  const baseOrderInsert: Record<string, unknown> = {
     customer_name: payload.customer_name.trim(),
     customer_email: customerEmail,
     customer_phone: payload.customer_phone.trim(),
@@ -151,6 +155,9 @@ export async function fulfillOrderFromPaymentIntent(
     user_id: userId,
     stripe_checkout_session_id: null,
     stripe_payment_intent_id: paymentIntentId,
+    tip_amount: tip,
+    substitution_pref: payload.substitution_pref ?? 'refund',
+    pickup_slot: payload.pickup_slot ?? null,
   }
 
   const pickupContactName = payload.pickup_contact_name?.trim() || null
@@ -161,16 +168,30 @@ export async function fulfillOrderFromPaymentIntent(
     .select()
     .single()
 
-  // Retry without the pickup column if the DB migration hasn't been applied yet.
+  // Retry without newer columns if the DB migration hasn't been applied yet.
   if (
     orderError &&
     /column .* does not exist|could not find the .* column/i.test(orderError.message)
   ) {
+    const legacy = { ...baseOrderInsert }
+    delete legacy.tip_amount
+    delete legacy.substitution_pref
+    delete legacy.pickup_slot
     ;({ data: order, error: orderError } = await supabaseAdmin
       .from('orders')
-      .insert(baseOrderInsert)
+      .insert({ ...legacy, pickup_contact_name: pickupContactName })
       .select()
       .single())
+    if (
+      orderError &&
+      /column .* does not exist|could not find the .* column/i.test(orderError.message)
+    ) {
+      ;({ data: order, error: orderError } = await supabaseAdmin
+        .from('orders')
+        .insert(legacy)
+        .select()
+        .single())
+    }
   }
 
   if (orderError || !order) {

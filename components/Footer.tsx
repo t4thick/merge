@@ -9,6 +9,7 @@ import { StoreLogo } from '@/components/ui/StoreLogo'
 
 const SHOP_LINKS = [
   { href: '/shop', label: 'All products' },
+  { href: '/bundles', label: 'Bundles' },
   { href: '/#mobile-market', label: 'Mobile market' },
   { href: '/#services', label: 'Services' },
   { href: '/shop?category=Spices', label: 'Spices' },
@@ -24,6 +25,11 @@ const ACCOUNT_LINKS = [
 ] as const
 
 const HELP_LINKS = [
+  { href: '/faq', label: 'FAQ' },
+  { href: '/shipping', label: 'Shipping' },
+  { href: '/returns', label: 'Returns' },
+  { href: '/recipes', label: 'Recipes' },
+  { href: '/about', label: 'About' },
   { href: '/feedback', label: 'Website feedback' },
   { href: '/track-order', label: 'Track order' },
 ] as const

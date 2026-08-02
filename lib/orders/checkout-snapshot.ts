@@ -13,4 +13,10 @@ export type CheckoutSnapshotPayload = {
   account_email: string
   /** For pickup orders: who is collecting (customer, friend, or courier). */
   pickup_contact_name?: string | null
+  /** refund | call | substitute */
+  substitution_pref?: string | null
+  /** today_asap | today_afternoon | … */
+  pickup_slot?: string | null
+  /** Driver tip dollars */
+  tip_amount?: number | null
 }

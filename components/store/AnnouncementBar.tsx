@@ -3,33 +3,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { X } from 'lucide-react'
-import { STORE, storePhonesPlain } from '@/lib/constants/store'
-import { FREE_STANDARD_SHIPPING_SUBTOTAL } from '@/lib/shipping'
+import type { AnnouncementMessage } from '@/lib/supabase/announcements'
 
-const DISMISS_KEY = 'kam_bar_v3'
+const DISMISS_KEY = 'kam_bar_v4'
 
-const MESSAGES = [
-  {
-    text: `Nationwide shipping · Free standard on $${FREE_STANDARD_SHIPPING_SUBTOTAL}+ · Pickup in Columbus`,
-    href: undefined as string | undefined,
-  },
-  {
-    text: `Mobile market & Ohio delivery — call ${storePhonesPlain()}`,
-    href: '/#mobile-market',
-  },
-  {
-    text: 'Insurance, notary & more services — by appointment',
-    href: '/#services',
-  },
-  {
-    text: `Store pickup · ${STORE.address}`,
-    href: undefined,
-  },
-] as const
-
-export function AnnouncementBar() {
+export function AnnouncementBar({ messages }: { messages: AnnouncementMessage[] }) {
   const [hidden, setHidden] = useState(false)
   const [index, setIndex] = useState(0)
+  const list = messages.length > 0 ? messages : []
 
   useEffect(() => {
     try {
@@ -48,9 +29,9 @@ export function AnnouncementBar() {
     }
   }
 
-  if (hidden) return null
+  if (hidden || list.length === 0) return null
 
-  const msg = MESSAGES[index]
+  const msg = list[index % list.length]
 
   return (
     <div className="relative border-b border-earth-200 bg-white py-2.5 text-center text-xs font-medium text-earth-600">
@@ -62,25 +43,27 @@ export function AnnouncementBar() {
         <p className="px-10">{msg.text}</p>
       )}
 
-      <div className="mt-1 flex items-center justify-center gap-0.5 pb-0.5">
-        {MESSAGES.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            aria-label={`Announcement ${i + 1} of ${MESSAGES.length}`}
-            aria-current={i === index}
-            onClick={() => setIndex(i)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl transition-colors duration-150 hover:bg-earth-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-earth-300"
-          >
-            <span
-              className={`h-2 w-2 rounded-full ${
-                i === index ? 'bg-earth-800' : 'bg-earth-300'
-              }`}
-              aria-hidden
-            />
-          </button>
-        ))}
-      </div>
+      {list.length > 1 && (
+        <div className="mt-1 flex items-center justify-center gap-0.5 pb-0.5">
+          {list.map((m, i) => (
+            <button
+              key={m.id}
+              type="button"
+              aria-label={`Announcement ${i + 1} of ${list.length}`}
+              aria-current={i === index}
+              onClick={() => setIndex(i)}
+              className="flex h-11 w-11 items-center justify-center rounded-xl transition-colors duration-150 hover:bg-earth-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-earth-300"
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  i === index ? 'bg-earth-800' : 'bg-earth-300'
+                }`}
+                aria-hidden
+              />
+            </button>
+          ))}
+        </div>
+      )}
 
       <button
         type="button"

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronDown, Filter, X } from 'lucide-react'
 import { PRODUCT_CATEGORIES } from '@/lib/constants/categories'
+import { DIETARY_TAGS, DIETARY_TAG_LABEL } from '@/lib/orders/grocery-ops'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -21,6 +22,8 @@ function useShopFilterState() {
   const sp = useSearchParams()
   const [q, setQ] = useState(sp.get('q') ?? '')
   const [category, setCategory] = useState(sp.get('category') ?? '')
+  const [brand, setBrand] = useState(sp.get('brand') ?? '')
+  const [dietary, setDietary] = useState(sp.get('dietary') ?? '')
   const [minPrice, setMinPrice] = useState(sp.get('minPrice') ?? '')
   const [maxPrice, setMaxPrice] = useState(sp.get('maxPrice') ?? '')
   const [inStockOnly, setInStockOnly] = useState(sp.get('inStock') === '1')
@@ -30,6 +33,8 @@ function useShopFilterState() {
   useEffect(() => {
     setQ(sp.get('q') ?? '')
     setCategory(sp.get('category') ?? '')
+    setBrand(sp.get('brand') ?? '')
+    setDietary(sp.get('dietary') ?? '')
     setMinPrice(sp.get('minPrice') ?? '')
     setMaxPrice(sp.get('maxPrice') ?? '')
     setInStockOnly(sp.get('inStock') === '1')
@@ -41,6 +46,8 @@ function useShopFilterState() {
   const activeFilterCount = [
     sp.get('q') ? 1 : 0,
     sp.get('category') ? 1 : 0,
+    sp.get('brand') ? 1 : 0,
+    sp.get('dietary') ? 1 : 0,
     sp.get('minPrice') || sp.get('maxPrice') ? 1 : 0,
     sp.get('inStock') === '1' ? 1 : 0,
     sp.get('sort') && sp.get('sort') !== 'featured' ? 1 : 0,
@@ -52,6 +59,8 @@ function useShopFilterState() {
     (next: Partial<{
       q: string
       category: string
+      brand: string
+      dietary: string
       minPrice: string
       maxPrice: string
       inStock: boolean
@@ -60,19 +69,23 @@ function useShopFilterState() {
       const p = new URLSearchParams()
       const qVal = next.q ?? q
       const catVal = next.category !== undefined ? next.category : category
+      const brandVal = next.brand !== undefined ? next.brand : brand
+      const dietaryVal = next.dietary !== undefined ? next.dietary : dietary
       const minVal = next.minPrice ?? minPrice
       const maxVal = next.maxPrice ?? maxPrice
       const stockVal = next.inStock ?? inStockOnly
       const sortVal = next.sort ?? sort
       if (qVal.trim()) p.set('q', qVal.trim())
       if (catVal) p.set('category', catVal)
+      if (brandVal) p.set('brand', brandVal)
+      if (dietaryVal) p.set('dietary', dietaryVal)
       if (minVal) p.set('minPrice', minVal)
       if (maxVal) p.set('maxPrice', maxVal)
       if (stockVal) p.set('inStock', '1')
       if (sortVal && sortVal !== 'featured') p.set('sort', sortVal)
       router.push(`/shop${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
     },
-    [router, q, category, minPrice, maxPrice, inStockOnly, sort]
+    [router, q, category, brand, dietary, minPrice, maxPrice, inStockOnly, sort]
   )
 
   function apply(e?: React.FormEvent) {
@@ -84,6 +97,8 @@ function useShopFilterState() {
   function reset() {
     setQ('')
     setCategory('')
+    setBrand('')
+    setDietary('')
     setMinPrice('')
     setMaxPrice('')
     setInStockOnly(false)
@@ -95,6 +110,18 @@ function useShopFilterState() {
   function setCategoryAndGo(cat: string) {
     setCategory(cat)
     pushFilters({ category: cat })
+    setMobileOpen(false)
+  }
+
+  function setBrandAndGo(b: string) {
+    setBrand(b)
+    pushFilters({ brand: b })
+    setMobileOpen(false)
+  }
+
+  function setDietaryAndGo(d: string) {
+    setDietary(d)
+    pushFilters({ dietary: d })
     setMobileOpen(false)
   }
 
@@ -111,6 +138,8 @@ function useShopFilterState() {
   return {
     q, setQ,
     category, setCategory,
+    brand, setBrand,
+    dietary, setDietary,
     minPrice, setMinPrice,
     maxPrice, setMaxPrice,
     inStockOnly, setInStockOnly,
@@ -120,7 +149,7 @@ function useShopFilterState() {
     hasFilters,
     activeFilterCount,
     apply, reset,
-    setCategoryAndGo, setSortAndGo, toggleStockAndGo,
+    setCategoryAndGo, setBrandAndGo, setDietaryAndGo, setSortAndGo, toggleStockAndGo,
   }
 }
 
@@ -344,8 +373,10 @@ export function SortMenu() {
 
 export function ShopFiltersSidebar({
   categoryCount,
+  brands = [],
 }: {
   categoryCount?: Record<string, number>
+  brands?: string[]
 }) {
   const state = useShopFilterState()
 
@@ -379,6 +410,76 @@ export function ShopFiltersSidebar({
             <Button type="submit" size="sm" className="mt-2 h-11 w-full text-xs">
               Apply price
             </Button>
+          </div>
+
+          {brands.length > 0 && (
+            <div>
+              <p className="form-label mb-1.5">Brand</p>
+              <ul className="max-h-40 space-y-0.5 overflow-y-auto">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => state.setBrandAndGo('')}
+                    className={cn(
+                      'flex min-h-10 w-full items-center rounded-md px-2.5 text-left text-[13px] font-medium',
+                      !state.brand ? 'bg-earth-100 text-earth-900' : 'text-earth-700 hover:bg-earth-50'
+                    )}
+                  >
+                    All brands
+                  </button>
+                </li>
+                {brands.map((b) => (
+                  <li key={b}>
+                    <button
+                      type="button"
+                      onClick={() => state.setBrandAndGo(b)}
+                      className={cn(
+                        'flex min-h-10 w-full items-center rounded-md px-2.5 text-left text-[13px] font-medium',
+                        state.brand === b
+                          ? 'bg-earth-100 text-earth-900'
+                          : 'text-earth-700 hover:bg-earth-50'
+                      )}
+                    >
+                      {b}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div>
+            <p className="form-label mb-1.5">Dietary</p>
+            <ul className="space-y-0.5">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => state.setDietaryAndGo('')}
+                  className={cn(
+                    'flex min-h-10 w-full items-center rounded-md px-2.5 text-left text-[13px] font-medium',
+                    !state.dietary ? 'bg-earth-100 text-earth-900' : 'text-earth-700 hover:bg-earth-50'
+                  )}
+                >
+                  Any
+                </button>
+              </li>
+              {DIETARY_TAGS.map((tag) => (
+                <li key={tag}>
+                  <button
+                    type="button"
+                    onClick={() => state.setDietaryAndGo(tag)}
+                    className={cn(
+                      'flex min-h-10 w-full items-center rounded-md px-2.5 text-left text-[13px] font-medium',
+                      state.dietary === tag
+                        ? 'bg-earth-100 text-earth-900'
+                        : 'text-earth-700 hover:bg-earth-50'
+                    )}
+                  >
+                    {DIETARY_TAG_LABEL[tag]}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         </form>
       </div>
@@ -617,6 +718,8 @@ export function ActiveFilterChips() {
 
   const q = sp.get('q')
   const category = sp.get('category')
+  const brand = sp.get('brand')
+  const dietary = sp.get('dietary')
   const minPrice = sp.get('minPrice')
   const maxPrice = sp.get('maxPrice')
   const inStock = sp.get('inStock') === '1'
@@ -629,6 +732,14 @@ export function ActiveFilterChips() {
 
   if (q) chips.push({ key: 'q', label: `"${q}"`, clear: () => clearKey('q') })
   if (category) chips.push({ key: 'category', label: category, clear: () => clearKey('category') })
+  if (brand) chips.push({ key: 'brand', label: brand, clear: () => clearKey('brand') })
+  if (dietary) {
+    chips.push({
+      key: 'dietary',
+      label: DIETARY_TAG_LABEL[dietary as keyof typeof DIETARY_TAG_LABEL] ?? dietary,
+      clear: () => clearKey('dietary'),
+    })
+  }
   if (minPrice || maxPrice) {
     chips.push({
       key: 'price',

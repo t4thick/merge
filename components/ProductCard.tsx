@@ -9,7 +9,7 @@ import { ProductImage } from '@/components/store/ProductImage'
 import { WishlistButton } from '@/components/store/WishlistButton'
 import { Button } from '@/components/ui/button'
 import { ProductStockLabel } from '@/components/store/ProductStockLabel'
-import { extractPackSize } from '@/lib/product-display'
+import { packLabel, formatUnitPrice, effectiveInStock, lowStockCount } from '@/lib/product-pricing'
 import { formatMoney } from '@/lib/utils'
 import type { Product } from '@/types'
 
@@ -17,6 +17,10 @@ export function ProductCard({ product, priority }: { product: Product; priority?
   const { addItem } = useCart()
   const toast = useToast()
   const [justAdded, setJustAdded] = useState(false)
+  const inStock = effectiveInStock(product)
+  const packSize = packLabel(product)
+  const unitPrice = formatUnitPrice(product)
+  const low = lowStockCount(product)
 
   useEffect(() => {
     if (!justAdded) return
@@ -24,12 +28,10 @@ export function ProductCard({ product, priority }: { product: Product; priority?
     return () => clearTimeout(t)
   }, [justAdded])
 
-  const packSize = extractPackSize(product)
-
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    if (!product.in_stock) return
+    if (!inStock) return
     addItem(product, 1)
     toast?.show(`Added: ${product.name}`)
     setJustAdded(true)
@@ -39,9 +41,14 @@ export function ProductCard({ product, priority }: { product: Product; priority?
     <article className="group premium-card premium-card-hover flex h-full min-w-0 flex-col">
       <Link href={`/products/${product.id}`} className="flex flex-1 flex-col no-underline">
         <div className="product-image-frame relative">
-          {!product.in_stock && (
+          {!inStock && (
             <span className="absolute left-3 top-3 z-10 rounded-full bg-earth-900/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-white">
               Out of stock
+            </span>
+          )}
+          {inStock && low != null && (
+            <span className="absolute left-3 top-3 z-10 rounded-full bg-amber-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+              Only {low} left
             </span>
           )}
           <div
@@ -66,7 +73,7 @@ export function ProductCard({ product, priority }: { product: Product; priority?
         </div>
         <div className="flex flex-1 flex-col p-4 sm:p-5">
           <p className="line-clamp-1 text-[10px] font-medium uppercase tracking-[0.14em] text-earth-500">
-            {product.category}
+            {product.brand?.trim() || product.category}
           </p>
           <h3 className="mt-2 line-clamp-2 text-[14px] font-medium leading-snug text-earth-900 transition-colors duration-200 group-hover:text-earth-600 sm:text-[15px]">
             {product.name}
@@ -76,35 +83,48 @@ export function ProductCard({ product, priority }: { product: Product; priority?
               {product.description}
             </p>
           )}
-          {(product.in_stock || packSize) && (
+          {(inStock || packSize) && (
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-              {product.in_stock && <ProductStockLabel inStock compact />}
+              {inStock && (
+                <ProductStockLabel
+                  inStock
+                  stockQuantity={product.stock_quantity}
+                  compact
+                />
+              )}
               {packSize && (
                 <span className="text-[11px] font-medium text-earth-500">{packSize}</span>
               )}
             </div>
           )}
-          <p className="mt-auto pt-4 text-[17px] font-semibold tabular-nums tracking-tight text-earth-900">
-            {formatMoney(product.price)}
-          </p>
+          <div className="mt-auto pt-4">
+            <p className="text-[17px] font-semibold tabular-nums tracking-tight text-earth-900">
+              {formatMoney(product.price)}
+            </p>
+            {unitPrice && (
+              <p className="mt-0.5 text-[11px] font-medium tabular-nums text-earth-500">
+                {unitPrice}
+              </p>
+            )}
+          </div>
         </div>
       </Link>
       <div className="px-3 pb-3 sm:px-4 sm:pb-4">
         <Button
           type="button"
-          variant={product.in_stock ? 'default' : 'outline'}
+          variant={inStock ? 'default' : 'outline'}
           size="sm"
           className="h-11 w-full gap-1.5 text-[13px]"
-          disabled={!product.in_stock}
+          disabled={!inStock}
           onClick={handleAdd}
-          aria-label={product.in_stock ? `Add ${product.name} to cart` : 'Unavailable'}
+          aria-label={inStock ? `Add ${product.name} to cart` : 'Unavailable'}
         >
           {justAdded ? (
             <>
               <Check className="h-4 w-4" aria-hidden />
               Added
             </>
-          ) : product.in_stock ? (
+          ) : inStock ? (
             <>
               <Plus className="h-4 w-4" aria-hidden />
               Add to cart

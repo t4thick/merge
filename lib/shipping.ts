@@ -95,6 +95,9 @@ export const SHIPPING_METHOD_LABEL: Record<ShippingMethod, string> = {
 /** Flat fee for local mobile-market delivery within the drive-time radius. */
 export const LOCAL_DELIVERY_FEE = 5
 
+/** Minimum merchandise subtotal before local delivery is offered. */
+export const LOCAL_DELIVERY_MIN_SUBTOTAL = 25
+
 /** Subtotal for free standard US shipping at checkout */
 export const FREE_STANDARD_SHIPPING_SUBTOTAL = 120
 

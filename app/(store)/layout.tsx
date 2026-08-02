@@ -7,12 +7,15 @@ import { MobileCartBar } from '@/components/store/MobileCartBar'
 import { CartDrawer } from '@/components/store/CartDrawer'
 import { AnnouncementBar } from '@/components/store/AnnouncementBar'
 import { StoreMobileChrome } from '@/components/store/StoreMobileChrome'
+import { fetchAnnouncements } from '@/lib/supabase/announcements'
 
-export default function StoreLayout({ children }: { children: ReactNode }) {
+export default async function StoreLayout({ children }: { children: ReactNode }) {
+  const announcements = await fetchAnnouncements()
+
   return (
     <StoreMobileChrome>
       <LocalBusinessJsonLd />
-      <AnnouncementBar />
+      <AnnouncementBar messages={announcements} />
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />

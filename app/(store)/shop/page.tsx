@@ -7,7 +7,7 @@ import {
   ShopFiltersSidebar,
   SortMenu,
 } from '@/components/shop/ShopFilters'
-import { fetchCategoryCounts, fetchProductsForShop, type SortOption } from '@/lib/supabase/products'
+import { fetchCategoryCounts, fetchDistinctBrands, fetchProductsForShop, type SortOption } from '@/lib/supabase/products'
 import { RecentlyViewed } from '@/components/store/RecentlyViewed'
 import { BackToTop } from '@/components/store/BackToTop'
 import type { Product } from '@/types'
@@ -22,6 +22,8 @@ export default async function ShopPage({
   searchParams: Promise<{
     q?: string
     category?: string
+    brand?: string
+    dietary?: string
     minPrice?: string
     maxPrice?: string
     inStock?: string
@@ -35,19 +37,28 @@ export default async function ShopPage({
     ? (p.sort as SortOption)
     : 'featured'
 
-  const [{ products, errorMessage }, categoryCount] = await Promise.all([
+  const [{ products, errorMessage }, categoryCount, brands] = await Promise.all([
     fetchProductsForShop({
       q: p.q,
       category: p.category,
+      brand: p.brand,
+      dietary: p.dietary,
       minPrice: Number.isNaN(minN) ? undefined : minN,
       maxPrice: Number.isNaN(maxN) ? undefined : maxN,
       inStockOnly: p.inStock === '1',
       sort,
     }),
     fetchCategoryCounts(),
+    fetchDistinctBrands(),
   ])
 
-  const title = p.category ? p.category : p.q ? `Results for "${p.q}"` : 'All products'
+  const title = p.category
+    ? p.category
+    : p.brand
+      ? p.brand
+      : p.q
+        ? `Results for "${p.q}"`
+        : 'All products'
   const subtitle = p.category
     ? `${products.length} product${products.length === 1 ? '' : 's'} in ${p.category.toLowerCase()}`
     : p.q
@@ -79,7 +90,7 @@ export default async function ShopPage({
           <aside className="hidden md:block">
             <div className="sticky top-24">
               <Suspense fallback={<p className="muted">Loading filters…</p>}>
-                <ShopFiltersSidebar categoryCount={categoryCount} />
+                <ShopFiltersSidebar categoryCount={categoryCount} brands={brands} />
               </Suspense>
             </div>
           </aside>
