@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { PageHeader } from '@/components/store/PageHeader'
+import { TapLink } from '@/components/store/TapLink'
 import { STORE } from '@/lib/constants/store'
 import {
   FREE_STANDARD_SHIPPING_SUBTOTAL,
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function ShippingPage() {
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <PageHeader
         eyebrow="Policies"
         title="Shipping & pickup"
@@ -59,19 +59,12 @@ export default function ShippingPage() {
             </p>
           </div>
 
-          <p className="text-sm text-earth-600">
-            More answers in the{' '}
-            <Link href="/faq" className="font-medium text-brand-700 no-underline hover:text-brand-800">
-              FAQ
-            </Link>
-            . Returns and refunds:{' '}
-            <Link
-              href="/returns"
-              className="font-medium text-brand-700 no-underline hover:text-brand-800"
-            >
-              Returns
-            </Link>
-            .
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-earth-600">
+            <span>More answers in the</span>
+            <TapLink href="/faq">FAQ</TapLink>
+            <span aria-hidden>·</span>
+            <span>Returns:</span>
+            <TapLink href="/returns">Returns</TapLink>
           </p>
         </div>
       </section>

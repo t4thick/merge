@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { PageHeader } from '@/components/store/PageHeader'
+import { TapLink } from '@/components/store/TapLink'
 import { STORE, getSupportEmail, storePhonesPlain } from '@/lib/constants/store'
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export default function ReturnsPage() {
   const supportEmail = getSupportEmail()
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <PageHeader
         eyebrow="Policies"
         title="Returns & refunds"
@@ -55,34 +55,20 @@ export default function ReturnsPage() {
 
           <div className="premium-card space-y-3 p-5 sm:p-6">
             <h2 className="text-lg font-semibold text-earth-900">How to contact us</h2>
-            <p>
-              Email{' '}
-              <a
-                href={`mailto:${supportEmail}`}
-                className="font-medium text-brand-700 no-underline hover:text-brand-800"
-              >
-                {supportEmail}
-              </a>{' '}
-              with your order number, or call {storePhonesPlain()}. Store address: {STORE.address}.
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>Email</span>
+              <TapLink href={`mailto:${supportEmail}`}>{supportEmail}</TapLink>
+              <span>with your order number, or call {storePhonesPlain()}. Store: {STORE.address}.</span>
             </p>
           </div>
 
-          <p className="text-sm text-earth-600">
-            Related:{' '}
-            <Link href="/faq" className="font-medium text-brand-700 no-underline hover:text-brand-800">
-              FAQ
-            </Link>
-            {' · '}
-            <Link
-              href="/shipping"
-              className="font-medium text-brand-700 no-underline hover:text-brand-800"
-            >
-              Shipping &amp; pickup
-            </Link>
-            {' · '}
-            <Link href="/terms" className="font-medium text-brand-700 no-underline hover:text-brand-800">
-              Terms
-            </Link>
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-earth-600">
+            <span>Related:</span>
+            <TapLink href="/faq">FAQ</TapLink>
+            <span aria-hidden>·</span>
+            <TapLink href="/shipping">Shipping &amp; pickup</TapLink>
+            <span aria-hidden>·</span>
+            <TapLink href="/terms">Terms</TapLink>
           </p>
         </div>
       </section>

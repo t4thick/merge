@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import Link from 'next/link'
 import { PageHeader } from '@/components/store/PageHeader'
+import { TapLink } from '@/components/store/TapLink'
 import { STORE, getSupportEmail, storePhonesPlain } from '@/lib/constants/store'
 import { PICKUP_HOLD_HOURS } from '@/lib/orders/pickup-hold'
 import {
@@ -32,10 +32,7 @@ const FAQS: Array<{ q: string; a: ReactNode }> = [
       <>
         Standard shipping usually arrives in 3–7 business days after we ship. Express options
         (when offered at checkout) are faster. Tracking appears on your confirmation email and at{' '}
-        <Link href="/track-order" className="font-medium text-brand-700 no-underline hover:text-brand-800">
-          Track order
-        </Link>
-        .
+        <TapLink href="/track-order">Track order</TapLink>.
       </>
     ),
   },
@@ -64,10 +61,7 @@ const FAQS: Array<{ q: string; a: ReactNode }> = [
       <>
         Damaged, incorrect, or defective items: contact us within 7 days of delivery. Perishable
         food cannot be returned unless damaged or incorrect. Full details on the{' '}
-        <Link href="/returns" className="font-medium text-brand-700 no-underline hover:text-brand-800">
-          Returns
-        </Link>{' '}
-        page.
+        <TapLink href="/returns">Returns</TapLink> page.
       </>
     ),
   },
@@ -84,12 +78,8 @@ const FAQS: Array<{ q: string; a: ReactNode }> = [
     q: 'How do I track my order?',
     a: (
       <>
-        Use{' '}
-        <Link href="/track-order" className="font-medium text-brand-700 no-underline hover:text-brand-800">
-          Track order
-        </Link>{' '}
-        with your order number and email. Shipped orders also include a carrier tracking link in
-        status emails.
+        Use <TapLink href="/track-order">Track order</TapLink> with your order number and email.
+        Shipped orders also include a carrier tracking link in status emails.
       </>
     ),
   },
@@ -98,11 +88,8 @@ const FAQS: Array<{ q: string; a: ReactNode }> = [
     a: (
       <>
         Standard US shipping is free on orders of ${FREE_STANDARD_SHIPPING_SUBTOTAL}+ merchandise
-        subtotal. See{' '}
-        <Link href="/shipping" className="font-medium text-brand-700 no-underline hover:text-brand-800">
-          Shipping &amp; pickup
-        </Link>{' '}
-        for rates and pickup details.
+        subtotal. See <TapLink href="/shipping">Shipping &amp; pickup</TapLink> for rates and
+        pickup details.
       </>
     ),
   },
@@ -112,7 +99,7 @@ export default function FaqPage() {
   const supportEmail = getSupportEmail()
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <PageHeader
         eyebrow="Help"
         title="Frequently asked questions"
@@ -124,21 +111,16 @@ export default function FaqPage() {
             {FAQS.map((item) => (
               <li key={item.q} className="premium-card p-5 sm:p-6">
                 <h2 className="text-base font-semibold text-earth-900">{item.q}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-earth-600">{item.a}</p>
+                <div className="mt-2 text-sm leading-relaxed text-earth-600">{item.a}</div>
               </li>
             ))}
           </ul>
 
-          <p className="mt-10 text-sm text-earth-600">
-            Still need help?{' '}
-            <a
-              href={`mailto:${supportEmail}`}
-              className="font-medium text-brand-700 no-underline hover:text-brand-800"
-            >
-              {supportEmail}
-            </a>
-            {' · '}
-            {storePhonesPlain()}
+          <p className="mt-10 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-earth-600">
+            <span>Still need help?</span>
+            <TapLink href={`mailto:${supportEmail}`}>{supportEmail}</TapLink>
+            <span aria-hidden>·</span>
+            <span>{storePhonesPlain()}</span>
           </p>
         </div>
       </section>

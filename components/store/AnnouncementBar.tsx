@@ -34,17 +34,23 @@ export function AnnouncementBar({ messages }: { messages: AnnouncementMessage[] 
   const msg = list[index % list.length]
 
   return (
-    <div className="relative border-b border-earth-200 bg-white py-2.5 text-center text-xs font-medium text-earth-600">
+    <div className="relative border-b border-earth-200 bg-white py-2 text-center text-xs font-medium text-earth-600 sm:py-2.5">
       {msg.href ? (
-        <Link href={msg.href} className="block px-10 text-earth-700 no-underline hover:text-earth-900">
+        <Link
+          href={msg.href}
+          className="block max-w-[calc(100%-2.75rem)] truncate px-3 text-earth-700 no-underline hover:text-earth-900 sm:mx-auto sm:max-w-3xl sm:px-10 sm:whitespace-normal sm:overflow-visible"
+        >
           {msg.text}
         </Link>
       ) : (
-        <p className="px-10">{msg.text}</p>
+        <p className="max-w-[calc(100%-2.75rem)] truncate px-3 sm:mx-auto sm:max-w-3xl sm:px-10 sm:whitespace-normal sm:overflow-visible">
+          {msg.text}
+        </p>
       )}
 
+      {/* Dot pager — desktop only; saves vertical chrome on phones */}
       {list.length > 1 && (
-        <div className="mt-1 flex items-center justify-center gap-0.5 pb-0.5">
+        <div className="mt-1 hidden items-center justify-center gap-0.5 pb-0.5 sm:flex">
           {list.map((m, i) => (
             <button
               key={m.id}
@@ -65,10 +71,24 @@ export function AnnouncementBar({ messages }: { messages: AnnouncementMessage[] 
         </div>
       )}
 
+      {/* Mobile: advance message by tapping the bar edge control */}
+      {list.length > 1 && (
+        <button
+          type="button"
+          className="absolute left-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-earth-400 sm:hidden"
+          aria-label="Next announcement"
+          onClick={() => setIndex((i) => (i + 1) % list.length)}
+        >
+          <span className="text-[10px] font-semibold tabular-nums">
+            {index + 1}/{list.length}
+          </span>
+        </button>
+      )}
+
       <button
         type="button"
         onClick={dismiss}
-        className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-earth-500 transition-colors duration-150 hover:bg-earth-100 hover:text-earth-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-earth-300"
+        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-earth-500 transition-colors duration-150 hover:bg-earth-100 hover:text-earth-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-earth-300 sm:right-2"
         aria-label="Dismiss announcement"
       >
         <X className="h-4 w-4" aria-hidden />

@@ -3,7 +3,20 @@ import Image from 'next/image'
 import { ProductImage } from '@/components/store/ProductImage'
 import type { Recipe } from '@/lib/supabase/recipes'
 
-/** Recipe card with dominant image (or ingredient thumb strip). */
+/** Fallback store photos when a recipe has no image and no linked product photos. */
+const RECIPE_FALLBACK_IMAGE: Record<string, string> = {
+  'egusi-soup': '/images/store/pantry-shelf.png',
+  'jollof-rice': '/images/categories/flours-rice.jpg',
+  'plantain-fufu-night': '/images/categories/fresh-produce.jpg',
+}
+
+const DEFAULT_FALLBACK = '/images/store/pantry-shelf.png'
+
+export function recipeFallbackImage(slug: string): string {
+  return RECIPE_FALLBACK_IMAGE[slug] ?? DEFAULT_FALLBACK
+}
+
+/** Recipe card with dominant image (or ingredient thumbs / store photo fallback). */
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   const timing = [
     recipe.prep_minutes != null ? `${recipe.prep_minutes} min prep` : null,
@@ -15,6 +28,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
 
   const linked = recipe.ingredients.filter((i) => i.product?.image_url).slice(0, 4)
   const hero = recipe.image_url?.trim() || null
+  const fallback = recipeFallbackImage(recipe.slug)
 
   return (
     <Link
@@ -48,9 +62,20 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
             ))}
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-xs font-medium uppercase tracking-wider text-earth-400">
-            Recipe
-          </div>
+          <>
+            <Image
+              src={fallback}
+              alt=""
+              fill
+              sizes="(max-width:640px) 100vw, 33vw"
+              className="object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+              unoptimized={fallback.startsWith('/images/')}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-earth-950/55 via-earth-950/10 to-transparent" />
+            <p className="absolute bottom-3 left-3 right-3 text-sm font-semibold text-white drop-shadow">
+              {recipe.title}
+            </p>
+          </>
         )}
       </div>
 

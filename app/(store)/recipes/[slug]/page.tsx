@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/store/PageHeader'
 import { AddRecipeToCart } from '@/components/store/AddRecipeToCart'
 import { ProductImage } from '@/components/store/ProductImage'
+import { recipeFallbackImage } from '@/components/store/RecipeCard'
 import { fetchRecipeBySlug, fetchRecipes } from '@/lib/supabase/recipes'
 
 export const revalidate = 60
@@ -56,6 +57,7 @@ export default async function RecipeDetailPage({ params }: Props) {
     }))
   const linkedThumbs = recipe.ingredients.filter((i) => i.product?.image_url).slice(0, 4)
   const hero = recipe.image_url?.trim() || null
+  const fallback = recipeFallbackImage(recipe.slug)
 
   return (
     <div className="min-h-screen bg-white">
@@ -87,7 +89,17 @@ export default async function RecipeDetailPage({ params }: Props) {
                     </div>
                   ))}
                 </div>
-              ) : null}
+              ) : (
+                <Image
+                  src={fallback}
+                  alt=""
+                  fill
+                  priority
+                  sizes="(max-width:1024px) 100vw, 70vw"
+                  className="object-cover"
+                  unoptimized={fallback.startsWith('/images/')}
+                />
+              )}
             </div>
 
             {timing && <p className="mt-4 text-sm text-earth-500">{timing}</p>}
