@@ -134,6 +134,9 @@ export async function POST(
 
     const isStripe =
       order.payment_method === 'stripe' && typeof order.stripe_payment_intent_id === 'string'
+    // No money was collected on an unpaid phone order — nothing to refund;
+    // the shortfall just reduces what staff should collect at handoff.
+    const isUnpaid = orderRecord.payment_status === 'unpaid'
 
     // 1. Persist what was handed over. Do this before charging anything back so
     //    a failed refund never leaves the money moved but the record stale.
@@ -181,7 +184,8 @@ export async function POST(
       }
     }
 
-    const refundApplied = quote.totalRefund > 0 && (refundId !== null || !isStripe)
+    const refundApplied =
+      quote.totalRefund > 0 && !isUnpaid && (refundId !== null || !isStripe)
     const newRefundTotal = refundApplied
       ? Math.round((alreadyRefunded + quote.totalRefund) * 100) / 100
       : alreadyRefunded
@@ -215,6 +219,10 @@ export async function POST(
     if (refundApplied) {
       noteParts.push(
         `Refunded $${quote.totalRefund.toFixed(2)}${isStripe ? ' via Stripe' : ' (manual)'}`
+      )
+    } else if (isUnpaid && quote.totalRefund > 0) {
+      noteParts.push(
+        `Unpaid order — collect $${Math.max(0, orderTotal - quote.totalRefund).toFixed(2)} instead of $${orderTotal.toFixed(2)}`
       )
     } else if (refundError) {
       noteParts.push(`Refund failed: ${refundError}`)
@@ -259,7 +267,13 @@ export async function POST(
       )
     }
 
-    return NextResponse.json({ ok: true, quote, refundId, refunded: refundApplied })
+    return NextResponse.json({
+      ok: true,
+      quote,
+      refundId,
+      refunded: refundApplied,
+      unpaid: isUnpaid,
+    })
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Server error.'
     return NextResponse.json({ error: message }, { status: 500 })

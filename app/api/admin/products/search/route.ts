@@ -9,7 +9,12 @@ export async function GET(req: NextRequest) {
   const auth = await requireAdminApi()
   if (!auth.ok) return auth.response
 
-  const q = (req.nextUrl.searchParams.get('q') ?? '').trim().slice(0, 80)
+  // Commas/parens are PostgREST filter syntax and would break the .or() below.
+  const q = (req.nextUrl.searchParams.get('q') ?? '')
+    .replace(/[,()]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80)
   if (q.length < 1) {
     return NextResponse.json({ products: [] })
   }

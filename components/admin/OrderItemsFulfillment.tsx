@@ -31,11 +31,14 @@ export function OrderItemsFulfillment({
   items,
   paysByCard,
   fullyRefunded,
+  unpaid = false,
 }: {
   orderId: string
   items: FulfillmentItem[]
   paysByCard: boolean
   fullyRefunded: boolean
+  /** No money collected yet — shortfalls reduce the amount to collect, not refund. */
+  unpaid?: boolean
 }) {
   const router = useRouter()
 
@@ -112,7 +115,9 @@ export function OrderItemsFulfillment({
     if (!quote) return
     const label =
       quote.totalRefund > 0
-        ? `Refund ${money(quote.totalRefund)} for the unavailable items?`
+        ? unpaid
+          ? `Save shortage and collect ${money(quote.totalRefund)} less at handoff?`
+          : `Refund ${money(quote.totalRefund)} for the unavailable items?`
         : 'Save these fulfilled quantities?'
     if (!confirm(label)) return
 
@@ -138,7 +143,9 @@ export function OrderItemsFulfillment({
       setDone(
         data.refunded
           ? `Refunded ${money(data.quote?.totalRefund ?? 0)} and notified the customer.`
-          : 'Saved.'
+          : data.unpaid && Number(data.quote?.totalRefund ?? 0) > 0
+            ? `Saved — collect ${money(data.quote?.totalRefund ?? 0)} less at handoff.`
+            : 'Saved.'
       )
       setReason('')
       router.refresh()
@@ -219,7 +226,9 @@ export function OrderItemsFulfillment({
           ) : quote ? (
             <>
               <div className="flex items-baseline justify-between gap-4">
-                <span className="text-sm font-semibold text-earth-900">Refund due</span>
+                <span className="text-sm font-semibold text-earth-900">
+                  {unpaid ? 'Less to collect' : 'Refund due'}
+                </span>
                 <span className="text-lg font-bold tabular-nums text-earth-950">
                   {money(quote.totalRefund)}
                 </span>
@@ -237,7 +246,13 @@ export function OrderItemsFulfillment({
                 )}
                 <div className="flex justify-between gap-4">
                   <dt>Method</dt>
-                  <dd>{paysByCard ? 'Stripe — back to card' : 'Cash — hand back at counter'}</dd>
+                  <dd>
+                    {unpaid
+                      ? 'Not paid yet — deduct from amount due'
+                      : paysByCard
+                        ? 'Stripe — back to card'
+                        : 'Cash — hand back at counter'}
+                  </dd>
                 </div>
               </dl>
               {quote.clamped && (
@@ -273,7 +288,9 @@ export function OrderItemsFulfillment({
               {busy
                 ? 'Working…'
                 : quote && quote.totalRefund > 0
-                  ? `Refund ${money(quote.totalRefund)}`
+                  ? unpaid
+                    ? `Save — collect ${money(quote.totalRefund)} less`
+                    : `Refund ${money(quote.totalRefund)}`
                   : 'Save quantities'}
             </Button>
             <Button

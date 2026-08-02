@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { normalizeOrderStatus, orderStatusLabel, isPickupShippingMethod } from '@/lib/order-status'
 import { assertSameOrigin } from '@/lib/security/same-origin'
 import { sendOrderStatusEmail } from '@/lib/email/send-order-emails'
+import { isPlaceholderCustomerEmail } from '@/lib/orders/order-source'
 
 /** Re-send the notification for an order's current status without changing it. */
 export async function POST(
@@ -30,8 +31,11 @@ export async function POST(
     if (error || !order) {
       return NextResponse.json({ error: 'Order not found.' }, { status: 404 })
     }
-    if (!order.customer_email?.trim()) {
-      return NextResponse.json({ error: 'Order has no customer email.' }, { status: 400 })
+    if (isPlaceholderCustomerEmail(order.customer_email)) {
+      return NextResponse.json(
+        { error: 'No customer email on file — call or text the customer instead.' },
+        { status: 400 }
+      )
     }
 
     const status = normalizeOrderStatus(order.status)

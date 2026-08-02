@@ -9,6 +9,8 @@ export type PeriodOrderRow = {
   refunded_at: string | null
   refund_amount: number | string | null
   created_at: string
+  /** 'paid' | 'unpaid' — missing on installs without the phone-orders migration. */
+  payment_status?: string | null
 }
 
 export type PeriodOrderItem = {
@@ -29,6 +31,9 @@ export type PeriodStats = {
   unitsSold: number
   averageOrderValue: number
   cancelledCount: number
+  /** Phone/in-store orders not yet paid — excluded from gross. */
+  unpaidCount: number
+  unpaidTotal: number
 }
 
 function num(n: number | string | null | undefined): number {
@@ -53,6 +58,8 @@ export function computePeriodStats(
   let refundsCount = 0
   let cancelledCount = 0
   let ordersCount = 0
+  let unpaidCount = 0
+  let unpaidTotal = 0
   const countableOrderIds = new Set<string>()
 
   for (const o of orders) {
@@ -64,6 +71,11 @@ export function computePeriodStats(
     if (o.refunded_at) {
       refundsCount += 1
       refundsTotal += num(o.refund_amount) || num(o.total_amount)
+      continue
+    }
+    if (o.payment_status === 'unpaid') {
+      unpaidCount += 1
+      unpaidTotal += num(o.total_amount)
       continue
     }
     gross += num(o.total_amount)
@@ -89,6 +101,8 @@ export function computePeriodStats(
     unitsSold,
     averageOrderValue,
     cancelledCount,
+    unpaidCount,
+    unpaidTotal,
   }
 }
 
@@ -131,6 +145,7 @@ export function countableOrderIdsFrom(orders: PeriodOrderRow[]): Set<string> {
     const st = normalizeOrderStatus(o.status)
     if (st === 'cancelled') continue
     if (o.refunded_at) continue
+    if (o.payment_status === 'unpaid') continue
     set.add(o.id)
   }
   return set

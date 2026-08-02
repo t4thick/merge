@@ -48,16 +48,26 @@ export async function GET(req: NextRequest) {
   const startIso = range.start?.toUTC().toISO() ?? null
   const endIso = range.end.toUTC().toISO()!
 
-  let q = supabaseAdmin
-    .from('orders')
-    .select(
-      'id, order_number, created_at, customer_name, customer_email, customer_phone, address_line, city, state, country, postal_code, subtotal_amount, shipping_fee, tax_amount, total_amount, refund_amount, refunded_at, status, shipping_method, payment_method, tracking_number'
-    )
-    .lt('created_at', endIso)
-    .order('created_at', { ascending: false })
-  if (startIso) q = q.gte('created_at', startIso)
+  const baseColumns =
+    'id, order_number, created_at, customer_name, customer_email, customer_phone, address_line, city, state, country, postal_code, subtotal_amount, shipping_fee, tax_amount, total_amount, refund_amount, refunded_at, status, shipping_method, payment_method, tracking_number'
 
-  const { data: orders, error } = await q
+  const buildQuery = (columns: string) => {
+    let q = supabaseAdmin
+      .from('orders')
+      .select(columns)
+      .lt('created_at', endIso)
+      .order('created_at', { ascending: false })
+    if (startIso) q = q.gte('created_at', startIso)
+    return q
+  }
+
+  // payment_status / paid_at / order_source need the phone-orders migration.
+  let { data: orders, error } = await buildQuery(
+    `${baseColumns}, payment_status, paid_at, order_source`
+  )
+  if (error && /payment_status|order_source|paid_at/i.test(error.message)) {
+    ;({ data: orders, error } = await buildQuery(baseColumns))
+  }
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -82,17 +92,21 @@ export async function GET(req: NextRequest) {
     'Refunded at',
     'Shipping method',
     'Payment method',
+    'Payment status',
+    'Paid at',
+    'Source',
     'Tracking',
   ]
     .map(csv)
     .join(',')
 
-  const rows = (orders ?? []).map((o) =>
+  type ExportRow = Record<string, unknown>
+  const rows = ((orders ?? []) as unknown as ExportRow[]).map((o) =>
     [
-      formatOrderNumber(o.order_number) || '',
+      formatOrderNumber(o.order_number as number | null) || '',
       o.id,
       o.created_at,
-      normalizeOrderStatus(o.status),
+      normalizeOrderStatus(o.status as string | null),
       o.customer_name ?? '',
       o.customer_email ?? '',
       o.customer_phone ?? '',
@@ -103,12 +117,15 @@ export async function GET(req: NextRequest) {
       o.country ?? '',
       o.subtotal_amount ?? '',
       o.shipping_fee ?? '',
-      (o as { tax_amount?: number | null }).tax_amount ?? '',
+      o.tax_amount ?? '',
       o.total_amount ?? '',
       o.refund_amount ?? '',
       o.refunded_at ?? '',
       o.shipping_method ?? '',
       o.payment_method ?? '',
+      o.payment_status ?? 'paid',
+      o.paid_at ?? '',
+      o.order_source ?? 'online',
       o.tracking_number ?? '',
     ]
       .map(csv)

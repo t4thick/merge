@@ -342,8 +342,8 @@ export default async function AdminOrderDetailPage({
             </section>
           )}
 
-          {/* Refund — COD / manual */}
-          {pm !== 'stripe' && !order.refunded_at && (
+          {/* Refund — COD / manual. Hidden while unpaid: there is no money to return. */}
+          {pm !== 'stripe' && !order.refunded_at && paymentStatus === 'paid' && (
             <section className="admin-card">
               <h2 className="admin-section-title">Refund</h2>
               <p className="mt-1 text-sm text-earth-500">Cash or manual payment — mark refunded after returning money.</p>
@@ -587,6 +587,7 @@ export default async function AdminOrderDetailPage({
                   items={fulfillmentItems}
                   paysByCard={pm === 'stripe'}
                   fullyRefunded={Boolean(order.refunded_at)}
+                  unpaid={pm !== 'stripe' && paymentStatus === 'unpaid'}
                 />
               </div>
             </section>

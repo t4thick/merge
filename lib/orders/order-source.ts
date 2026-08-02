@@ -25,3 +25,11 @@ export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
   paid: 'Paid',
   unpaid: 'Unpaid',
 }
+
+/** Stored when a phone-order customer has no email; must never be mailed. */
+export const PHONE_ORDER_PLACEHOLDER_EMAIL = 'phone-order@kintampo.local'
+
+export function isPlaceholderCustomerEmail(email: string | null | undefined): boolean {
+  const normalized = (email ?? '').trim().toLowerCase()
+  return !normalized || normalized.endsWith('@kintampo.local')
+}

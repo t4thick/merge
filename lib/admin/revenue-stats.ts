@@ -7,6 +7,8 @@ export type OrderMoneyRow = {
   created_at: string
   status: string | null
   refunded_at?: string | null
+  /** 'paid' | 'unpaid' — missing on installs without the phone-orders migration. */
+  payment_status?: string | null
 }
 
 export function getReportTimeZone(): string {
@@ -28,6 +30,7 @@ export function isCountableForGross(o: OrderMoneyRow): boolean {
   const st = normalizeOrderStatus(o.status)
   if (st === 'cancelled') return false
   if (o.refunded_at) return false
+  if (o.payment_status === 'unpaid') return false
   return true
 }
 

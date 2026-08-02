@@ -6,6 +6,7 @@ import {
   type PaymentMethod,
 } from '@/lib/payment-methods'
 import {
+  PHONE_ORDER_PLACEHOLDER_EMAIL,
   normalizeOrderSource,
   normalizePaymentStatus,
   type OrderSource,
@@ -43,8 +44,6 @@ export type CreatePhoneOrderInput = {
 export type CreatePhoneOrderResult =
   | { ok: true; orderId: string; orderNumber: number | null; totalAmount: number }
   | { ok: false; error: string; status: number }
-
-const PLACEHOLDER_EMAIL = 'phone-order@kintampo.local'
 
 function money(n: number): number {
   return Math.round(n * 100) / 100
@@ -165,7 +164,7 @@ export async function createPhoneOrder(
   )
 
   const totalAmount = money(subtotal + shipping.fee + tax.taxAmount)
-  const email = (input.customerEmail ?? '').trim() || PLACEHOLDER_EMAIL
+  const email = (input.customerEmail ?? '').trim() || PHONE_ORDER_PLACEHOLDER_EMAIL
   const nowIso = new Date().toISOString()
   const paidAt = paymentStatus === 'paid' ? nowIso : null
   const note = (input.note ?? '').trim().slice(0, 500)
@@ -275,6 +274,7 @@ export async function createPhoneOrder(
     order_id: order.id,
     from_status: null,
     to_status: 'ordered',
+    changed_by: 'admin',
     note: logNoteParts.join(' · '),
   })
 

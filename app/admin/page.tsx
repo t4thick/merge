@@ -66,16 +66,24 @@ function buildHref(params: Record<string, string | undefined>): string {
   return s ? `/admin?${s}` : '/admin'
 }
 
+const DASHBOARD_ORDER_COLUMNS =
+  'id, total_amount, subtotal_amount, shipping_fee, status, refunded_at, refund_amount, created_at, order_number, customer_name'
+
 async function fetchOrdersAndItems(startIso: string | null, endIso: string) {
-  let ordersQuery = supabaseAdmin
-    .from('orders')
-    .select(
-      'id, total_amount, subtotal_amount, shipping_fee, status, refunded_at, refund_amount, created_at, order_number, customer_name'
-    )
-    .lt('created_at', endIso)
-  if (startIso) ordersQuery = ordersQuery.gte('created_at', startIso)
-  const { data: rawOrders } = await ordersQuery
-  const orders = (rawOrders ?? []) as Array<
+  const buildQuery = (columns: string) => {
+    let q = supabaseAdmin.from('orders').select(columns).lt('created_at', endIso)
+    if (startIso) q = q.gte('created_at', startIso)
+    return q
+  }
+
+  // payment_status only exists after the phone-orders migration; fall back without it.
+  let { data: rawOrders, error } = await buildQuery(
+    `${DASHBOARD_ORDER_COLUMNS}, payment_status`
+  )
+  if (error && /payment_status/i.test(error.message)) {
+    ;({ data: rawOrders } = await buildQuery(DASHBOARD_ORDER_COLUMNS))
+  }
+  const orders = (rawOrders ?? []) as unknown as Array<
     PeriodOrderRow & { order_number: number | null; customer_name: string | null }
   >
 
@@ -308,6 +316,11 @@ export default async function AdminDashboard({
             value={money(periodStats.gross)}
             delta={deltaPct(periodStats.gross, prevStats.gross)}
             deltaLabel="vs. previous"
+            sub={
+              periodStats.unpaidCount > 0
+                ? `+ ${money(periodStats.unpaidTotal)} unpaid (${periodStats.unpaidCount}) not counted`
+                : undefined
+            }
           />
           <Kpi
             icon={ShoppingBag}

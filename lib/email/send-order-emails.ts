@@ -12,6 +12,7 @@ import { PAYMENT_LABEL, normalizePaymentMethod } from '@/lib/payment-methods'
 import { getPublicSiteUrl } from '@/lib/site-url'
 import { SHIPPING_METHOD_LABEL, type ShippingMethod } from '@/lib/shipping'
 import { formatOrderNumber } from '@/lib/orders/order-number'
+import { isPlaceholderCustomerEmail } from '@/lib/orders/order-source'
 
 const STORE_NAME = 'Kintampo African Market'
 
@@ -351,15 +352,17 @@ export async function sendOrderEmails(order: OrderRowForEmail, items: Authoritat
   const { sender, label } = picked
   const orderLabel = orderRefLabel(order)
 
-  try {
-    await sender({
-      to: order.customer_email,
-      subject: `Your order ${orderLabel} — ${STORE_NAME}`,
-      html: receiptHtml(order, items),
-      text: receiptText(order, items),
-    })
-  } catch (error) {
-    console.error(`[email:${label}] Customer receipt failed:`, error)
+  if (!isPlaceholderCustomerEmail(order.customer_email)) {
+    try {
+      await sender({
+        to: order.customer_email,
+        subject: `Your order ${orderLabel} — ${STORE_NAME}`,
+        html: receiptHtml(order, items),
+        text: receiptText(order, items),
+      })
+    } catch (error) {
+      console.error(`[email:${label}] Customer receipt failed:`, error)
+    }
   }
 
   const merchantTo = process.env.MERCHANT_ORDER_EMAIL?.trim()
@@ -544,7 +547,7 @@ export async function sendShortfallEmail(input: {
     return false
   }
   const { order, shortLines, refundAmount } = input
-  if (!order.customer_email?.trim() || !shortLines.length) return false
+  if (isPlaceholderCustomerEmail(order.customer_email) || !shortLines.length) return false
 
   const orderLabel = orderRefLabel(order)
   const base = getPublicSiteUrl()
@@ -632,8 +635,8 @@ export async function sendOrderStatusEmail(
     console.warn('[email] No email transport configured — skipping status update email.')
     return false
   }
-  if (!order.customer_email?.trim()) {
-    console.warn('[email] Order has no customer_email — skipping status update.')
+  if (isPlaceholderCustomerEmail(order.customer_email)) {
+    console.warn('[email] Order has no real customer_email — skipping status update.')
     return false
   }
   const { sender, label } = picked

@@ -113,15 +113,17 @@ export function PhoneOrderForm() {
   }
 
   function setQty(productId: string, quantity: number) {
+    // Clamp to 1 so clearing the input while typing doesn't drop the line.
+    const next = Number.isFinite(quantity)
+      ? Math.max(1, Math.min(99, Math.trunc(quantity)))
+      : 1
     setLines((prev) =>
-      prev
-        .map((l) =>
-          l.productId === productId
-            ? { ...l, quantity: Math.max(0, Math.min(99, Math.trunc(quantity))) }
-            : l
-        )
-        .filter((l) => l.quantity > 0)
+      prev.map((l) => (l.productId === productId ? { ...l, quantity: next } : l))
     )
+  }
+
+  function removeLine(productId: string) {
+    setLines((prev) => prev.filter((l) => l.productId !== productId))
   }
 
   const subtotal = useMemo(
@@ -387,6 +389,7 @@ export function PhoneOrderForm() {
                       size="icon"
                       className="h-9 w-9"
                       aria-label={`Fewer ${line.name}`}
+                      disabled={line.quantity <= 1}
                       onClick={() => setQty(line.productId, line.quantity - 1)}
                     >
                       <Minus className="h-4 w-4" aria-hidden />
@@ -415,7 +418,7 @@ export function PhoneOrderForm() {
                       type="button"
                       className="ml-1 inline-flex h-9 w-9 items-center justify-center text-earth-400 hover:text-red-600"
                       aria-label={`Remove ${line.name}`}
-                      onClick={() => setQty(line.productId, 0)}
+                      onClick={() => removeLine(line.productId)}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
                     </button>
