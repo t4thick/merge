@@ -14,20 +14,17 @@ export default async function BundlesPage() {
   const bundles = await fetchActiveBundles()
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <PageHeader
-        eyebrow="Shop"
         title="Kits & bundles"
-        subtitle="Add a full set in one tap."
+        subtitle="Full set, one add to cart. Price shown after kit discount."
       />
       <section className="py-12 sm:py-16 lg:py-20">
         <div className="store-container">
           {bundles.length === 0 ? (
-            <div className="premium-card px-6 py-12 text-center text-sm text-earth-500">
-              No kits available right now.
-            </div>
+            <p className="py-12 text-center text-sm text-earth-500">No kits available right now.</p>
           ) : (
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
               {bundles.map((bundle) => (
                 <li key={bundle.id}>
                   <BundleCard bundle={bundle} />

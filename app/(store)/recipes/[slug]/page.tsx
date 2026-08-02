@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/store/PageHeader'
 import { AddRecipeToCart } from '@/components/store/AddRecipeToCart'
+import { ProductImage } from '@/components/store/ProductImage'
 import { fetchRecipeBySlug, fetchRecipes } from '@/lib/supabase/recipes'
 
 export const revalidate = 60
@@ -29,6 +31,7 @@ function bodyParagraphs(body: string): string[] {
     .split(/\n\n+/)
     .map((p) => p.trim())
     .filter(Boolean)
+    .map((p) => p.replace(/^##\s+/, '').replace(/^#\s+/, ''))
 }
 
 export default async function RecipeDetailPage({ params }: Props) {
@@ -51,54 +54,102 @@ export default async function RecipeDetailPage({ params }: Props) {
       product: i.product!,
       quantity: i.quantity,
     }))
+  const linkedThumbs = recipe.ingredients.filter((i) => i.product?.image_url).slice(0, 4)
+  const hero = recipe.image_url?.trim() || null
 
   return (
-    <div className="min-h-screen bg-cream">
-      <PageHeader eyebrow="Recipe" title={recipe.title} subtitle={recipe.summary ?? undefined} />
+    <div className="min-h-screen bg-white">
+      <PageHeader title={recipe.title} subtitle={recipe.summary ?? undefined} />
       <section className="py-12 sm:py-16 lg:py-20">
-        <div className="store-container max-w-3xl">
-          {timing && <p className="text-sm text-earth-500">{timing}</p>}
-
-          <div className="mt-6 premium-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-earth-900">Ingredients</h2>
-            <ul className="mt-4 space-y-2">
-              {recipe.ingredients.map((ing) => (
-                <li key={ing.id} className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="text-earth-800">
-                    {ing.quantity > 1 ? `${ing.quantity}× ` : ''}
-                    {ing.label}
-                  </span>
-                  {ing.product ? (
-                    <Link
-                      href={`/products/${ing.product.id}`}
-                      className="shrink-0 font-medium text-brand-700 no-underline hover:text-brand-800"
-                    >
-                      In store
-                    </Link>
-                  ) : (
-                    <span className="shrink-0 text-xs text-earth-400">No link</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6">
-              <AddRecipeToCart recipeTitle={recipe.title} ingredients={cartIngredients} />
+        <div className="store-container grid gap-8 lg:grid-cols-[1fr_340px] lg:gap-12">
+          <div>
+            <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-earth-200 bg-earth-100">
+              {hero ? (
+                <Image
+                  src={hero}
+                  alt=""
+                  fill
+                  priority
+                  sizes="(max-width:1024px) 100vw, 70vw"
+                  className="object-cover"
+                />
+              ) : linkedThumbs.length > 0 ? (
+                <div className="grid h-full grid-cols-2 grid-rows-2 gap-px bg-earth-200">
+                  {linkedThumbs.map((ing) => (
+                    <div key={ing.id} className="relative bg-white">
+                      <ProductImage
+                        src={ing.product!.image_url}
+                        alt={ing.label}
+                        className="h-full w-full rounded-none"
+                        sizes="300px"
+                        framed={false}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
+
+            {timing && <p className="mt-4 text-sm text-earth-500">{timing}</p>}
+
+            {paragraphs.length > 0 && (
+              <div className="mt-8 space-y-4 text-base leading-relaxed text-earth-700">
+                {paragraphs.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+              </div>
+            )}
           </div>
 
-          {paragraphs.length > 0 && (
-            <div className="mt-8 space-y-4 text-base leading-relaxed text-earth-700">
-              {paragraphs.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-2xl border border-earth-200 bg-earth-50 p-5 sm:p-6">
+              <h2 className="text-base font-semibold text-earth-900">Ingredients</h2>
+              <ul className="mt-4 space-y-3">
+                {recipe.ingredients.map((ing) => (
+                  <li key={ing.id} className="flex items-center gap-3 text-sm">
+                    {ing.product?.image_url ? (
+                      <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-earth-200 bg-white">
+                        <ProductImage
+                          src={ing.product.image_url}
+                          alt={ing.label}
+                          className="h-full w-full rounded-none"
+                          sizes="44px"
+                          framed={false}
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-11 w-11 shrink-0 rounded-lg border border-earth-200 bg-white" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-earth-900">
+                        {ing.quantity > 1 ? `${ing.quantity}× ` : ''}
+                        {ing.label}
+                      </p>
+                      {ing.product && (
+                        <Link
+                          href={`/products/${ing.product.id}`}
+                          className="text-xs font-medium text-brand-700 no-underline hover:text-brand-800"
+                        >
+                          View product
+                        </Link>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6">
+                <AddRecipeToCart recipeTitle={recipe.title} ingredients={cartIngredients} />
+              </div>
             </div>
-          )}
-
-          <p className="mt-10">
-            <Link href="/recipes" className="text-sm font-semibold text-brand-700 no-underline hover:text-brand-800">
-              ← All recipes
-            </Link>
-          </p>
+            <p className="mt-6">
+              <Link
+                href="/recipes"
+                className="text-sm font-semibold text-brand-700 no-underline hover:text-brand-800"
+              >
+                ← All recipes
+              </Link>
+            </p>
+          </aside>
         </div>
       </section>
     </div>

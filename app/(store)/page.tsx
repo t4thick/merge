@@ -96,14 +96,17 @@ export default async function Home() {
         />
       )}
       {bundles.length > 0 && (
-        <section className="border-t border-earth-100 bg-white py-12 sm:py-16 lg:py-20">
+        <section className="border-t border-earth-100 bg-earth-50 py-12 sm:py-16 lg:py-20">
           <div className="store-container">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold tracking-tight text-earth-900 sm:text-2xl">
-                  Kits &amp; bundles
+                <p className="text-xs font-semibold uppercase tracking-wider text-earth-500">
+                  Kits
+                </p>
+                <h2 className="mt-1 text-lg font-semibold tracking-tight text-earth-900 sm:text-xl">
+                  Meal sets
                 </h2>
-                <p className="mt-1 text-sm text-earth-600">Add a full meal set in one tap.</p>
+                <p className="mt-1 text-sm text-earth-600">Full set, one add to cart.</p>
               </div>
               <Link
                 href="/bundles"
@@ -112,10 +115,10 @@ export default async function Home() {
                 View all
               </Link>
             </div>
-            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
               {bundles.slice(0, 3).map((bundle) => (
                 <li key={bundle.id}>
-                  <BundleCard bundle={bundle} />
+                  <BundleCard bundle={bundle} quiet />
                 </li>
               ))}
             </ul>
