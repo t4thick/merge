@@ -31,13 +31,24 @@ const routes = [
   ['/admin/announcements', 'announcements'],
 ]
 
+function isAdminAuthedUrl(url) {
+  try {
+    const path = new URL(url).pathname
+    return path === '/admin' || (path.startsWith('/admin/') && !path.startsWith('/admin/login'))
+  } catch {
+    return false
+  }
+}
+
 async function signIn(page) {
   await page.goto(`${BASE}/admin/login`, { waitUntil: 'domcontentloaded', timeout: 60000 })
   // Already signed in (cookie reuse) → redirected away from login
-  if (!page.url().includes('/admin/login')) return
+  if (isAdminAuthedUrl(page.url())) return
   await page.locator('#staff-pass').fill(password)
-  await page.getByRole('button', { name: 'Sign in' }).click()
-  await page.waitForURL(/\/admin(?:\?|$|\/)/, { timeout: 60000 })
+  await Promise.all([
+    page.waitForURL((url) => isAdminAuthedUrl(url), { timeout: 60000 }),
+    page.getByRole('button', { name: 'Sign in' }).click(),
+  ])
 }
 
 async function auditPath(page, path, file, name) {
