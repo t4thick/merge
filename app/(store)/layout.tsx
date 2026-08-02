@@ -7,6 +7,8 @@ import { MobileCartBar } from '@/components/store/MobileCartBar'
 import { CartDrawer } from '@/components/store/CartDrawer'
 import { AnnouncementBar } from '@/components/store/AnnouncementBar'
 import { StoreMobileChrome } from '@/components/store/StoreMobileChrome'
+import { PwaRegister } from '@/components/store/PwaRegister'
+import { PwaInstallBanner } from '@/components/store/PwaInstallBanner'
 import { fetchAnnouncements } from '@/lib/supabase/announcements'
 
 export default async function StoreLayout({ children }: { children: ReactNode }) {
@@ -15,6 +17,7 @@ export default async function StoreLayout({ children }: { children: ReactNode })
   return (
     <StoreMobileChrome>
       <LocalBusinessJsonLd />
+      <PwaRegister />
       <AnnouncementBar messages={announcements} />
       <Navbar />
       <main className="flex-1">{children}</main>
@@ -22,6 +25,7 @@ export default async function StoreLayout({ children }: { children: ReactNode })
       <CartDrawer />
       <MobileCartBar />
       <MobileBottomNav />
+      <PwaInstallBanner />
     </StoreMobileChrome>
   )
 }

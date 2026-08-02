@@ -21,9 +21,18 @@ const nextConfig: NextConfig = {
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self' https://js.stripe.com",
+      "worker-src 'self'",
+      "manifest-src 'self'",
     ].join('; ')
 
     return [
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
       {
         source: '/admin/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],

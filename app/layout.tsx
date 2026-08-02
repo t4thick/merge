@@ -36,6 +36,18 @@ export const metadata: Metadata = {
     template: `%s · ${STORE.shortName}`,
   },
   description: STORE.tagline,
+  applicationName: STORE.shortName,
+  appleWebApp: {
+    capable: true,
+    title: 'Kintampo',
+    statusBarStyle: 'default',
+  },
+  formatDetection: {
+    telephone: true,
+  },
+  icons: {
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
   verification: { google: googleVerification },
   openGraph: {
     type: 'website',
@@ -57,8 +69,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#fafafa' },
-    { media: '(prefers-color-scheme: dark)', color: '#fafafa' },
+    { media: '(prefers-color-scheme: light)', color: '#ce1126' },
+    { media: '(prefers-color-scheme: dark)', color: '#ce1126' },
   ],
 }
 
