@@ -149,6 +149,13 @@ export function AdminSidebar() {
 
         <div className="shrink-0 border-t border-slate-100 p-3">
           <Link
+            href="/admin/products/fabrics/new"
+            className="mb-2 flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-800 no-underline transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50"
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Add fabric / lace
+          </Link>
+          <Link
             href="/admin/products/new"
             className="mb-2 flex min-h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 text-[13px] font-semibold text-white no-underline transition-colors duration-150 hover:bg-slate-800"
           >
@@ -248,6 +255,13 @@ export function AdminSidebar() {
             <AdminNav pathname={pathname} />
 
             <div className="shrink-0 space-y-1 border-t border-slate-100 p-3">
+              <Link
+                href="/admin/products/fabrics/new"
+                className="flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 no-underline"
+              >
+                <Plus className="h-4 w-4" aria-hidden />
+                Add fabric / lace
+              </Link>
               <Link
                 href="/admin/products/new"
                 className="flex min-h-11 items-center gap-3 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white no-underline"

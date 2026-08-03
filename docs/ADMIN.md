@@ -95,13 +95,23 @@ Then set status to **Shipped** (or auto-update when label / webhook applies).
 
 ## Products
 
-### Add product
+### Add product (grocery / general)
 
 **Products → Add product**
 
 - Name, price, category, description, image URL or upload
 - **In stock** toggle controls visibility
-- Optional: brand, stock quantity, unit amount/measure, variant group (see grocery-ops.sql)
+- Optional grocery-ops fields via API: brand, stock quantity, unit amount/measure, pack label, variant group (requires `grocery-ops.sql`)
+
+### Add fabric / lace
+
+**Products → Add fabric / lace** (`/admin/products/fabrics/new`)
+
+- Dedicated flow for 6-yard African prints, lace, george, voile, Aso Oke
+- Collects design name, colorway, yardage, width, composition, origin, care, piece price, piece stock
+- Auto-builds storefront name, pack label (`6 yd · 45″`), description, and `$/yd` unit pricing
+- Photos: primary + detail shots
+- Cross-link from standard Add product page
 
 ### Bulk management
 

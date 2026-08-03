@@ -138,10 +138,15 @@ export default async function AdminProductsPage({
             {visible.length} shown · {total} total · {inStockCount} in stock · {outOfStockCount} out of stock
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link href="/admin/products/descriptions" className="no-underline">
             <Button size="sm" variant="outline" className="gap-1.5">
               <FileText className="h-4 w-4" /> Descriptions
+            </Button>
+          </Link>
+          <Link href="/admin/products/fabrics/new" className="no-underline">
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <Plus className="h-4 w-4" /> Add fabric / lace
             </Button>
           </Link>
           <Link href="/admin/products/new" className="no-underline">

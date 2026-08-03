@@ -1,12 +1,12 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { ProductForm } from '@/components/admin/ProductForm'
+import { FabricProductForm } from '@/components/admin/FabricProductForm'
 import { requireAdminPage } from '@/lib/auth/require-admin-page'
 
-export default async function NewProductPage() {
+export default async function NewFabricProductPage() {
   await requireAdminPage()
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <div>
         <Link
           href="/admin/products"
@@ -15,22 +15,21 @@ export default async function NewProductPage() {
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Back to products
         </Link>
-      </div>
-      <div>
-        <h1 className="admin-page-title">Add product</h1>
-        <p className="mt-1 text-sm text-earth-500">
-          Fill in the details below. Customers see this immediately.
+        <h1 className="admin-page-title mt-3">Add fabric / lace</h1>
+        <p className="mt-1 max-w-2xl text-sm text-earth-500">
+          Built for 6-yard prints, lace, george, and voile — piece price, yardage, width, and
+          stock. Grocery add product stays separate.
         </p>
         <p className="mt-2">
           <Link
-            href="/admin/products/fabrics/new"
+            href="/admin/products/new"
             className="inline-flex min-h-11 items-center text-sm font-medium text-brand-700 no-underline hover:text-brand-800"
           >
-            Adding lace or 6-yard prints? Use Add fabric / lace →
+            Need groceries instead? Use standard Add product →
           </Link>
         </p>
       </div>
-      <ProductForm />
+      <FabricProductForm />
     </div>
   )
 }
