@@ -80,6 +80,22 @@ Unpaid orders do **not** count in Dashboard gross revenue until marked paid.
    - **Unit amount + unit** (e.g. 5 + lb) — shows $/lb  
    - **Variant group** — same slug on related sizes so the size picker appears  
 
+### Fashion / fabric / hair
+
+Storefront department: **`/fashion`** (same cart as groceries).
+
+| Category | What goes here |
+|----------|----------------|
+| African Prints | Ankara, george, voile, Aso Oke |
+| Lace | Cord lace, guipure, net lace |
+| Ready-to-wear | Clothes, dashiki, wrappers sold as garments |
+| Hair & Braiding | Wigs, braiding hair, extensions |
+
+**Fast path for fabric/lace:** Admin → **Products → Add fabric / lace** (`/admin/products/fabrics/new`).  
+Publish with **In stock** on — it appears on `/fashion` under the mapped category.
+
+Ready-to-wear and Hair & Braiding: use normal **Add product** and pick that category.
+
 ---
 
 ## Announcements (top bar on the website)
@@ -106,6 +122,7 @@ Staff usually only need to know the URLs exist for customers; catalog linking is
 | Page | URL |
 |------|-----|
 | Shop | `/shop` |
+| Fashion | `/fashion` |
 | Track order | `/track-order` |
 | Receipt | from confirmation / track |
 | FAQ | `/faq` |

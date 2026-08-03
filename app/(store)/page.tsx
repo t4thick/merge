@@ -72,7 +72,7 @@ export default async function Home() {
       {fashion.length > 0 && (
         <ProductShowcase
           title="Fashion & fabric"
-          subtitle="Prints, lace, ready-to-wear & hair — same store, same cart."
+          subtitle="Prints, lace, ready-to-wear & hair."
           products={fashion}
           viewAllHref="/fashion"
           priorityCount={2}
@@ -145,7 +145,7 @@ export default async function Home() {
           </div>
         </section>
       )}
-      <FeaturedCollections />
+      <FeaturedCollections showFashion={fashionCount > 0} />
       <RecentlyViewed />
       <TrustStrip inStockCount={inStockCount} />
       <HomepageReviews reviews={reviews} totalCount={reviewCount} averageRating={averageRating} />

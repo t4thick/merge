@@ -12,7 +12,8 @@ const TABS = [
     href: '/shop',
     label: 'Shop',
     icon: Store,
-    match: (path: string) => path === '/shop' || path.startsWith('/products/'),
+    match: (path: string) =>
+      path === '/shop' || path === '/fashion' || path.startsWith('/products/'),
   },
   {
     href: '/cart',

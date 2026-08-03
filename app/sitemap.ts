@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { createCatalogClient } from '@/lib/supabase/catalog-client'
 import { getPublicSiteUrl } from '@/lib/site-url'
 import { isHiddenFromStorefront } from '@/lib/catalog/public-product-filter'
+import { isFashionCategory } from '@/lib/constants/categories'
 
 /**
  * /sitemap.xml — generated at request time so newly added/removed products show up
@@ -53,14 +54,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }))
 
-    // De-duplicate category landing pages so /shop?category=Spices etc. get crawled.
+    // De-duplicate category landing pages. Fashion cats use /fashion hub URLs.
     const categories = new Set<string>()
     visible.forEach((p) => {
       if (p.category) categories.add(p.category)
     })
     for (const category of categories) {
+      const url = isFashionCategory(category)
+        ? `${baseUrl}/fashion?category=${encodeURIComponent(category)}`
+        : `${baseUrl}/shop?category=${encodeURIComponent(category)}`
       productEntries.push({
-        url: `${baseUrl}/shop?category=${encodeURIComponent(category)}`,
+        url,
         lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.7,

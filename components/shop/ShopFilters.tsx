@@ -776,13 +776,6 @@ export function ActiveFilterChips() {
     })
   }
 
-  if (fashionHub) {
-    chips.push({
-      key: 'dept',
-      label: 'Fashion',
-      clear: () => router.push('/shop', { scroll: false }),
-    })
-  }
   if (q) chips.push({ key: 'q', label: `"${q}"`, clear: () => clearKey('q') })
   if (category) chips.push({ key: 'category', label: category, clear: () => clearKey('category') })
   if (brand) chips.push({ key: 'brand', label: brand, clear: () => clearKey('brand') })
@@ -825,7 +818,7 @@ export function ActiveFilterChips() {
       ))}
       <button
         type="button"
-        onClick={() => router.push('/shop', { scroll: false })}
+        onClick={() => router.push(catalogBase, { scroll: false })}
         className="text-xs font-medium text-brand-700 hover:underline"
       >
         Clear all

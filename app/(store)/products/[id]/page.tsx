@@ -18,6 +18,7 @@ import { WishlistButton } from '@/components/store/WishlistButton'
 import { ProductStockLabel } from '@/components/store/ProductStockLabel'
 import { VariantSizePicker } from '@/components/store/VariantSizePicker'
 import { packLabel, formatUnitPrice, effectiveInStock } from '@/lib/product-pricing'
+import { isFashionCategory } from '@/lib/constants/categories'
 import { formatMoney } from '@/lib/utils'
 import type { Product } from '@/types'
 
@@ -227,11 +228,15 @@ export default async function ProductPage({
       <RecordRecentlyViewed product={product} />
       <div className="store-container py-6 sm:py-8 lg:py-10">
         <Link
-          href="/shop"
+          href={
+            isFashionCategory(product.category)
+              ? `/fashion?category=${encodeURIComponent(product.category)}`
+              : '/shop'
+          }
           className="mb-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-earth-600 no-underline transition-colors hover:text-earth-900"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
-          Back to shop
+          {isFashionCategory(product.category) ? 'Back to fashion' : 'Back to shop'}
         </Link>
 
         <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:gap-12">

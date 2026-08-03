@@ -701,7 +701,7 @@ export function FabricProductForm() {
             </Button>
           </Link>
           <p className="text-center text-[11px] text-earth-400">
-            Goes live in shop under {preview.category}.
+            Goes live under {preview.category} on /fashion.
           </p>
         </div>
       </aside>

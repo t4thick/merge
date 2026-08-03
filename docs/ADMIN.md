@@ -112,6 +112,7 @@ Then set status to **Shipped** (or auto-update when label / webhook applies).
 - Auto-builds storefront name, pack label (`6 yd · 45″`), description, and `$/yd` unit pricing
 - Photos: primary + detail shots
 - Cross-link from standard Add product page
+- Live on storefront at **`/fashion`** under African Prints or Lace
 
 ### Bulk management
 

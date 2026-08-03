@@ -208,17 +208,23 @@ export async function fetchProductsForShop(options?: {
   }
 }
 
-export async function fetchDistinctBrands(): Promise<string[]> {
+export async function fetchDistinctBrands(options?: {
+  categories?: readonly string[]
+}): Promise<string[]> {
   const { configured } = getSupabasePublicConfig()
   if (!configured) return []
   try {
     const supabase = await createClientOptional()
     if (!supabase) return []
-    const { data, error } = await supabase
+    let built = supabase
       .from('products')
       .select('brand')
       .not('brand', 'is', null)
       .eq('in_stock', true)
+    if (options?.categories?.length) {
+      built = built.in('category', [...options.categories])
+    }
+    const { data, error } = await built
     if (error) return []
     const set = new Set<string>()
     for (const row of data ?? []) {

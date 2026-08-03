@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { redirect } from 'next/navigation'
 import { ProductCard } from '@/components/ProductCard'
 import {
   ActiveFilterChips,
@@ -44,11 +45,19 @@ export async function ShopCatalog({
   dept?: ShopDept | null
 }) {
   const deptCategories = categoriesForDept(dept)
-  const category =
-    params.category && dept === 'fashion' && !isFashionCategory(params.category)
-      ? undefined
-      : params.category
+  const fashionHub = dept === 'fashion'
 
+  // Drop invalid fashion category from the URL so chips match the grid.
+  if (fashionHub && params.category && !isFashionCategory(params.category)) {
+    const next = new URLSearchParams()
+    for (const [key, value] of Object.entries(params)) {
+      if (key === 'category' || value == null || value === '') continue
+      next.set(key, value)
+    }
+    redirect(next.toString() ? `/fashion?${next.toString()}` : '/fashion')
+  }
+
+  const category = params.category
   const minN = params.minPrice ? parseFloat(params.minPrice) : NaN
   const maxN = params.maxPrice ? parseFloat(params.maxPrice) : NaN
   const sort = (VALID_SORTS as string[]).includes(params.sort ?? '')
@@ -68,10 +77,11 @@ export async function ShopCatalog({
       sort,
     }),
     fetchCategoryCounts(),
-    fetchDistinctBrands(),
+    fetchDistinctBrands({
+      categories: fashionHub ? deptCategories ?? undefined : undefined,
+    }),
   ])
 
-  const fashionHub = dept === 'fashion'
   const title = category
     ? category
     : fashionHub
@@ -90,6 +100,8 @@ export async function ShopCatalog({
         : `${products.length} product${products.length === 1 ? '' : 's'} across all departments`
 
   const clearHref = fashionHub ? '/fashion' : '/shop'
+  const fashionEmpty =
+    fashionHub && products.length === 0 && !errorMessage && !params.q && !params.brand
 
   return (
     <>
@@ -120,7 +132,9 @@ export async function ShopCatalog({
                 )}
               </div>
               <div className="hidden lg:block">
-                <SortMenu />
+                <Suspense fallback={null}>
+                  <SortMenu />
+                </Suspense>
               </div>
             </div>
             {fashionHub && (
@@ -165,16 +179,39 @@ export async function ShopCatalog({
 
               {products.length === 0 && !errorMessage ? (
                 <div className="mt-8 rounded-xl border border-dashed border-earth-300 bg-earth-50 px-6 py-16 text-center">
-                  <p className="text-base font-semibold text-earth-900">No products found</p>
-                  <p className="mt-1 text-sm text-earth-600">
-                    Try a different category or remove some filters.
+                  <p className="text-base font-semibold text-earth-900">
+                    {fashionEmpty ? 'Fashion catalog is empty' : 'No products found'}
                   </p>
-                  <Link
-                    href={clearHref}
-                    className="mt-4 inline-block text-sm font-semibold text-brand-700 no-underline hover:underline"
-                  >
-                    Clear all filters →
-                  </Link>
+                  <p className="mt-1 text-sm text-earth-600">
+                    {fashionEmpty
+                      ? 'Add African Prints, Lace, Ready-to-wear, or Hair & Braiding in admin — they show here automatically.'
+                      : 'Try a different category or remove some filters.'}
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                    {fashionEmpty ? (
+                      <>
+                        <Link
+                          href="/admin/products/fabrics/new"
+                          className="inline-flex min-h-11 items-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white no-underline hover:bg-brand-700"
+                        >
+                          Add fabric / lace
+                        </Link>
+                        <Link
+                          href="/shop"
+                          className="text-sm font-semibold text-brand-700 no-underline hover:underline"
+                        >
+                          Shop groceries →
+                        </Link>
+                      </>
+                    ) : (
+                      <Link
+                        href={clearHref}
+                        className="text-sm font-semibold text-brand-700 no-underline hover:underline"
+                      >
+                        Clear all filters →
+                      </Link>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="mt-6 grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">

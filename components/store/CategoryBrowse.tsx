@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { CategoryIcon } from '@/components/store/CategoryIcon'
 import { getCategoryImage } from '@/lib/constants/category-images'
-import { PRODUCT_CATEGORIES } from '@/lib/constants/categories'
+import { isFashionCategory, PRODUCT_CATEGORIES } from '@/lib/constants/categories'
 
 type CategoryBrowseProps = {
   displayCategories: readonly string[]
@@ -88,7 +88,11 @@ export function CategoryBrowse({
             return (
               <li key={cat} className="min-w-0">
                 <Link
-                  href={`/shop?category=${encodeURIComponent(cat)}`}
+                  href={
+                    isFashionCategory(cat)
+                      ? `/fashion?category=${encodeURIComponent(cat)}`
+                      : `/shop?category=${encodeURIComponent(cat)}`
+                  }
                   className="category-tile group block min-w-0 no-underline"
                 >
                   <div className="relative aspect-square overflow-hidden bg-earth-50">

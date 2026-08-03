@@ -14,18 +14,31 @@ const COLLECTION_CATEGORY: Record<string, string> = {
   produce: 'Fresh Produce',
 }
 
-export function FeaturedCollections() {
-  const collections = FEATURED_COLLECTIONS.map((col) => {
-    if (col.id === 'beverages') {
-      return { ...col, image: getBeveragesCollectionImage() }
+export function FeaturedCollections({
+  showFashion = true,
+}: {
+  showFashion?: boolean
+}) {
+  const collections = FEATURED_COLLECTIONS.filter((col) => showFashion || col.id !== 'fashion').map(
+    (col) => {
+      if (col.id === 'beverages') {
+        return { ...col, image: getBeveragesCollectionImage() }
+      }
+      if (col.id === 'beauty') {
+        return { ...col, image: getCosmeticsCollectionImage() }
+      }
+      const cat = COLLECTION_CATEGORY[col.id]
+      const fromCat = cat ? getCategoryImage(cat) : undefined
+      return fromCat ? { ...col, image: fromCat } : col
     }
-    if (col.id === 'beauty') {
-      return { ...col, image: getCosmeticsCollectionImage() }
-    }
-    const cat = COLLECTION_CATEGORY[col.id]
-    const fromCat = cat ? getCategoryImage(cat) : undefined
-    return fromCat ? { ...col, image: fromCat } : col
-  })
+  )
+
+  const cols =
+    collections.length >= 5
+      ? 'lg:grid-cols-3 xl:grid-cols-5'
+      : collections.length === 4
+        ? 'lg:grid-cols-4'
+        : 'lg:grid-cols-3'
 
   return (
     <section className="page-section bg-earth-50">
@@ -33,7 +46,11 @@ export function FeaturedCollections() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="section-title">Shop by department</h2>
-            <p className="section-subtitle">Fashion, staples, produce, drinks &amp; beauty.</p>
+            <p className="section-subtitle">
+              {showFashion
+                ? 'Fashion, staples, produce, drinks & beauty.'
+                : 'Staples, produce, drinks & beauty.'}
+            </p>
           </div>
           <Link
             href="/shop"
@@ -45,7 +62,9 @@ export function FeaturedCollections() {
         </div>
 
         <div className="-mx-4 mt-10 sm:mx-0">
-          <div className="flex gap-4 overflow-x-auto scrollbar-none px-4 pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 xl:grid-cols-5 lg:gap-5">
+          <div
+            className={`flex gap-4 overflow-x-auto scrollbar-none px-4 pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:gap-5 ${cols}`}
+          >
             {collections.map((col) => (
               <Link
                 key={col.id}
