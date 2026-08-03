@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Menu, ShoppingBag, X } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
@@ -14,12 +14,14 @@ import { cn } from '@/lib/utils'
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
+  { href: '/fashion', label: 'Fashion' },
   { href: '/#services', label: 'Services' },
   { href: '/track-order', label: 'Track order' },
   { href: '/account', label: 'Account' },
 ] as const
 
 const DEPARTMENT_SHORTCUTS = [
+  { href: '/fashion', label: 'Fashion' },
   { href: '/shop?category=Flours%20%26%20Rice', label: 'Rice & flour' },
   { href: '/shop?category=Spices', label: 'Spices' },
   { href: '/shop?category=Beverages', label: 'Drinks' },
@@ -28,15 +30,29 @@ const DEPARTMENT_SHORTCUTS = [
   { href: '/#services', label: 'More services' },
 ] as const
 
-function isActive(pathname: string, href: string) {
+function isActive(pathname: string, href: string, search: string) {
   if (href === '/') return pathname === '/'
   if (href.startsWith('/#')) return false
-  return pathname === href || pathname.startsWith(`${href}/`)
+  const [path, query = ''] = href.split('?')
+  if (!(pathname === path || pathname.startsWith(`${path}/`))) return false
+  if (!query) {
+    if (path === '/shop') return pathname === '/shop'
+    if (path === '/fashion') return pathname === '/fashion'
+    return true
+  }
+  const want = new URLSearchParams(query)
+  const have = new URLSearchParams(search)
+  for (const [key, value] of want.entries()) {
+    if (have.get(key) !== value) return false
+  }
+  return true
 }
 
 export function Navbar() {
   const { totalItems, openCart } = useCart()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const search = searchParams.toString()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [badgeKey, setBadgeKey] = useState(totalItems)
@@ -81,7 +97,7 @@ export function Navbar() {
 
             <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main">
               {NAV_LINKS.map(({ href, label }) => {
-                const active = isActive(pathname, href)
+                const active = isActive(pathname, href, search)
                 return (
                   <Link
                     key={href}
@@ -186,7 +202,7 @@ export function Navbar() {
 
             <div className="flex flex-col gap-1 overflow-y-auto p-3">
               {NAV_LINKS.map(({ href, label }) => {
-                const active = isActive(pathname, href)
+                const active = isActive(pathname, href, search)
                 return (
                   <Link
                     key={href}

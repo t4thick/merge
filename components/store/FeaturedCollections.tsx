@@ -9,6 +9,7 @@ import {
 } from '@/lib/constants/category-images'
 
 const COLLECTION_CATEGORY: Record<string, string> = {
+  fashion: 'African Prints',
   staples: 'Flours & Rice',
   produce: 'Fresh Produce',
 }
@@ -32,7 +33,7 @@ export function FeaturedCollections() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="section-title">Shop by department</h2>
-            <p className="section-subtitle">Rice &amp; flour, fresh produce, drinks, beauty &amp; more.</p>
+            <p className="section-subtitle">Fashion, staples, produce, drinks &amp; beauty.</p>
           </div>
           <Link
             href="/shop"
@@ -44,7 +45,7 @@ export function FeaturedCollections() {
         </div>
 
         <div className="-mx-4 mt-10 sm:mx-0">
-          <div className="flex gap-4 overflow-x-auto scrollbar-none px-4 pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4 lg:gap-5">
+          <div className="flex gap-4 overflow-x-auto scrollbar-none px-4 pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 xl:grid-cols-5 lg:gap-5">
             {collections.map((col) => (
               <Link
                 key={col.id}

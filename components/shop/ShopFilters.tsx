@@ -1,9 +1,13 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronDown, Filter, X } from 'lucide-react'
-import { PRODUCT_CATEGORIES } from '@/lib/constants/categories'
+import {
+  FASHION_CATEGORIES,
+  PRODUCT_CATEGORIES,
+  parseShopDept,
+} from '@/lib/constants/categories'
 import { DIETARY_TAGS, DIETARY_TAG_LABEL } from '@/lib/orders/grocery-ops'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +24,10 @@ const SORT_LABELS: Record<string, string> = {
 function useShopFilterState() {
   const router = useRouter()
   const sp = useSearchParams()
+  const pathname = usePathname()
+  const fashionHub =
+    pathname === '/fashion' || parseShopDept(sp.get('dept')) === 'fashion'
+  const catalogBase = fashionHub ? '/fashion' : '/shop'
   const [q, setQ] = useState(sp.get('q') ?? '')
   const [category, setCategory] = useState(sp.get('category') ?? '')
   const [brand, setBrand] = useState(sp.get('brand') ?? '')
@@ -54,6 +62,7 @@ function useShopFilterState() {
   ].reduce((a, b) => a + b, 0)
 
   const hasFilters = activeFilterCount > 0
+  const shopBase = catalogBase
 
   const pushFilters = useCallback(
     (next: Partial<{
@@ -67,6 +76,8 @@ function useShopFilterState() {
       sort: string
     }>) => {
       const p = new URLSearchParams()
+      // /fashion already scopes the dept; keep ?dept=fashion only on /shop
+      if (fashionHub && catalogBase === '/shop') p.set('dept', 'fashion')
       const qVal = next.q ?? q
       const catVal = next.category !== undefined ? next.category : category
       const brandVal = next.brand !== undefined ? next.brand : brand
@@ -83,9 +94,9 @@ function useShopFilterState() {
       if (maxVal) p.set('maxPrice', maxVal)
       if (stockVal) p.set('inStock', '1')
       if (sortVal && sortVal !== 'featured') p.set('sort', sortVal)
-      router.push(`/shop${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
+      router.push(`${catalogBase}${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
     },
-    [router, q, category, brand, dietary, minPrice, maxPrice, inStockOnly, sort]
+    [router, fashionHub, catalogBase, q, category, brand, dietary, minPrice, maxPrice, inStockOnly, sort]
   )
 
   function apply(e?: React.FormEvent) {
@@ -103,7 +114,7 @@ function useShopFilterState() {
     setMaxPrice('')
     setInStockOnly(false)
     setSort('featured')
-    router.push('/shop', { scroll: false })
+    router.push(shopBase, { scroll: false })
     setMobileOpen(false)
   }
 
@@ -146,11 +157,24 @@ function useShopFilterState() {
     sort, setSort,
     mobileOpen, setMobileOpen,
     activeCategory,
+    fashionHub,
     hasFilters,
     activeFilterCount,
+    shopBase,
     apply, reset,
     setCategoryAndGo, setBrandAndGo, setDietaryAndGo, setSortAndGo, toggleStockAndGo,
   }
+}
+
+function categoryOptions(
+  fashionHub: boolean,
+  categoryCount?: Record<string, number>
+): readonly string[] {
+  const base = fashionHub ? [...FASHION_CATEGORIES] : [...PRODUCT_CATEGORIES]
+  if (!categoryCount) return base
+  return base
+    .filter((c) => (categoryCount[c] ?? 0) > 0)
+    .sort((a, b) => (categoryCount[b] ?? 0) - (categoryCount[a] ?? 0))
 }
 
 function PriceFields({
@@ -226,16 +250,20 @@ function CategoryList({
   activeCategory,
   onSelect,
   categoryCount,
+  fashionHub,
 }: {
   activeCategory: string | null
   onSelect: (cat: string) => void
   categoryCount?: Record<string, number>
+  fashionHub?: boolean
 }) {
-  const categories = categoryCount
-    ? [...PRODUCT_CATEGORIES]
-        .filter((c) => (categoryCount[c] ?? 0) > 0)
-        .sort((a, b) => (categoryCount[b] ?? 0) - (categoryCount[a] ?? 0))
-    : PRODUCT_CATEGORIES
+  const categories = categoryOptions(!!fashionHub, categoryCount)
+  const allLabel = fashionHub ? 'All fashion' : 'All products'
+  const allCount = fashionHub
+    ? FASHION_CATEGORIES.reduce((sum, c) => sum + (categoryCount?.[c] ?? 0), 0)
+    : categoryCount
+      ? Object.values(categoryCount).reduce((a, b) => a + b, 0)
+      : null
 
   return (
     <ul className="space-y-0.5">
@@ -250,11 +278,9 @@ function CategoryList({
               : 'text-earth-700 hover:bg-earth-50 hover:text-earth-900'
           )}
         >
-          <span>All products</span>
-          {categoryCount && (
-            <span className="text-[11px] tabular-nums text-earth-400">
-              {Object.values(categoryCount).reduce((a, b) => a + b, 0)}
-            </span>
+          <span>{allLabel}</span>
+          {allCount != null && (
+            <span className="text-[11px] tabular-nums text-earth-400">{allCount}</span>
           )}
         </button>
       </li>
@@ -320,14 +346,20 @@ function StockToggle({
 export function SortMenu() {
   const router = useRouter()
   const sp = useSearchParams()
+  const pathname = usePathname()
+  const fashionHub =
+    pathname === '/fashion' || parseShopDept(sp.get('dept')) === 'fashion'
+  const catalogBase = fashionHub ? '/fashion' : '/shop'
   const current = sp.get('sort') ?? 'featured'
   const [open, setOpen] = useState(false)
 
   function select(value: string) {
     const p = new URLSearchParams(sp.toString())
+    p.delete('dept') // /fashion already scopes; avoid duplicate
     if (value === 'featured') p.delete('sort')
     else p.set('sort', value)
-    router.push(`/shop${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
+    if (fashionHub && catalogBase === '/shop') p.set('dept', 'fashion')
+    router.push(`${catalogBase}${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
     setOpen(false)
   }
 
@@ -448,49 +480,54 @@ export function ShopFiltersSidebar({
             </div>
           )}
 
-          <div>
-            <p className="form-label mb-1.5">Dietary</p>
-            <ul className="space-y-0.5">
-              <li>
-                <button
-                  type="button"
-                  onClick={() => state.setDietaryAndGo('')}
-                  className={cn(
-                    'flex min-h-10 w-full items-center rounded-md px-2.5 text-left text-[13px] font-medium',
-                    !state.dietary ? 'bg-earth-100 text-earth-900' : 'text-earth-700 hover:bg-earth-50'
-                  )}
-                >
-                  Any
-                </button>
-              </li>
-              {DIETARY_TAGS.map((tag) => (
-                <li key={tag}>
+          {!state.fashionHub && (
+            <div>
+              <p className="form-label mb-1.5">Dietary</p>
+              <ul className="space-y-0.5">
+                <li>
                   <button
                     type="button"
-                    onClick={() => state.setDietaryAndGo(tag)}
+                    onClick={() => state.setDietaryAndGo('')}
                     className={cn(
                       'flex min-h-10 w-full items-center rounded-md px-2.5 text-left text-[13px] font-medium',
-                      state.dietary === tag
-                        ? 'bg-earth-100 text-earth-900'
-                        : 'text-earth-700 hover:bg-earth-50'
+                      !state.dietary ? 'bg-earth-100 text-earth-900' : 'text-earth-700 hover:bg-earth-50'
                     )}
                   >
-                    {DIETARY_TAG_LABEL[tag]}
+                    Any
                   </button>
                 </li>
-              ))}
-            </ul>
-          </div>
+                {DIETARY_TAGS.map((tag) => (
+                  <li key={tag}>
+                    <button
+                      type="button"
+                      onClick={() => state.setDietaryAndGo(tag)}
+                      className={cn(
+                        'flex min-h-10 w-full items-center rounded-md px-2.5 text-left text-[13px] font-medium',
+                        state.dietary === tag
+                          ? 'bg-earth-100 text-earth-900'
+                          : 'text-earth-700 hover:bg-earth-50'
+                      )}
+                    >
+                      {DIETARY_TAG_LABEL[tag]}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </form>
       </div>
 
       <div className="rounded-xl border border-earth-200 bg-white p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-earth-500">Category</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-earth-500">
+          {state.fashionHub ? 'Fashion category' : 'Category'}
+        </p>
         <div className="mt-3">
           <CategoryList
             activeCategory={state.activeCategory}
             onSelect={state.setCategoryAndGo}
             categoryCount={categoryCount}
+            fashionHub={state.fashionHub}
           />
         </div>
       </div>
@@ -523,11 +560,7 @@ export function ShopFiltersBar({
     }
   }, [state.mobileOpen])
 
-  const mobileCategories = categoryCount
-    ? [...PRODUCT_CATEGORIES]
-        .filter((c) => (categoryCount[c] ?? 0) > 0)
-        .sort((a, b) => (categoryCount[b] ?? 0) - (categoryCount[a] ?? 0))
-    : PRODUCT_CATEGORIES
+  const mobileCategories = categoryOptions(state.fashionHub, categoryCount)
 
   return (
     <div className="space-y-2 lg:hidden">
@@ -544,7 +577,7 @@ export function ShopFiltersBar({
                 : 'border border-earth-200 bg-white text-earth-700 hover:border-earth-300'
             )}
           >
-            All
+            {state.fashionHub ? 'All fashion' : 'All'}
           </button>
           {mobileCategories.slice(0, 12).map((c) => (
             <button
@@ -634,7 +667,9 @@ export function ShopFiltersBar({
               >
                 {/* Category */}
                 <div>
-                  <p className="form-label mb-2.5">Category</p>
+                  <p className="form-label mb-2.5">
+                    {state.fashionHub ? 'Fashion category' : 'Category'}
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
@@ -646,7 +681,7 @@ export function ShopFiltersBar({
                           : 'border border-earth-200 bg-white text-earth-700'
                       )}
                     >
-                      All
+                      {state.fashionHub ? 'All fashion' : 'All'}
                     </button>
                     {mobileCategories.map((c) => (
                       <button
@@ -714,7 +749,11 @@ export function ShopFiltersBar({
 export function ActiveFilterChips() {
   const sp = useSearchParams()
   const router = useRouter()
+  const pathname = usePathname()
   const chips: { key: string; label: string; clear: () => void }[] = []
+  const fashionHub =
+    pathname === '/fashion' || parseShopDept(sp.get('dept')) === 'fashion'
+  const catalogBase = fashionHub ? '/fashion' : '/shop'
 
   const q = sp.get('q')
   const category = sp.get('category')
@@ -724,12 +763,26 @@ export function ActiveFilterChips() {
   const maxPrice = sp.get('maxPrice')
   const inStock = sp.get('inStock') === '1'
 
-  function clearKey(key: string) {
+  function pushParams(mutate: (p: URLSearchParams) => void) {
     const p = new URLSearchParams(sp.toString())
-    p.delete(key)
-    router.push(`/shop${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
+    p.delete('dept')
+    mutate(p)
+    router.push(`${catalogBase}${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
   }
 
+  function clearKey(key: string) {
+    pushParams((p) => {
+      p.delete(key)
+    })
+  }
+
+  if (fashionHub) {
+    chips.push({
+      key: 'dept',
+      label: 'Fashion',
+      clear: () => router.push('/shop', { scroll: false }),
+    })
+  }
   if (q) chips.push({ key: 'q', label: `"${q}"`, clear: () => clearKey('q') })
   if (category) chips.push({ key: 'category', label: category, clear: () => clearKey('category') })
   if (brand) chips.push({ key: 'brand', label: brand, clear: () => clearKey('brand') })
@@ -744,12 +797,11 @@ export function ActiveFilterChips() {
     chips.push({
       key: 'price',
       label: `$${minPrice || '0'}–$${maxPrice || '∞'}`,
-      clear: () => {
-        const p = new URLSearchParams(sp.toString())
-        p.delete('minPrice')
-        p.delete('maxPrice')
-        router.push(`/shop${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
-      },
+      clear: () =>
+        pushParams((p) => {
+          p.delete('minPrice')
+          p.delete('maxPrice')
+        }),
     })
   }
   if (inStock) {

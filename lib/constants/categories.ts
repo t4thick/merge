@@ -36,6 +36,24 @@ export const FASHION_CATEGORIES = [
 
 export type FashionCategory = (typeof FASHION_CATEGORIES)[number]
 
+/** Storefront department hubs (same cart, scoped browse). */
+export const SHOP_DEPTS = ['fashion'] as const
+export type ShopDept = (typeof SHOP_DEPTS)[number]
+
+export function isFashionCategory(category: string): boolean {
+  return (FASHION_CATEGORIES as readonly string[]).includes(category)
+}
+
+export function parseShopDept(value: string | null | undefined): ShopDept | null {
+  if (value === 'fashion') return 'fashion'
+  return null
+}
+
+export function categoriesForDept(dept: ShopDept | null): readonly string[] | null {
+  if (dept === 'fashion') return FASHION_CATEGORIES
+  return null
+}
+
 /** Short labels for category chips on home / shop. */
 export const CATEGORY_ICONS: Record<string, string> = {
   Alcohol: '🍷',

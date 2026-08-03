@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
   useCallback,
   useEffect,
@@ -13,6 +13,7 @@ import {
 } from 'react'
 import { Search, X } from 'lucide-react'
 import { ProductImage } from '@/components/store/ProductImage'
+import { parseShopDept } from '@/lib/constants/categories'
 import { cn, formatMoney } from '@/lib/utils'
 import type { Product } from '@/types'
 
@@ -22,10 +23,16 @@ type Props = {
   placeholder?: string
 }
 
-const POPULAR = ['jollof rice', 'palm oil', 'plantain', 'goat meat', 'malt']
+const POPULAR_GROCERY = ['jollof rice', 'palm oil', 'plantain', 'goat meat', 'malt']
+const POPULAR_FASHION = ['ankara', 'lace', 'ready-to-wear', 'gele', 'braiding']
 
 export function SearchAutocomplete({ className, compact, placeholder }: Props) {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const fashionHub =
+    pathname === '/fashion' || parseShopDept(searchParams.get('dept')) === 'fashion'
+
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [results, setResults] = useState<Product[]>([])
@@ -37,6 +44,18 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
   const listboxId = useId()
 
   const trimmed = q.trim()
+  const popular = fashionHub ? POPULAR_FASHION : POPULAR_GROCERY
+
+  const resultsHref = useCallback(
+    (term?: string) => {
+      const t = term?.trim()
+      if (fashionHub) {
+        return t ? `/fashion?q=${encodeURIComponent(t)}` : '/fashion'
+      }
+      return t ? `/shop?q=${encodeURIComponent(t)}` : '/shop'
+    },
+    [fashionHub]
+  )
 
   useEffect(() => {
     if (!trimmed) {
@@ -52,7 +71,12 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
       const controller = new AbortController()
       abortRef.current = controller
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=6`, {
+        const params = new URLSearchParams({
+          q: trimmed,
+          limit: '6',
+        })
+        if (fashionHub) params.set('dept', 'fashion')
+        const res = await fetch(`/api/search?${params}`, {
           signal: controller.signal,
         })
         if (!res.ok) throw new Error('search failed')
@@ -66,7 +90,7 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
     }, 160)
 
     return () => window.clearTimeout(t)
-  }, [trimmed])
+  }, [trimmed, fashionHub])
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -84,10 +108,10 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
   const submit = useCallback(
     (forced?: string) => {
       const term = (forced ?? trimmed).trim()
-      router.push(term ? `/shop?q=${encodeURIComponent(term)}` : '/shop')
+      router.push(resultsHref(term))
       close()
     },
-    [router, trimmed, close]
+    [router, trimmed, close, resultsHref]
   )
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -114,7 +138,7 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
 
   const popularPills = useMemo(
     () =>
-      POPULAR.map((term) => (
+      popular.map((term) => (
         <button
           key={term}
           type="button"
@@ -127,8 +151,14 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
           {term}
         </button>
       )),
-    [submit]
+    [popular, submit]
   )
+
+  const searchPlaceholder = fashionHub
+    ? compact
+      ? 'Search fashion…'
+      : 'Search prints, lace, ready-to-wear, hair…'
+    : placeholder ?? (compact ? 'Search products…' : 'Search products, brands, categories…')
 
   return (
     <div ref={containerRef} className={cn('relative w-full', className)}>
@@ -156,8 +186,8 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
-          placeholder={placeholder ?? 'Search products, brands, categories…'}
-          aria-label="Search products"
+          placeholder={searchPlaceholder}
+          aria-label={fashionHub ? 'Search fashion' : 'Search products'}
           aria-autocomplete="list"
           aria-controls={listboxId}
           className={cn(
@@ -197,7 +227,7 @@ export function SearchAutocomplete({ className, compact, placeholder }: Props) {
           {!trimmed ? (
             <div className="p-4">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-earth-500">
-                Popular searches
+                {fashionHub ? 'Popular in fashion' : 'Popular searches'}
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">{popularPills}</div>
             </div>

@@ -1,6 +1,14 @@
 /** Curated discovery rows — link to shop filters (aligned with live catalog). */
 export const FEATURED_COLLECTIONS = [
   {
+    id: 'fashion',
+    title: 'Fashion & Fabric',
+    subtitle: 'Prints, lace, ready-to-wear & hair',
+    emoji: '🧵',
+    href: '/fashion',
+    image: 'https://images.unsplash.com/photo-1586495777744-4413f21067fa?w=960&h=960&fit=crop&q=90&auto=format',
+  },
+  {
     id: 'staples',
     title: 'Yam, Fufu & Pantry',
     subtitle: 'Flours, gari, banku, rice & African staples',

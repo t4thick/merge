@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Suspense } from 'react'
 import { LocalBusinessJsonLd } from '@/components/seo/LocalBusinessJsonLd'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
@@ -19,7 +20,9 @@ export default async function StoreLayout({ children }: { children: ReactNode })
       <LocalBusinessJsonLd />
       <PwaRegister />
       <AnnouncementBar messages={announcements} />
-      <Navbar />
+      <Suspense fallback={<div className="h-14 border-b border-earth-200 bg-earth-50/95 sm:h-16" />}>
+        <Navbar />
+      </Suspense>
       <main className="flex-1">{children}</main>
       <Footer />
       <CartDrawer />

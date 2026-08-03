@@ -11,8 +11,8 @@ import { VisitSection } from '@/components/store/VisitSection'
 import { AdditionalServices } from '@/components/store/AdditionalServices'
 import { HomepageReviews } from '@/components/store/HomepageReviews'
 import { BundleCard } from '@/components/store/BundleCard'
-import { PRODUCT_CATEGORIES } from '@/lib/constants/categories'
-import { fetchHomepageProducts } from '@/lib/supabase/products'
+import { PRODUCT_CATEGORIES, FASHION_CATEGORIES } from '@/lib/constants/categories'
+import { fetchHomepageProducts, fetchFashionProducts } from '@/lib/supabase/products'
 import { fetchBestsellers } from '@/lib/supabase/bestsellers'
 import { fetchHomepageReviews } from '@/lib/supabase/homepage-reviews'
 import { fetchActiveBundles } from '@/lib/supabase/bundles'
@@ -23,6 +23,10 @@ const HOME_CATEGORY_ORDER = [
   'Beverages',
   'Meat and Seafood',
   'Spices',
+  'Ready-to-wear',
+  'African Prints',
+  'Lace',
+  'Hair & Braiding',
   'Dairy And Tea',
   'Bread',
   'Snack',
@@ -36,15 +40,18 @@ export default async function Home() {
     bestsellers,
     bundles,
     reviewData,
+    fashion,
   ] = await Promise.all([
     fetchHomepageProducts(),
     fetchBestsellers(8),
     fetchActiveBundles(),
     fetchHomepageReviews(),
+    fetchFashionProducts(8),
   ])
   const { reviews, totalCount: reviewCount, averageRating } = reviewData
 
   const withStock = PRODUCT_CATEGORIES.filter((c) => (categoryCount[c] ?? 0) > 0)
+  const fashionCount = FASHION_CATEGORIES.reduce((sum, c) => sum + (categoryCount[c] ?? 0), 0)
   const ordered = HOME_CATEGORY_ORDER.filter((c) => (categoryCount[c] ?? 0) > 0)
   const rest = withStock.filter((c) => !(HOME_CATEGORY_ORDER as readonly string[]).includes(c))
   const displayCategories =
@@ -57,7 +64,20 @@ export default async function Home() {
         departmentCount={withStock.length}
         categoryCount={categoryCount}
       />
-      <CategoryBrowse displayCategories={displayCategories} categoryCount={categoryCount} />
+      <CategoryBrowse
+        displayCategories={displayCategories}
+        categoryCount={categoryCount}
+        fashionCount={fashionCount}
+      />
+      {fashion.length > 0 && (
+        <ProductShowcase
+          title="Fashion & fabric"
+          subtitle="Prints, lace, ready-to-wear & hair — same store, same cart."
+          products={fashion}
+          viewAllHref="/fashion"
+          priorityCount={2}
+        />
+      )}
       {staples.length > 0 && (
         <ProductShowcase
           title="Yam, fufu & staples"

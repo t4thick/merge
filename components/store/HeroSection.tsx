@@ -69,9 +69,9 @@ export function HeroSection({
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>
             </Link>
-            <Link href="#categories" className="w-full no-underline sm:w-auto">
+            <Link href="/fashion" className="w-full no-underline sm:w-auto">
               <Button size="lg" variant="outline" className="h-12 w-full bg-white/80 px-7 sm:w-auto">
-                Browse categories
+                Shop fashion
               </Button>
             </Link>
           </div>

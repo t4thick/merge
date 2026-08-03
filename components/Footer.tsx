@@ -9,6 +9,7 @@ import { StoreLogo } from '@/components/ui/StoreLogo'
 
 const SHOP_LINKS = [
   { href: '/shop', label: 'All products' },
+  { href: '/fashion', label: 'Fashion' },
   { href: '/bundles', label: 'Bundles' },
   { href: '/#mobile-market', label: 'Mobile market' },
   { href: '/#services', label: 'Services' },

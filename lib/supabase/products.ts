@@ -6,6 +6,7 @@ import {
   STOREFRONT_PRODUCT_SELECT,
   STOREFRONT_PRODUCT_SELECT_LEGACY,
 } from '@/lib/product-pricing'
+import { FASHION_CATEGORIES } from '@/lib/constants/categories'
 import type { Product } from '@/types'
 
 export type ProductsQueryResult = {
@@ -32,6 +33,8 @@ async function selectProducts(supabase: Awaited<ReturnType<typeof createClientOp
 export async function fetchProductsForShop(options?: {
   q?: string
   category?: string
+  /** When set (and no single category), limit to these categories — e.g. fashion dept. */
+  categories?: readonly string[]
   brand?: string
   dietary?: string
   minPrice?: number
@@ -60,9 +63,13 @@ export async function fetchProductsForShop(options?: {
 
     const q = options?.q?.trim() ?? ''
     let products: Product[] = []
+    const scoped =
+      Boolean(options?.category?.trim()) || Boolean(options?.categories?.length)
 
-    // Prefer trigram fuzzy RPC when searching (needs grocery-ops.sql).
-    if (q) {
+    // Fuzzy RPC ranks across the whole catalog (grocery-heavy). When the shop is
+    // scoped to a department/category, skip it and query with .eq/.in so fashion
+    // (and other hubs) actually return matches instead of empty post-filters.
+    if (q && !scoped) {
       const { data: fuzzy, error: fuzzyErr } = await supabase.rpc('search_products_fuzzy', {
         search_query: q,
         result_limit: 60,
@@ -72,7 +79,7 @@ export async function fetchProductsForShop(options?: {
       }
     }
 
-    if (!q || products.length === 0) {
+    if (!q || products.length === 0 || scoped) {
       let built = supabase.from('products').select(STOREFRONT_PRODUCT_SELECT)
       if (q) {
         const terms = expandSearchTerms(q).filter((t) => t.trim().length > 0).slice(0, 6)
@@ -87,6 +94,9 @@ export async function fetchProductsForShop(options?: {
         built = built.or(orFilter)
       }
       if (options?.category) built = built.eq('category', options.category)
+      else if (options?.categories?.length) {
+        built = built.in('category', [...options.categories])
+      }
       if (options?.brand?.trim()) built = built.ilike('brand', options.brand.trim())
       if (options?.dietary?.trim()) built = built.contains('dietary_tags', [options.dietary.trim()])
       if (options?.minPrice != null && !Number.isNaN(options.minPrice)) {
@@ -100,7 +110,10 @@ export async function fetchProductsForShop(options?: {
       }
 
       const sort = SORT_CONFIG[options?.sort ?? 'featured']
-      let { data, error } = await built.order(sort.column, { ascending: sort.ascending })
+      // In-stock first, then requested sort — better hub browsing.
+      let { data, error } = await built
+        .order('in_stock', { ascending: false })
+        .order(sort.column, { ascending: sort.ascending })
 
       if (error && /brand|dietary_tags|column/i.test(error.message)) {
         let legacy = supabase.from('products').select(STOREFRONT_PRODUCT_SELECT_LEGACY)
@@ -116,6 +129,9 @@ export async function fetchProductsForShop(options?: {
           legacy = legacy.or(orFilter)
         }
         if (options?.category) legacy = legacy.eq('category', options.category)
+        else if (options?.categories?.length) {
+          legacy = legacy.in('category', [...options.categories])
+        }
         if (options?.minPrice != null && !Number.isNaN(options.minPrice)) {
           legacy = legacy.gte('price', options.minPrice)
         }
@@ -123,7 +139,9 @@ export async function fetchProductsForShop(options?: {
           legacy = legacy.lte('price', options.maxPrice)
         }
         if (options?.inStockOnly) legacy = legacy.eq('in_stock', true)
-        const legacyRes = await legacy.order(sort.column, { ascending: sort.ascending })
+        const legacyRes = await legacy
+          .order('in_stock', { ascending: false })
+          .order(sort.column, { ascending: sort.ascending })
         data = legacyRes.data as typeof data
         error = legacyRes.error
       }
@@ -140,6 +158,9 @@ export async function fetchProductsForShop(options?: {
       // Apply non-search filters client-side after fuzzy RPC.
       if (options?.category) {
         products = products.filter((p) => p.category === options.category)
+      } else if (options?.categories?.length) {
+        const allowed = new Set(options.categories)
+        products = products.filter((p) => allowed.has(p.category))
       }
       if (options?.brand?.trim()) {
         const b = options.brand.trim().toLowerCase()
@@ -160,6 +181,7 @@ export async function fetchProductsForShop(options?: {
       }
       const sort = options?.sort ?? 'featured'
       products = [...products].sort((a, b) => {
+        if (a.in_stock !== b.in_stock) return a.in_stock ? -1 : 1
         if (sort === 'price-asc') return a.price - b.price
         if (sort === 'price-desc') return b.price - a.price
         if (sort === 'name-asc') return a.name.localeCompare(b.name)
@@ -262,6 +284,17 @@ const SEARCH_SYNONYMS: Record<string, string[]> = {
   'banku': ['banku mix', 'corn dough'],
   'shea butter': ['nkuto', 'ori', 'shea'],
   'black soap': ['alata soap', 'dudu osun'],
+  // Fashion / fabric / hair
+  ankara: ['african print', 'wax print', 'hollandais'],
+  'african print': ['ankara', 'wax print', 'hollandais'],
+  lace: ['cord lace', 'guipure', 'net lace'],
+  kente: ['african print', 'woven'],
+  dashiki: ['ready-to-wear', 'shirt'],
+  gele: ['headwrap', 'head tie'],
+  fabric: ['african prints', 'lace', 'yard'],
+  wig: ['hair', 'braiding', 'closure'],
+  braid: ['braiding', 'hair', 'extension'],
+  braiding: ['braid', 'hair', 'extension'],
 }
 
 function expandSearchTerms(term: string): string[] {
@@ -280,7 +313,11 @@ function expandSearchTerms(term: string): string[] {
   return [...terms]
 }
 
-export async function searchProductsLite(q: string, limit = 6): Promise<Product[]> {
+export async function searchProductsLite(
+  q: string,
+  limit = 6,
+  options?: { categories?: readonly string[] }
+): Promise<Product[]> {
   const term = q.trim()
   if (!term) return []
   const { configured } = getSupabasePublicConfig()
@@ -289,12 +326,17 @@ export async function searchProductsLite(q: string, limit = 6): Promise<Product[
     const supabase = await createClientOptional()
     if (!supabase) return []
 
-    const { data: fuzzy } = await supabase.rpc('search_products_fuzzy', {
-      search_query: term,
-      result_limit: limit * 3,
-    })
-    if (Array.isArray(fuzzy) && fuzzy.length > 0) {
-      return filterStorefrontProducts(fuzzy as Product[]).slice(0, limit)
+    const categories = options?.categories
+    const scoped = Boolean(categories?.length)
+
+    if (!scoped) {
+      const { data: fuzzy } = await supabase.rpc('search_products_fuzzy', {
+        search_query: term,
+        result_limit: limit * 3,
+      })
+      if (Array.isArray(fuzzy) && fuzzy.length > 0) {
+        return filterStorefrontProducts(fuzzy as Product[]).slice(0, limit)
+      }
     }
 
     // Expand search with synonyms
@@ -310,12 +352,15 @@ export async function searchProductsLite(q: string, limit = 6): Promise<Product[
       ])
       .join(',')
 
-    const { data } = await supabase
+    let built = supabase
       .from('products')
       .select('id,name,price,image_url,category,in_stock,description')
       .or(orFilter)
+    if (categories?.length) built = built.in('category', [...categories])
+
+    const { data } = await built
       .order('in_stock', { ascending: false })
-      .limit(limit)
+      .limit(scoped ? limit : limit * 2)
 
     // Sort: exact name matches first, then category hits, then in-stock
     const needle = term.toLowerCase()
@@ -338,6 +383,15 @@ export async function searchProductsLite(q: string, limit = 6): Promise<Product[
   } catch {
     return []
   }
+}
+
+export async function fetchFashionProducts(limit = 8): Promise<Product[]> {
+  const { products } = await fetchProductsForShop({
+    categories: FASHION_CATEGORIES,
+    inStockOnly: true,
+    sort: 'newest',
+  })
+  return products.slice(0, limit)
 }
 
 export async function fetchFrequentlyBoughtTogether(
