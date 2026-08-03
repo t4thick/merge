@@ -1,2 +1,5 @@
 # Broken/locked local file blocked a prior deploy
 public/images/categories/beverages.jpg
+
+# Capacitor native shell — not part of the Next.js site build
+mobile/
