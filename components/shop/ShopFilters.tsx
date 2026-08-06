@@ -260,8 +260,7 @@ function CategoryList({
   const categories = categoryOptions(!!fashionHub, categoryCount)
   const allLabel = fashionHub ? 'All fashion' : 'All products'
   const allCount = fashionHub
-    ? FASHION_CATEGORIES.reduce((sum, c) => sum + (categoryCount?.[c] ?? 0), 0) +
-      (categoryCount?.Wax ?? 0)
+    ? null
     : categoryCount
       ? Object.values(categoryCount).reduce((a, b) => a + b, 0)
       : null
@@ -298,7 +297,7 @@ function CategoryList({
             )}
           >
             <span className="line-clamp-1 flex-1">{c}</span>
-            {categoryCount?.[c] != null && (
+            {!fashionHub && categoryCount?.[c] != null && (
               <span className="shrink-0 text-[11px] tabular-nums text-earth-400">
                 {categoryCount[c]}
               </span>
@@ -701,7 +700,7 @@ export function ShopFiltersBar({
                         )}
                       >
                         {c}
-                        {categoryCount?.[c] != null && (
+                        {!state.fashionHub && categoryCount?.[c] != null && (
                           <span className={cn(
                             'ml-1 tabular-nums',
                             state.activeCategory === c ? 'text-white/70' : 'text-earth-400'

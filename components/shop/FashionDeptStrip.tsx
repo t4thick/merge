@@ -12,24 +12,24 @@ export function FashionDeptStrip({ activeCategory, categoryCount }: FashionDeptS
   const cats = FASHION_CATEGORIES.filter(
     (cat) => (categoryCount[cat] ?? 0) > 0 || activeCategory === cat
   )
-  if (cats.length === 0) return null
+  // One type isn't a browse strip — skip until multiple fashion types are stocked.
+  if (cats.length < 2) return null
 
   return (
     <ul
       className={cn(
         'grid gap-2.5 sm:gap-3',
-        cats.length <= 2
+        cats.length === 2
           ? 'grid-cols-2'
           : cats.length === 3
             ? 'grid-cols-2 sm:grid-cols-3'
-            : cats.length <= 4
+            : cats.length === 4
               ? 'grid-cols-2 sm:grid-cols-4'
               : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
       )}
     >
       {cats.map((cat) => {
         const imageUrl = getCategoryImage(cat)
-        const count = categoryCount[cat] ?? 0
         const active = activeCategory === cat
         const href = active
           ? '/fashion'
@@ -58,10 +58,7 @@ export function FashionDeptStrip({ activeCategory, categoryCount }: FashionDeptS
                     aria-hidden
                   />
                 ) : null}
-                <span
-                  className="absolute inset-x-0 top-0 flex h-1.5"
-                  aria-hidden
-                >
+                <span className="absolute inset-x-0 top-0 flex h-1.5" aria-hidden>
                   <span className="flex-1 bg-brand-600" />
                   <span className="flex-1 bg-accent-500" />
                   <span className="flex-1 bg-earth-800" />
@@ -70,9 +67,6 @@ export function FashionDeptStrip({ activeCategory, categoryCount }: FashionDeptS
                 <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/90 to-transparent px-2.5 pb-2.5 pt-8 sm:px-3 sm:pb-3">
                   <span className="block truncate text-sm font-semibold text-earth-900">
                     {cat}
-                  </span>
-                  <span className="mt-0.5 block text-[11px] tabular-nums text-earth-600">
-                    {count > 0 ? `${count} in stock` : 'View'}
                   </span>
                 </span>
               </span>

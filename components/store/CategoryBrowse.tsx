@@ -71,7 +71,7 @@ export function CategoryBrowse({
                   Fashion
                 </span>
                 <span className="mt-1 block text-sm text-earth-600">
-                  {fashionCount.toLocaleString()} items · prints, lace, ready-to-wear &amp; hair
+                  Prints, lace, ready-to-wear &amp; hair
                 </span>
               </span>
               <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white transition-colors duration-150 group-hover:bg-brand-700">

@@ -99,9 +99,11 @@ export async function ShopCatalog({
           ? `Results for "${params.q}"`
           : 'All products'
   const subtitle = category
-    ? `${products.length} product${products.length === 1 ? '' : 's'} in ${category.toLowerCase()}`
+    ? fashionHub
+      ? category
+      : `${products.length} product${products.length === 1 ? '' : 's'} in ${category.toLowerCase()}`
     : fashionHub
-      ? `${products.length} product${products.length === 1 ? '' : 's'} in clothes, fabric & hair`
+      ? 'Clothes, fabric & hair'
       : params.q
         ? `${products.length} match${products.length === 1 ? '' : 'es'}`
         : `${products.length} product${products.length === 1 ? '' : 's'} across all departments`
@@ -131,11 +133,11 @@ export async function ShopCatalog({
                 <h1 className="mt-1 text-2xl font-semibold tracking-tight text-earth-900 sm:text-3xl">
                   {title}
                 </h1>
-                <p className="mt-1.5 text-base font-semibold tabular-nums text-earth-900">
-                  {fashionDeptEmpty
-                    ? 'Coming soon'
-                    : subtitle}
-                </p>
+                {!fashionHub && (
+                  <p className="mt-1.5 text-base font-semibold tabular-nums text-earth-900">
+                    {subtitle}
+                  </p>
+                )}
                 {fashionHub && (
                   <p className="mt-2 text-sm text-earth-600">
                     Clothes, fabric &amp; hair ·{' '}
@@ -146,6 +148,9 @@ export async function ShopCatalog({
                       Shop groceries
                     </Link>
                   </p>
+                )}
+                {fashionHub && fashionDeptEmpty && (
+                  <p className="mt-1.5 text-base font-semibold text-earth-900">Coming soon</p>
                 )}
               </div>
               {!fashionDeptEmpty && (
