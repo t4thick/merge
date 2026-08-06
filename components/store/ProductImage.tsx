@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { Package } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +15,10 @@ type ProductImageProps = {
   showPlaceholderHint?: boolean
 }
 
+/**
+ * Native <img> for product photos — avoids Vercel /_next/image quota and
+ * INVALID_IMAGE_OPTIMIZE_REQUEST failures on large Supabase uploads.
+ */
 export function ProductImage({
   src,
   alt,
@@ -53,16 +56,18 @@ export function ProductImage({
         className
       )}
     >
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element -- product CDN photos must bypass optimizer */}
+      <img
         src={src}
         alt={alt}
-        fill
+        sizes={sizes}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchPriority={priority ? 'high' : undefined}
         className={cn(
-          'object-contain p-3 sm:p-4',
+          'absolute inset-0 h-full w-full object-contain p-3 sm:p-4',
           hoverZoom && 'transition-transform duration-150 ease-out group-hover:scale-[1.02]'
         )}
-        sizes={sizes}
-        priority={priority}
       />
     </div>
   )

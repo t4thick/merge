@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,20 +27,27 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
     )
   }
 
-  function prev() { setActive((i) => (i === 0 ? allImages.length - 1 : i - 1)) }
-  function next() { setActive((i) => (i === allImages.length - 1 ? 0 : i + 1)) }
+  function prev() {
+    setActive((i) => (i === 0 ? allImages.length - 1 : i - 1))
+  }
+  function next() {
+    setActive((i) => (i === allImages.length - 1 ? 0 : i + 1))
+  }
 
   return (
     <div className="space-y-3">
       {/* Main image */}
       <div className="relative overflow-hidden rounded-xl border border-earth-200 bg-earth-50 aspect-square">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element -- product CDN photos must bypass optimizer */}
+        <img
+          key={allImages[active]}
           src={allImages[active]}
           alt={`${productName} — photo ${active + 1}`}
-          fill
-          className="object-contain p-2"
+          className="absolute inset-0 h-full w-full object-contain p-2"
           sizes="(max-width:1024px) 100vw, 50vw"
-          priority={active === 0}
+          loading={active === 0 ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={active === 0 ? 'high' : undefined}
         />
 
         {/* Arrows — only show if multiple images */}
@@ -104,12 +110,14 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
                   : 'border-earth-200 hover:border-earth-300'
               )}
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element -- product CDN photos must bypass optimizer */}
+              <img
                 src={src}
                 alt=""
-                fill
-                className="object-contain p-1"
+                className="absolute inset-0 h-full w-full object-contain p-1"
                 sizes="64px"
+                loading="lazy"
+                decoding="async"
               />
             </button>
           ))}
