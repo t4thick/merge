@@ -24,7 +24,7 @@ const HOME_CATEGORY_ORDER = [
   'Meat and Seafood',
   'Spices',
   'Ready-to-wear',
-  'Wax',
+  'African Prints',
   'Lace',
   'Headtie',
   'Kente',

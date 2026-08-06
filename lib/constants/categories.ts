@@ -3,6 +3,7 @@
  * Taxable: Alcohol, Cosmetics, Non food, fashion & hair (see lib/tax/sales-tax.ts).
  */
 export const PRODUCT_CATEGORIES = [
+  'African Prints',
   'Alcohol',
   'Beverages',
   'Bread',
@@ -24,7 +25,6 @@ export const PRODUCT_CATEGORIES = [
   'Ready-to-wear',
   'Snack',
   'Spices',
-  'Wax',
 ] as const
 
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
@@ -34,7 +34,7 @@ export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
  * Order matches storefront strip (type first, then RTW / hair).
  */
 export const FASHION_CATEGORIES = [
-  'Wax',
+  'African Prints',
   'Lace',
   'Headtie',
   'Kente',
@@ -45,11 +45,8 @@ export const FASHION_CATEGORIES = [
 
 export type FashionCategory = (typeof FASHION_CATEGORIES)[number]
 
-/**
- * Legacy labels still treated as fashion for queries / tax / nav counts.
- * Map any remaining DB rows to current types when convenient.
- */
-export const LEGACY_FASHION_CATEGORIES = ['African Prints'] as const
+/** Legacy shop labels still treated as fashion (e.g. old “Wax” rows). */
+export const LEGACY_FASHION_CATEGORIES = ['Wax'] as const
 
 /** Brand / mill lines for fabric admin + `/fashion` brand filter. */
 export const FASHION_BRAND_LINES = [
@@ -100,8 +97,8 @@ export const CATEGORY_ICONS: Record<string, string> = {
   'Meat and Seafood': '🐟',
   Snack: '🍿',
   'Dairy And Tea': '🫖',
-  Wax: '🧵',
   'African Prints': '🧵',
+  Wax: '🧵',
   Lace: '👗',
   Headtie: '🧣',
   Kente: '🟨',

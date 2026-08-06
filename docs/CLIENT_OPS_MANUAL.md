@@ -86,7 +86,7 @@ Storefront department: **`/fashion`** (same cart as groceries).
 
 | Category | What goes here |
 |----------|----------------|
-| Wax | Ankara, hollandais, george wrappers sold as fabric |
+| African Prints | Ankara, hollandais, george wrappers sold as fabric |
 | Lace | Cord lace, guipure, net lace |
 | Headtie | Gele, headtie, headwrap pieces |
 | Kente | Kente cloth, Aso Oke / traditional weave |

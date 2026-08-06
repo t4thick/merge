@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { FASHION_CATEGORIES } from '@/lib/constants/categories'
 import { getCategoryImage } from '@/lib/constants/category-images'
@@ -41,27 +40,38 @@ export function FashionDeptStrip({ activeCategory, categoryCount }: FashionDeptS
             <Link
               href={href}
               className={cn(
-                'group relative block overflow-hidden rounded-xl border no-underline transition-colors duration-150',
+                'group block overflow-hidden rounded-xl border bg-white no-underline transition-colors duration-150',
                 active
-                  ? 'border-earth-900 shadow-[var(--shadow-card)]'
+                  ? 'border-brand-600 shadow-[var(--shadow-card)]'
                   : 'border-earth-200 hover:border-earth-300'
               )}
             >
-              <span className="relative block aspect-[5/3] bg-earth-100 sm:aspect-[4/3]">
+              <span className="relative block aspect-[5/3] bg-accent-50 sm:aspect-[4/3]">
                 {imageUrl ? (
-                  <Image
+                  // eslint-disable-next-line @next/next/no-img-element -- avoid optimizer for remote category photos
+                  <img
                     src={imageUrl}
                     alt=""
-                    fill
-                    sizes="(max-width:640px) 45vw, 180px"
-                    className="object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                    loading="lazy"
+                    decoding="async"
                     aria-hidden
                   />
                 ) : null}
-                <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-                <span className="absolute inset-x-0 bottom-0 p-2.5 sm:p-3">
-                  <span className="block truncate text-sm font-semibold text-white">{cat}</span>
-                  <span className="mt-0.5 block text-[11px] tabular-nums text-white/80">
+                <span
+                  className="absolute inset-x-0 top-0 flex h-1.5"
+                  aria-hidden
+                >
+                  <span className="flex-1 bg-brand-600" />
+                  <span className="flex-1 bg-accent-500" />
+                  <span className="flex-1 bg-earth-800" />
+                  <span className="flex-1 bg-brand-700" />
+                </span>
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/90 to-transparent px-2.5 pb-2.5 pt-8 sm:px-3 sm:pb-3">
+                  <span className="block truncate text-sm font-semibold text-earth-900">
+                    {cat}
+                  </span>
+                  <span className="mt-0.5 block text-[11px] tabular-nums text-earth-600">
                     {count > 0 ? `${count} in stock` : 'View'}
                   </span>
                 </span>

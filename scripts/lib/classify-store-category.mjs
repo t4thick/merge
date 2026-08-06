@@ -4,6 +4,7 @@
  */
 
 export const STORE_CATEGORIES = [
+  'African Prints',
   'Beverages',
   'Bread',
   'Brocade',
@@ -24,7 +25,6 @@ export const STORE_CATEGORIES = [
   'Ready-to-wear',
   'Snack',
   'Spices',
-  'Wax',
   'Sample',
 ]
 
@@ -105,7 +105,7 @@ const SOURCE_CATEGORY_SCORES = {
   Household: { 'Non food': 6 },
   'Our Store': { Motherland: 3 },
   Culture: { Motherland: 5 },
-  'Clothes & Fashion': { 'Ready-to-wear': 8, Wax: 4 },
+  'Clothes & Fashion': { 'Ready-to-wear': 8, 'African Prints': 4 },
   'Caribbean product': { 'Caribbean product': 8 },
   Frozen: { 'Frozen foods': 8 },
   'Frozen foods': { 'Frozen foods': 8 },
@@ -372,7 +372,7 @@ const NAME_RULES = [
     weight: 9,
   },
   {
-    cat: 'Wax',
+    cat: 'African Prints',
     words: [
       'ankara',
       'african print',

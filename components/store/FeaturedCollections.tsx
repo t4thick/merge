@@ -9,7 +9,7 @@ import {
 } from '@/lib/constants/category-images'
 
 const COLLECTION_CATEGORY: Record<string, string> = {
-  fashion: 'Wax',
+  fashion: 'African Prints',
   staples: 'Flours & Rice',
   produce: 'Fresh Produce',
 }

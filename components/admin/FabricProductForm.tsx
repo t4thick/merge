@@ -409,7 +409,7 @@ export function FabricProductForm() {
                 onChange={(e) => update('yards', e.target.value)}
               />
               <p className="text-[11px] text-earth-400">
-                6 yd is standard for wax prints.
+                6 yd is standard for African prints.
               </p>
             </div>
             <div className="space-y-1.5">

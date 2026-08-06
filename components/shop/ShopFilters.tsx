@@ -170,11 +170,7 @@ function categoryOptions(
   fashionHub: boolean,
   categoryCount?: Record<string, number>
 ): readonly string[] {
-  // Fashion hub always lists type taxonomy; grocery hides empty cats.
   const base = fashionHub ? [...FASHION_CATEGORIES] : [...PRODUCT_CATEGORIES]
-  if (fashionHub) {
-    return base.sort((a, b) => (categoryCount?.[b] ?? 0) - (categoryCount?.[a] ?? 0))
-  }
   if (!categoryCount) return base
   return base
     .filter((c) => (categoryCount[c] ?? 0) > 0)
@@ -265,7 +261,7 @@ function CategoryList({
   const allLabel = fashionHub ? 'All fashion' : 'All products'
   const allCount = fashionHub
     ? FASHION_CATEGORIES.reduce((sum, c) => sum + (categoryCount?.[c] ?? 0), 0) +
-      (categoryCount?.['African Prints'] ?? 0)
+      (categoryCount?.Wax ?? 0)
     : categoryCount
       ? Object.values(categoryCount).reduce((a, b) => a + b, 0)
       : null

@@ -6,8 +6,8 @@
 export const FABRIC_KINDS = [
   {
     id: 'wax_6yd',
-    label: 'Wax — 6 yards',
-    category: 'Wax',
+    label: 'African print — 6 yards',
+    category: 'African Prints',
     defaultYards: 6,
     hint: 'Ankara / wax print sold as a full 6-yard piece',
   },
@@ -42,14 +42,14 @@ export const FABRIC_KINDS = [
   {
     id: 'george',
     label: 'George / wrapper',
-    category: 'Wax',
+    category: 'African Prints',
     defaultYards: 6,
     hint: 'George wrapper sets and related yardage',
   },
   {
     id: 'other_fabric',
     label: 'Other fabric',
-    category: 'Wax',
+    category: 'African Prints',
     defaultYards: 6,
     hint: 'Custom length or specialty textile',
   },
@@ -101,7 +101,7 @@ export function buildFabricProductName(input: {
   if (input.kindId === 'lace') {
     parts.push('Lace')
   } else if (input.kindId === 'wax_6yd') {
-    parts.push(`${formatYards(input.yards)} Wax`)
+    parts.push(`${formatYards(input.yards)} Print`)
   } else if (input.kindId === 'headtie') {
     parts.push('Headtie')
   } else if (input.kindId === 'kente') {
@@ -129,7 +129,7 @@ export function buildFabricPackLabel(input: {
   if (input.widthId === '45') bits.push('45″')
   else if (input.widthId === '60') bits.push('60″')
   if (input.kindId === 'lace') bits.push('Lace')
-  else if (input.kindId === 'wax_6yd') bits.push('Wax')
+  else if (input.kindId === 'wax_6yd') bits.push('Print')
   else if (input.kindId === 'headtie') bits.push('Headtie')
   else if (input.kindId === 'kente') bits.push('Kente')
   else if (input.kindId === 'brocade') bits.push('Brocade')

@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { CategoryIcon } from '@/components/store/CategoryIcon'
@@ -17,7 +16,7 @@ export function CategoryBrowse({
   fashionCount = 0,
 }: CategoryBrowseProps) {
   const fashionImage =
-    getCategoryImage('Wax') ?? getCategoryImage('Ready-to-wear')
+    getCategoryImage('African Prints') ?? getCategoryImage('Ready-to-wear')
 
   return (
     <section id="categories" className="page-section bg-white">
@@ -47,33 +46,35 @@ export function CategoryBrowse({
         {fashionCount > 0 && (
           <Link
             href="/fashion"
-            className="group relative mt-8 flex min-h-[7.5rem] overflow-hidden rounded-2xl border border-earth-200 bg-earth-950 no-underline shadow-[var(--shadow-card)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)] sm:min-h-[8.5rem]"
+            className="group relative mt-8 flex min-h-[7.5rem] overflow-hidden rounded-2xl border border-earth-200 bg-accent-50 no-underline shadow-[var(--shadow-card)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)] sm:min-h-[8.5rem]"
           >
+            <span className="absolute inset-y-0 left-0 flex w-2 sm:w-2.5" aria-hidden>
+              <span className="h-full w-full bg-[linear-gradient(180deg,var(--color-brand-600)_0%,var(--color-accent-500)_35%,var(--color-earth-800)_70%,var(--color-brand-700)_100%)]" />
+            </span>
             {fashionImage && (
-              <Image
+              // eslint-disable-next-line @next/next/no-img-element -- category remote photo; avoid optimizer
+              <img
                 src={fashionImage}
                 alt=""
-                fill
-                quality={80}
-                sizes="(max-width:768px) 100vw, 1100px"
-                className="object-cover object-center opacity-55 transition-transform duration-200 group-hover:scale-[1.02]"
+                className="absolute inset-0 h-full w-full object-cover object-center opacity-25 transition-transform duration-200 group-hover:scale-[1.02]"
+                loading="lazy"
+                decoding="async"
                 aria-hidden
               />
             )}
-            <span className="absolute inset-0 bg-gradient-to-r from-earth-950/90 via-earth-950/55 to-transparent" />
-            <span className="relative flex w-full items-end justify-between gap-4 p-5 sm:p-6">
+            <span className="relative flex w-full items-end justify-between gap-4 p-5 pl-6 sm:p-6 sm:pl-7">
               <span>
-                <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">
                   Department
                 </span>
-                <span className="mt-1 block text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                <span className="mt-1 block text-xl font-semibold tracking-tight text-earth-900 sm:text-2xl">
                   Fashion
                 </span>
-                <span className="mt-1 block text-sm text-white/80">
+                <span className="mt-1 block text-sm text-earth-600">
                   {fashionCount.toLocaleString()} items · prints, lace, ready-to-wear &amp; hair
                 </span>
               </span>
-              <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-earth-900 transition-transform duration-150 group-hover:translate-x-0.5">
+              <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white transition-colors duration-150 group-hover:bg-brand-700">
                 Shop fashion
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </span>
@@ -98,15 +99,13 @@ export function CategoryBrowse({
                 >
                   <div className="relative aspect-square overflow-hidden bg-earth-50">
                     {imageUrl ? (
-                      <Image
+                      // eslint-disable-next-line @next/next/no-img-element -- mix of local + remote category photos
+                      <img
                         src={imageUrl}
                         alt={cat}
-                        fill
-                        quality={90}
-                        unoptimized={imageUrl.startsWith('/images/categories/')}
-                        priority={cat === 'Beverages' || cat === 'Bread'}
-                        className="object-cover object-center transition-transform duration-200 group-hover:scale-[1.02]"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px"
+                        className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-200 group-hover:scale-[1.02]"
+                        loading={cat === 'Beverages' || cat === 'Bread' ? 'eager' : 'lazy'}
+                        decoding="async"
                       />
                     ) : (
                       <span className="absolute inset-0 flex items-center justify-center bg-earth-100">
