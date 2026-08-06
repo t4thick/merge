@@ -3,9 +3,8 @@ import { sendOrderEmails } from '@/lib/email/send-order-emails'
 import { sendOrderSmsToMerchant } from '@/lib/notifications/send-order-sms'
 import type { SanitizedCartLine } from '@/lib/order-pricing'
 import {
-  CHECKOUT_PRODUCT_SELECT,
-  CHECKOUT_PRODUCT_SELECT_LEGACY,
   computeCheckoutTotals,
+  fetchCheckoutProductMap,
   type ProductWithCategory,
 } from '@/lib/checkout-totals'
 import { normalizeShippingCountry, normalizeShippingRegion, normalizeShippingMethod } from '@/lib/shipping'
@@ -91,25 +90,14 @@ export async function fulfillOrderFromPaymentIntent(
   }
 
   const candidateProductIds = Array.from(new Set(sanitizedItems.map((i) => i.productId)))
-  let { data: productRows, error: productError } = await supabaseAdmin
-    .from('products')
-    .select(CHECKOUT_PRODUCT_SELECT)
-    .in('id', candidateProductIds)
-
-  if (productError && /stock_quantity|column/i.test(productError.message)) {
-    ;({ data: productRows, error: productError } = await supabaseAdmin
-      .from('products')
-      .select(CHECKOUT_PRODUCT_SELECT_LEGACY)
-      .in('id', candidateProductIds))
-  }
+  const { productMap, error: productError } = await fetchCheckoutProductMap(
+    supabaseAdmin,
+    candidateProductIds
+  )
 
   if (productError) {
     throw new Error(productError.message)
   }
-
-  const productMap = new Map<string, ProductWithCategory>(
-    (productRows ?? []).map((p) => [p.id, p as ProductWithCategory])
-  )
 
   if (productMap.size !== candidateProductIds.length) {
     throw new Error('One or more products are no longer available')

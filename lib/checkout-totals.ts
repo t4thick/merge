@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   buildAuthoritativeOrderItems,
   type AuthoritativeProduct,
@@ -20,6 +21,79 @@ export type ProductWithCategory = AuthoritativeProduct & {
 
 export const CHECKOUT_PRODUCT_SELECT = 'id,name,price,in_stock,category,stock_quantity'
 export const CHECKOUT_PRODUCT_SELECT_LEGACY = 'id,name,price,in_stock,category'
+
+/** Normalize Supabase product rows for checkout (legacy DBs may omit stock_quantity). */
+export function toProductWithCategory(row: {
+  id: string
+  name: string
+  price: number
+  in_stock: boolean
+  category: string
+  stock_quantity?: number | null
+}): ProductWithCategory {
+  return {
+    id: row.id,
+    name: row.name,
+    price: row.price,
+    in_stock: row.in_stock,
+    category: row.category,
+    stock_quantity:
+      typeof row.stock_quantity === 'number' && Number.isFinite(row.stock_quantity)
+        ? row.stock_quantity
+        : null,
+  }
+}
+
+export async function fetchCheckoutProductMap(
+  supabase: SupabaseClient,
+  candidateProductIds: string[]
+): Promise<{ productMap: Map<string, ProductWithCategory>; error: { message: string } | null }> {
+  const primary = await supabase
+    .from('products')
+    .select(CHECKOUT_PRODUCT_SELECT)
+    .in('id', candidateProductIds)
+
+  if (!primary.error) {
+    const rows = (primary.data ?? []) as Array<{
+      id: string
+      name: string
+      price: number
+      in_stock: boolean
+      category: string
+      stock_quantity?: number | null
+    }>
+    return {
+      productMap: new Map(rows.map((row) => [row.id, toProductWithCategory(row)])),
+      error: null,
+    }
+  }
+
+  if (!/stock_quantity|column/i.test(primary.error.message)) {
+    return { productMap: new Map(), error: primary.error }
+  }
+
+  const fallback = await supabase
+    .from('products')
+    .select(CHECKOUT_PRODUCT_SELECT_LEGACY)
+    .in('id', candidateProductIds)
+
+  if (fallback.error) {
+    return { productMap: new Map(), error: fallback.error }
+  }
+
+  const rows = (fallback.data ?? []) as Array<{
+    id: string
+    name: string
+    price: number
+    in_stock: boolean
+    category: string
+  }>
+
+  return {
+    productMap: new Map(rows.map((row) => [row.id, toProductWithCategory(row)])),
+    error: null,
+  }
+}
 
 export type CheckoutTotals = {
   orderItems: ReturnType<typeof buildAuthoritativeOrderItems>['orderItems']

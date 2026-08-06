@@ -3,9 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sanitizeCartItems } from '@/lib/order-pricing'
 import {
-  CHECKOUT_PRODUCT_SELECT,
-  CHECKOUT_PRODUCT_SELECT_LEGACY,
   computeCheckoutTotals,
+  fetchCheckoutProductMap,
   type ProductWithCategory,
 } from '@/lib/checkout-totals'
 import {
@@ -146,26 +145,15 @@ export async function POST(req: NextRequest) {
     }
 
     const candidateProductIds = Array.from(new Set(sanitizedItems.map((item) => item.productId)))
-    let { data: productRows, error: productError } = await supabaseAdmin
-      .from('products')
-      .select(CHECKOUT_PRODUCT_SELECT)
-      .in('id', candidateProductIds)
-
-    if (productError && /stock_quantity|column/i.test(productError.message)) {
-      ;({ data: productRows, error: productError } = await supabaseAdmin
-        .from('products')
-        .select(CHECKOUT_PRODUCT_SELECT_LEGACY)
-        .in('id', candidateProductIds))
-    }
+    const { productMap, error: productError } = await fetchCheckoutProductMap(
+      supabaseAdmin,
+      candidateProductIds
+    )
 
     if (productError) {
       console.error('Product lookup error:', productError)
       return NextResponse.json({ error: 'Could not verify cart items.' }, { status: 500 })
     }
-
-    const productMap = new Map<string, ProductWithCategory>(
-      (productRows ?? []).map((product) => [product.id, product as ProductWithCategory])
-    )
 
     if (productMap.size !== candidateProductIds.length) {
       return NextResponse.json(
