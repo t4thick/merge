@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import sharp from 'sharp'
 import { requireAdminApi } from '@/lib/auth/require-admin-api'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { assertSameOrigin } from '@/lib/security/same-origin'
@@ -43,6 +44,50 @@ function detectMimeFromBytes(bytes: Uint8Array): string | null {
   return null
 }
 
+/** Resize / re-encode so storefront can serve originals without multi‑MB phone photos. */
+async function prepareImageUpload(
+  buffer: Buffer,
+  detectedMime: string
+): Promise<{ buffer: Buffer; mime: string; ext: string }> {
+  try {
+    // GIF: keep as-is (sharp would flatten animation).
+    if (detectedMime === 'image/gif') {
+      return { buffer, mime: detectedMime, ext: 'gif' }
+    }
+
+    const image = sharp(buffer, { failOn: 'none' }).rotate()
+    const meta = await image.metadata()
+    const maxEdge = 1600
+    const needsResize =
+      (meta.width != null && meta.width > maxEdge) ||
+      (meta.height != null && meta.height > maxEdge)
+
+    let pipeline = image
+    if (needsResize) {
+      pipeline = pipeline.resize({
+        width: maxEdge,
+        height: maxEdge,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+    }
+
+    if (detectedMime === 'image/png' && meta.hasAlpha) {
+      const out = await pipeline.png({ compressionLevel: 8 }).toBuffer()
+      return { buffer: out, mime: 'image/png', ext: 'png' }
+    }
+
+    const out = await pipeline.jpeg({ quality: 82, mozjpeg: true }).toBuffer()
+    return { buffer: out, mime: 'image/jpeg', ext: 'jpg' }
+  } catch {
+    return {
+      buffer,
+      mime: detectedMime,
+      ext: EXT_BY_MIME[detectedMime] ?? 'bin',
+    }
+  }
+}
+
 export async function POST(req: NextRequest) {
   const originCheck = assertSameOrigin(req)
   if (!originCheck.ok) return originCheck.response
@@ -75,8 +120,8 @@ export async function POST(req: NextRequest) {
     }
 
     const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const headerBytes = new Uint8Array(buffer.slice(0, 12))
+    const rawBuffer = Buffer.from(bytes)
+    const headerBytes = new Uint8Array(rawBuffer.slice(0, 12))
 
     // Validate actual file content via magic bytes — prevents polyglot uploads.
     const detectedMime = detectMimeFromBytes(headerBytes)
@@ -87,18 +132,17 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Use the server-detected MIME (not the client-supplied one) for the extension.
-    const ext = EXT_BY_MIME[detectedMime] ?? 'bin'
+    const prepared = await prepareImageUpload(rawBuffer, detectedMime)
     const baseName = (file.name || 'upload')
       .replace(/\.[^.]+$/, '')
       .replace(/[^a-zA-Z0-9\-_]/g, '-')
       .slice(0, 80) || 'upload'
-    const fileName = `${Date.now()}-${baseName}.${ext}`
+    const fileName = `${Date.now()}-${baseName}.${prepared.ext}`
 
     const { data, error } = await supabaseAdmin.storage
       .from('product-images')
-      .upload(fileName, buffer, {
-        contentType: detectedMime,
+      .upload(fileName, prepared.buffer, {
+        contentType: prepared.mime,
         upsert: false,
       })
 
@@ -106,9 +150,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('product-images')
-      .getPublicUrl(data.path)
+    const {
+      data: { publicUrl },
+    } = supabaseAdmin.storage.from('product-images').getPublicUrl(data.path)
 
     return NextResponse.json({ url: publicUrl })
   } catch (err) {

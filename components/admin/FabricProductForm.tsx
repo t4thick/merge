@@ -27,6 +27,7 @@ import {
   fabricKindById,
   formatYards,
 } from '@/lib/fabrics/catalog'
+import { FASHION_BRAND_LINES } from '@/lib/constants/categories'
 
 type FormState = {
   kindId: FabricKindId
@@ -46,7 +47,7 @@ type FormState = {
 }
 
 const INITIAL: FormState = {
-  kindId: 'african_print_6yd',
+  kindId: 'wax_6yd',
   designName: '',
   color: '',
   yards: '6',
@@ -65,6 +66,7 @@ const INITIAL: FormState = {
 export function FabricProductForm() {
   const router = useRouter()
   const [form, setForm] = useState<FormState>(INITIAL)
+  const [useCustomBrand, setUseCustomBrand] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -82,7 +84,7 @@ export function FabricProductForm() {
       composition:
         kindId === 'lace'
           ? 'Net / tulle'
-          : kindId === 'voile'
+          : kindId === 'brocade'
             ? '100% polyester'
             : '100% cotton',
       care:
@@ -336,15 +338,54 @@ export function FabricProductForm() {
             </div>
             <div className="space-y-1.5">
               <label className="form-label" htmlFor="brand">
-                Mill / brand
+                Brand / line
               </label>
-              <Input
+              <select
                 id="brand"
-                maxLength={80}
-                placeholder="Optional — e.g. GTP, Vlisco, Hitarget"
-                value={form.brand}
-                onChange={(e) => update('brand', e.target.value)}
-              />
+                className="form-select"
+                value={
+                  useCustomBrand ||
+                  (form.brand.length > 0 &&
+                    !(FASHION_BRAND_LINES as readonly string[]).includes(form.brand))
+                    ? '__custom__'
+                    : form.brand
+                }
+                onChange={(e) => {
+                  const v = e.target.value
+                  if (v === '__custom__') {
+                    setUseCustomBrand(true)
+                    if ((FASHION_BRAND_LINES as readonly string[]).includes(form.brand)) {
+                      update('brand', '')
+                    }
+                    return
+                  }
+                  setUseCustomBrand(false)
+                  update('brand', v)
+                }}
+              >
+                <option value="">Select (optional)</option>
+                {FASHION_BRAND_LINES.map((line) => (
+                  <option key={line} value={line}>
+                    {line}
+                  </option>
+                ))}
+                <option value="__custom__">Other / custom…</option>
+              </select>
+              {(useCustomBrand ||
+                (form.brand.length > 0 &&
+                  !(FASHION_BRAND_LINES as readonly string[]).includes(form.brand))) && (
+                <Input
+                  maxLength={80}
+                  placeholder="Custom mill / brand name"
+                  value={
+                    (FASHION_BRAND_LINES as readonly string[]).includes(form.brand)
+                      ? ''
+                      : form.brand
+                  }
+                  onChange={(e) => update('brand', e.target.value)}
+                  className="mt-2"
+                />
+              )}
             </div>
           </div>
         </section>
@@ -368,7 +409,7 @@ export function FabricProductForm() {
                 onChange={(e) => update('yards', e.target.value)}
               />
               <p className="text-[11px] text-earth-400">
-                6 yd is standard for African prints.
+                6 yd is standard for wax prints.
               </p>
             </div>
             <div className="space-y-1.5">

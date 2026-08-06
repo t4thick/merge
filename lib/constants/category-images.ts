@@ -29,9 +29,11 @@ const CATEGORY_LOCAL: Partial<Record<string, string>> = {
 /** Remote fallbacks when no local asset is listed above */
 const CATEGORY_REMOTE: Record<string, string> = {
   'African Prints': U('photo-1586495777744-4413f21067fa'),
+  Wax: U('photo-1586495777744-4413f21067fa'),
   Alcohol: U('photo-1510812431401-41d2bd2722f3'),
   Beverages: U('photo-1755752919046-a6543db419cc'),
   Bread: U('photo-1725297952102-ab28892a31ab'),
+  Brocade: U('photo-1558171813-4c088753af8f'),
   Canned: U('photo-1601598704991-eef6114775e0'),
   'Caribbean product': U('photo-1617631716600-6a454b430367'),
   Cosmetics: U('photo-1556228720-195a672e8a03'),
@@ -40,6 +42,8 @@ const CATEGORY_REMOTE: Record<string, string> = {
   'Fresh Produce': U('photo-1607349913338-fca6f7fc42d0'),
   'Frozen foods': U('photo-1601599967100-f16100982063'),
   'Hair & Braiding': U('photo-1605497788044-2834a0b2e6b5'),
+  Headtie: U('photo-1594938298603-c8148c4dae35'),
+  Kente: U('photo-1610030469983-98e550d6193c'),
   Lace: U('photo-1594633313593-bab3825d0caf'),
   'Meat and Seafood': U('photo-1754587489041-9fc8301f4c98'),
   Motherland: U('photo-1740439225991-ab26e8f6da9d'),

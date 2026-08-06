@@ -12,14 +12,14 @@ import { PwaRegister } from '@/components/store/PwaRegister'
 import { PwaInstallBanner } from '@/components/store/PwaInstallBanner'
 import { fetchAnnouncements } from '@/lib/supabase/announcements'
 import { fetchCategoryCounts } from '@/lib/supabase/products'
-import { FASHION_CATEGORIES } from '@/lib/constants/categories'
+import { fashionQueryCategories } from '@/lib/constants/categories'
 
 export default async function StoreLayout({ children }: { children: ReactNode }) {
   const [announcements, categoryCount] = await Promise.all([
     fetchAnnouncements(),
     fetchCategoryCounts(),
   ])
-  const showFashion = FASHION_CATEGORIES.some((c) => (categoryCount[c] ?? 0) > 0)
+  const showFashion = fashionQueryCategories().some((c) => (categoryCount[c] ?? 0) > 0)
 
   return (
     <StoreMobileChrome>

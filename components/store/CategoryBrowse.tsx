@@ -17,7 +17,7 @@ export function CategoryBrowse({
   fashionCount = 0,
 }: CategoryBrowseProps) {
   const fashionImage =
-    getCategoryImage('African Prints') ?? getCategoryImage('Ready-to-wear')
+    getCategoryImage('Wax') ?? getCategoryImage('Ready-to-wear')
 
   return (
     <section id="categories" className="page-section bg-white">

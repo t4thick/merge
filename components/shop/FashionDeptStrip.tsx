@@ -19,13 +19,13 @@ export function FashionDeptStrip({ activeCategory, categoryCount }: FashionDeptS
     <ul
       className={cn(
         'grid gap-2.5 sm:gap-3',
-        cats.length === 1
-          ? 'grid-cols-1 sm:grid-cols-2'
-          : cats.length === 2
-            ? 'grid-cols-2'
-            : cats.length === 3
-              ? 'grid-cols-2 sm:grid-cols-3'
-              : 'grid-cols-2 sm:grid-cols-4'
+        cats.length <= 2
+          ? 'grid-cols-2'
+          : cats.length === 3
+            ? 'grid-cols-2 sm:grid-cols-3'
+            : cats.length <= 4
+              ? 'grid-cols-2 sm:grid-cols-4'
+              : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
       )}
     >
       {cats.map((cat) => {

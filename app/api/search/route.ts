@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { categoriesForDept, parseShopDept } from '@/lib/constants/categories'
+import { fashionQueryCategories, parseShopDept } from '@/lib/constants/categories'
 import { searchProductsLite } from '@/lib/supabase/products'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   const limitParam = url.searchParams.get('limit')
   const limit = Math.min(Math.max(parseInt(limitParam ?? '6', 10) || 6, 1), 10)
   const dept = parseShopDept(url.searchParams.get('dept'))
-  const categories = categoriesForDept(dept) ?? undefined
+  const categories = dept === 'fashion' ? fashionQueryCategories() : undefined
 
   const products = await searchProductsLite(q, limit, { categories })
   return NextResponse.json(

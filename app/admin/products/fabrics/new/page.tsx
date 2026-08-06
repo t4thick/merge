@@ -17,8 +17,8 @@ export default async function NewFabricProductPage() {
         </Link>
         <h1 className="admin-page-title mt-3">Add fabric / lace</h1>
         <p className="mt-1 max-w-2xl text-sm text-earth-500">
-          Built for 6-yard prints, lace, george, and voile — piece price, yardage, width, and
-          stock. Grocery add product stays separate.
+          Built for wax, lace, headtie, kente, brocade, and george — brand/line, piece price,
+          yardage, width, and stock. Grocery add product stays separate.
         </p>
         <p className="mt-2">
           <Link

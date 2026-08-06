@@ -6,7 +6,7 @@ import {
   STOREFRONT_PRODUCT_SELECT,
   STOREFRONT_PRODUCT_SELECT_LEGACY,
 } from '@/lib/product-pricing'
-import { FASHION_CATEGORIES } from '@/lib/constants/categories'
+import { fashionQueryCategories } from '@/lib/constants/categories'
 import type { Product } from '@/types'
 
 export type ProductsQueryResult = {
@@ -291,13 +291,17 @@ const SEARCH_SYNONYMS: Record<string, string[]> = {
   'shea butter': ['nkuto', 'ori', 'shea'],
   'black soap': ['alata soap', 'dudu osun'],
   // Fashion / fabric / hair
-  ankara: ['african print', 'wax print', 'hollandais'],
-  'african print': ['ankara', 'wax print', 'hollandais'],
+  ankara: ['wax', 'wax print', 'hollandais', 'african print'],
+  wax: ['ankara', 'wax print', 'hollandais', 'african print'],
+  'african print': ['ankara', 'wax', 'wax print', 'hollandais'],
   lace: ['cord lace', 'guipure', 'net lace'],
-  kente: ['african print', 'woven'],
+  kente: ['woven', 'aso oke'],
+  brocade: ['bazin', 'voile', 'damask'],
+  bazin: ['brocade', 'voile'],
+  headtie: ['gele', 'headwrap', 'head tie'],
+  gele: ['headtie', 'headwrap', 'head tie'],
   dashiki: ['ready-to-wear', 'shirt'],
-  gele: ['headwrap', 'head tie'],
-  fabric: ['african prints', 'lace', 'yard'],
+  fabric: ['wax', 'lace', 'yard', 'ankara'],
   wig: ['hair', 'braiding', 'closure'],
   braid: ['braiding', 'hair', 'extension'],
   braiding: ['braid', 'hair', 'extension'],
@@ -393,7 +397,7 @@ export async function searchProductsLite(
 
 export async function fetchFashionProducts(limit = 8): Promise<Product[]> {
   const { products } = await fetchProductsForShop({
-    categories: FASHION_CATEGORIES,
+    categories: fashionQueryCategories(),
     inStockOnly: true,
     sort: 'newest',
   })

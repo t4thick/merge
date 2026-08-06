@@ -24,7 +24,7 @@ type Props = {
 }
 
 const POPULAR_GROCERY = ['jollof rice', 'palm oil', 'plantain', 'goat meat', 'malt']
-const POPULAR_FASHION = ['ankara', 'lace', 'ready-to-wear', 'gele', 'braiding']
+const POPULAR_FASHION = ['wax', 'lace', 'headtie', 'kente', 'hollandais', 'ready-to-wear']
 
 export function SearchAutocomplete({ className, compact, placeholder }: Props) {
   const router = useRouter()

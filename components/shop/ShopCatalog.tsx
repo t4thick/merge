@@ -18,7 +18,8 @@ import {
 import { RecentlyViewed } from '@/components/store/RecentlyViewed'
 import { BackToTop } from '@/components/store/BackToTop'
 import {
-  categoriesForDept,
+  FASHION_BRAND_LINES,
+  fashionQueryCategories,
   isFashionCategory,
   type ShopDept,
 } from '@/lib/constants/categories'
@@ -44,7 +45,7 @@ export async function ShopCatalog({
   params: ShopCatalogParams
   dept?: ShopDept | null
 }) {
-  const deptCategories = categoriesForDept(dept)
+  const deptCategories = dept === 'fashion' ? fashionQueryCategories() : null
   const fashionHub = dept === 'fashion'
 
   // Drop invalid fashion category from the URL so chips match the grid.
@@ -81,6 +82,12 @@ export async function ShopCatalog({
       categories: fashionHub ? deptCategories ?? undefined : undefined,
     }),
   ])
+
+  const brandOptions = fashionHub
+    ? Array.from(new Set([...FASHION_BRAND_LINES, ...brands])).sort((a, b) =>
+        a.localeCompare(b)
+      )
+    : brands
 
   const title = category
     ? category
@@ -179,7 +186,7 @@ export async function ShopCatalog({
             <aside className="hidden md:block">
               <div className="sticky top-24">
                 <Suspense fallback={<p className="muted">Loading filters…</p>}>
-                  <ShopFiltersSidebar categoryCount={categoryCount} brands={brands} />
+                  <ShopFiltersSidebar categoryCount={categoryCount} brands={brandOptions} />
                 </Suspense>
               </div>
             </aside>
@@ -187,7 +194,7 @@ export async function ShopCatalog({
             <div>
               <div className="sticky top-14 z-40 -mx-4 border-b border-earth-200 bg-white/95 px-4 py-2.5 backdrop-blur-sm sm:top-16 md:hidden lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
                 <Suspense fallback={null}>
-                  <ShopFiltersBar categoryCount={categoryCount} />
+                  <ShopFiltersBar categoryCount={categoryCount} brands={brandOptions} />
                 </Suspense>
               </div>
 

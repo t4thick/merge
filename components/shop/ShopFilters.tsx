@@ -170,7 +170,11 @@ function categoryOptions(
   fashionHub: boolean,
   categoryCount?: Record<string, number>
 ): readonly string[] {
+  // Fashion hub always lists type taxonomy; grocery hides empty cats.
   const base = fashionHub ? [...FASHION_CATEGORIES] : [...PRODUCT_CATEGORIES]
+  if (fashionHub) {
+    return base.sort((a, b) => (categoryCount?.[b] ?? 0) - (categoryCount?.[a] ?? 0))
+  }
   if (!categoryCount) return base
   return base
     .filter((c) => (categoryCount[c] ?? 0) > 0)
@@ -260,7 +264,8 @@ function CategoryList({
   const categories = categoryOptions(!!fashionHub, categoryCount)
   const allLabel = fashionHub ? 'All fashion' : 'All products'
   const allCount = fashionHub
-    ? FASHION_CATEGORIES.reduce((sum, c) => sum + (categoryCount?.[c] ?? 0), 0)
+    ? FASHION_CATEGORIES.reduce((sum, c) => sum + (categoryCount?.[c] ?? 0), 0) +
+      (categoryCount?.['African Prints'] ?? 0)
     : categoryCount
       ? Object.values(categoryCount).reduce((a, b) => a + b, 0)
       : null
@@ -446,7 +451,9 @@ export function ShopFiltersSidebar({
 
           {brands.length > 0 && (
             <div>
-              <p className="form-label mb-1.5">Brand</p>
+              <p className="form-label mb-1.5">
+                {state.fashionHub ? 'Brand / line' : 'Brand'}
+              </p>
               <ul className="max-h-40 space-y-0.5 overflow-y-auto">
                 <li>
                   <button
@@ -537,8 +544,10 @@ export function ShopFiltersSidebar({
 
 export function ShopFiltersBar({
   categoryCount,
+  brands = [],
 }: {
   categoryCount?: Record<string, number>
+  brands?: string[]
 }) {
   const state = useShopFilterState()
 
@@ -725,6 +734,43 @@ export function ShopFiltersBar({
                     setMaxPrice={state.setMaxPrice}
                   />
                 </div>
+
+                {brands.length > 0 && (
+                  <div>
+                    <p className="form-label mb-2.5">
+                      {state.fashionHub ? 'Brand / line' : 'Brand'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => state.setBrandAndGo('')}
+                        className={cn(
+                          'rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors',
+                          !state.brand
+                            ? 'bg-earth-900 text-white'
+                            : 'border border-earth-200 bg-white text-earth-700'
+                        )}
+                      >
+                        All brands
+                      </button>
+                      {brands.map((b) => (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => state.setBrandAndGo(b)}
+                          className={cn(
+                            'rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors',
+                            state.brand === b
+                              ? 'bg-earth-900 text-white'
+                              : 'border border-earth-200 bg-white text-earth-700'
+                          )}
+                        >
+                          {b}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </form>
             </div>
 

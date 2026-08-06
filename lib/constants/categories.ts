@@ -3,10 +3,10 @@
  * Taxable: Alcohol, Cosmetics, Non food, fashion & hair (see lib/tax/sales-tax.ts).
  */
 export const PRODUCT_CATEGORIES = [
-  'African Prints',
   'Alcohol',
   'Beverages',
   'Bread',
+  'Brocade',
   'Canned',
   'Caribbean product',
   'Cosmetics',
@@ -15,6 +15,8 @@ export const PRODUCT_CATEGORIES = [
   'Fresh Produce',
   'Frozen foods',
   'Hair & Braiding',
+  'Headtie',
+  'Kente',
   'Lace',
   'Meat and Seafood',
   'Motherland',
@@ -22,26 +24,58 @@ export const PRODUCT_CATEGORIES = [
   'Ready-to-wear',
   'Snack',
   'Spices',
+  'Wax',
 ] as const
 
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
 
-/** Fashion / fabric / hair departments — sold alongside groceries. */
+/**
+ * Fashion type categories — browse tiles / filters on `/fashion`.
+ * Order matches storefront strip (type first, then RTW / hair).
+ */
 export const FASHION_CATEGORIES = [
-  'African Prints',
+  'Wax',
   'Lace',
+  'Headtie',
+  'Kente',
+  'Brocade',
   'Ready-to-wear',
   'Hair & Braiding',
 ] as const
 
 export type FashionCategory = (typeof FASHION_CATEGORIES)[number]
 
+/**
+ * Legacy labels still treated as fashion for queries / tax / nav counts.
+ * Map any remaining DB rows to current types when convenient.
+ */
+export const LEGACY_FASHION_CATEGORIES = ['African Prints'] as const
+
+/** Brand / mill lines for fabric admin + `/fashion` brand filter. */
+export const FASHION_BRAND_LINES = [
+  'Hollandais',
+  'Vlisco-type',
+  'Supreme-style',
+  'Other wax',
+  'Unbranded',
+] as const
+
+export type FashionBrandLine = (typeof FASHION_BRAND_LINES)[number]
+
 /** Storefront department hubs (same cart, scoped browse). */
 export const SHOP_DEPTS = ['fashion'] as const
 export type ShopDept = (typeof SHOP_DEPTS)[number]
 
 export function isFashionCategory(category: string): boolean {
-  return (FASHION_CATEGORIES as readonly string[]).includes(category)
+  return (
+    (FASHION_CATEGORIES as readonly string[]).includes(category) ||
+    (LEGACY_FASHION_CATEGORIES as readonly string[]).includes(category)
+  )
+}
+
+/** Categories used when scoping product queries to the fashion department. */
+export function fashionQueryCategories(): readonly string[] {
+  return [...FASHION_CATEGORIES, ...LEGACY_FASHION_CATEGORIES]
 }
 
 export function parseShopDept(value: string | null | undefined): ShopDept | null {
@@ -66,8 +100,12 @@ export const CATEGORY_ICONS: Record<string, string> = {
   'Meat and Seafood': '🐟',
   Snack: '🍿',
   'Dairy And Tea': '🫖',
+  Wax: '🧵',
   'African Prints': '🧵',
   Lace: '👗',
+  Headtie: '🧣',
+  Kente: '🟨',
+  Brocade: '✨',
   'Ready-to-wear': '🧥',
   'Hair & Braiding': '💇',
 }

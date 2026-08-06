@@ -107,12 +107,12 @@ Then set status to **Shipped** (or auto-update when label / webhook applies).
 
 **Products → Add fabric / lace** (`/admin/products/fabrics/new`)
 
-- Dedicated flow for 6-yard African prints, lace, george, voile, Aso Oke
-- Collects design name, colorway, yardage, width, composition, origin, care, piece price, piece stock
+- Dedicated flow for wax, lace, headtie, kente, brocade, george
+- Collects design name, colorway, brand/line, yardage, width, composition, origin, care, piece price, piece stock
 - Auto-builds storefront name, pack label (`6 yd · 45″`), description, and `$/yd` unit pricing
 - Photos: primary + detail shots
 - Cross-link from standard Add product page
-- Live on storefront at **`/fashion`** under African Prints or Lace
+- Live on storefront at **`/fashion`** under Wax, Lace, Headtie, Kente, or Brocade
 
 ### Bulk management
 

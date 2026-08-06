@@ -33,7 +33,11 @@ export const TAXABLE_CATEGORY_KEYS = new Set(
     'Cosmetics',
     'Non food',
     'African Prints',
+    'Wax',
     'Lace',
+    'Headtie',
+    'Kente',
+    'Brocade',
     'Ready-to-wear',
     'Hair & Braiding',
   ].map(normalizeCategoryKey)
@@ -72,7 +76,13 @@ export function isCategoryTaxable(category: string): boolean {
     key.includes('fabric') ||
     key.includes('ankara') ||
     key.includes('print') ||
+    key.includes('wax') ||
     key.includes('lace') ||
+    key.includes('kente') ||
+    key.includes('brocade') ||
+    key.includes('bazin') ||
+    key.includes('headtie') ||
+    key.includes('gele') ||
     key.includes('braid') ||
     key.includes('hair')
   ) {

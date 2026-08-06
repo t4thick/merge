@@ -5,9 +5,9 @@
 
 export const FABRIC_KINDS = [
   {
-    id: 'african_print_6yd',
-    label: 'African print — 6 yards',
-    category: 'African Prints',
+    id: 'wax_6yd',
+    label: 'Wax — 6 yards',
+    category: 'Wax',
     defaultYards: 6,
     hint: 'Ankara / wax print sold as a full 6-yard piece',
   },
@@ -19,30 +19,37 @@ export const FABRIC_KINDS = [
     hint: 'French lace, Guipure, cord lace, soft net — sold by piece or yardage',
   },
   {
+    id: 'headtie',
+    label: 'Headtie / Gele',
+    category: 'Headtie',
+    defaultYards: 2,
+    hint: 'Headtie, gele, and wrapper headpieces',
+  },
+  {
+    id: 'kente',
+    label: 'Kente',
+    category: 'Kente',
+    defaultYards: 4,
+    hint: 'Kente cloth and traditional weave pieces',
+  },
+  {
+    id: 'brocade',
+    label: 'Brocade / Bazin',
+    category: 'Brocade',
+    defaultYards: 5,
+    hint: 'Brocade, bazin, Swiss voile, dry lace blends',
+  },
+  {
     id: 'george',
     label: 'George / wrapper',
-    category: 'African Prints',
+    category: 'Wax',
     defaultYards: 6,
     hint: 'George wrapper sets and related yardage',
   },
   {
-    id: 'voile',
-    label: 'Voile / Brocade',
-    category: 'African Prints',
-    defaultYards: 5,
-    hint: 'Swiss voile, brocade, dry lace blends',
-  },
-  {
-    id: 'aso_oke',
-    label: 'Aso Oke / traditional weave',
-    category: 'African Prints',
-    defaultYards: 8,
-    hint: 'Traditional weave pieces',
-  },
-  {
     id: 'other_fabric',
     label: 'Other fabric',
-    category: 'African Prints',
+    category: 'Wax',
     defaultYards: 6,
     hint: 'Custom length or specialty textile',
   },
@@ -93,8 +100,14 @@ export function buildFabricProductName(input: {
   if (color) parts.push(color)
   if (input.kindId === 'lace') {
     parts.push('Lace')
-  } else if (input.kindId === 'african_print_6yd') {
-    parts.push(`${formatYards(input.yards)} African Print`)
+  } else if (input.kindId === 'wax_6yd') {
+    parts.push(`${formatYards(input.yards)} Wax`)
+  } else if (input.kindId === 'headtie') {
+    parts.push('Headtie')
+  } else if (input.kindId === 'kente') {
+    parts.push('Kente')
+  } else if (input.kindId === 'brocade') {
+    parts.push('Brocade')
   } else {
     parts.push(kind.label.split('—')[0].trim())
   }
@@ -116,7 +129,10 @@ export function buildFabricPackLabel(input: {
   if (input.widthId === '45') bits.push('45″')
   else if (input.widthId === '60') bits.push('60″')
   if (input.kindId === 'lace') bits.push('Lace')
-  else if (input.kindId === 'african_print_6yd') bits.push('Print')
+  else if (input.kindId === 'wax_6yd') bits.push('Wax')
+  else if (input.kindId === 'headtie') bits.push('Headtie')
+  else if (input.kindId === 'kente') bits.push('Kente')
+  else if (input.kindId === 'brocade') bits.push('Brocade')
   return bits.filter(Boolean).join(' · ').slice(0, 80)
 }
 

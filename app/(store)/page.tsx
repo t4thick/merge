@@ -11,7 +11,7 @@ import { VisitSection } from '@/components/store/VisitSection'
 import { AdditionalServices } from '@/components/store/AdditionalServices'
 import { HomepageReviews } from '@/components/store/HomepageReviews'
 import { BundleCard } from '@/components/store/BundleCard'
-import { PRODUCT_CATEGORIES, FASHION_CATEGORIES } from '@/lib/constants/categories'
+import { PRODUCT_CATEGORIES, fashionQueryCategories } from '@/lib/constants/categories'
 import { fetchHomepageProducts, fetchFashionProducts } from '@/lib/supabase/products'
 import { fetchBestsellers } from '@/lib/supabase/bestsellers'
 import { fetchHomepageReviews } from '@/lib/supabase/homepage-reviews'
@@ -24,8 +24,11 @@ const HOME_CATEGORY_ORDER = [
   'Meat and Seafood',
   'Spices',
   'Ready-to-wear',
-  'African Prints',
+  'Wax',
   'Lace',
+  'Headtie',
+  'Kente',
+  'Brocade',
   'Hair & Braiding',
   'Dairy And Tea',
   'Bread',
@@ -51,7 +54,10 @@ export default async function Home() {
   const { reviews, totalCount: reviewCount, averageRating } = reviewData
 
   const withStock = PRODUCT_CATEGORIES.filter((c) => (categoryCount[c] ?? 0) > 0)
-  const fashionCount = FASHION_CATEGORIES.reduce((sum, c) => sum + (categoryCount[c] ?? 0), 0)
+  const fashionCount = fashionQueryCategories().reduce(
+    (sum, c) => sum + (categoryCount[c] ?? 0),
+    0
+  )
   const ordered = HOME_CATEGORY_ORDER.filter((c) => (categoryCount[c] ?? 0) > 0)
   const rest = withStock.filter((c) => !(HOME_CATEGORY_ORDER as readonly string[]).includes(c))
   const displayCategories =

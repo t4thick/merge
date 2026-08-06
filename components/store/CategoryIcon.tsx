@@ -19,9 +19,11 @@ import { cn } from '@/lib/utils'
 
 const ICON_MAP: Record<string, LucideIcon> = {
   'African Prints': Layers,
+  Wax: Layers,
   Alcohol: Wine,
   Beverages: Coffee,
   Bread: Wheat,
+  Brocade: Sparkles,
   Canned: Package,
   'Caribbean product': Sparkles,
   Cosmetics: Sparkles,
@@ -30,6 +32,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   'Fresh Produce': Leaf,
   'Frozen foods': Snowflake,
   'Hair & Braiding': Scissors,
+  Headtie: Shirt,
+  Kente: Layers,
   Lace: Sparkles,
   'Meat and Seafood': Fish,
   Motherland: ShoppingBasket,

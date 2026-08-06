@@ -86,13 +86,18 @@ Storefront department: **`/fashion`** (same cart as groceries).
 
 | Category | What goes here |
 |----------|----------------|
-| African Prints | Ankara, george, voile, Aso Oke |
+| Wax | Ankara, hollandais, george wrappers sold as fabric |
 | Lace | Cord lace, guipure, net lace |
-| Ready-to-wear | Clothes, dashiki, wrappers sold as garments |
+| Headtie | Gele, headtie, headwrap pieces |
+| Kente | Kente cloth, Aso Oke / traditional weave |
+| Brocade | Brocade, bazin, Swiss voile |
+| Ready-to-wear | Clothes, dashiki, garments |
 | Hair & Braiding | Wigs, braiding hair, extensions |
 
+**Brand / line** (filter on `/fashion`): Hollandais, Vlisco-type, Supreme-style, Other wax, Unbranded — set when adding fabric.
+
 **Fast path for fabric/lace:** Admin → **Products → Add fabric / lace** (`/admin/products/fabrics/new`).  
-Publish with **In stock** on — it appears on `/fashion` under the mapped category.
+Pick fabric type + brand/line, then publish with **In stock** on — it appears on `/fashion`.
 
 Ready-to-wear and Hair & Braiding: use normal **Add product** and pick that category.
 

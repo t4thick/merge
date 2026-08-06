@@ -4,9 +4,9 @@
  */
 
 export const STORE_CATEGORIES = [
-  'African Prints',
   'Beverages',
   'Bread',
+  'Brocade',
   'Canned',
   'Caribbean product',
   'Cosmetics',
@@ -15,6 +15,8 @@ export const STORE_CATEGORIES = [
   'Fresh Produce',
   'Frozen foods',
   'Hair & Braiding',
+  'Headtie',
+  'Kente',
   'Lace',
   'Meat and Seafood',
   'Motherland',
@@ -22,6 +24,7 @@ export const STORE_CATEGORIES = [
   'Ready-to-wear',
   'Snack',
   'Spices',
+  'Wax',
   'Sample',
 ]
 
@@ -102,7 +105,7 @@ const SOURCE_CATEGORY_SCORES = {
   Household: { 'Non food': 6 },
   'Our Store': { Motherland: 3 },
   Culture: { Motherland: 5 },
-  'Clothes & Fashion': { 'Ready-to-wear': 8, 'African Prints': 4 },
+  'Clothes & Fashion': { 'Ready-to-wear': 8, Wax: 4 },
   'Caribbean product': { 'Caribbean product': 8 },
   Frozen: { 'Frozen foods': 8 },
   'Frozen foods': { 'Frozen foods': 8 },
@@ -369,17 +372,33 @@ const NAME_RULES = [
     weight: 9,
   },
   {
-    cat: 'African Prints',
+    cat: 'Wax',
     words: [
       'ankara',
       'african print',
       'wax print',
+      'wax',
       'hollandais',
-      'kente cloth',
-      'kente fabric',
       'print fabric',
       'yard fabric',
+      'george wrapper',
+      'george fabric',
     ],
+    weight: 12,
+  },
+  {
+    cat: 'Kente',
+    words: ['kente cloth', 'kente fabric', 'kente', 'aso oke', 'aso-oke'],
+    weight: 13,
+  },
+  {
+    cat: 'Headtie',
+    words: ['headtie', 'head tie', 'gele', 'headwrap', 'head wrap'],
+    weight: 12,
+  },
+  {
+    cat: 'Brocade',
+    words: ['brocade', 'bazin', 'swiss voile', 'voile fabric', 'damask'],
     weight: 12,
   },
   {
