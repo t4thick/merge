@@ -100,8 +100,16 @@ export async function ShopCatalog({
         : `${products.length} product${products.length === 1 ? '' : 's'} across all departments`
 
   const clearHref = fashionHub ? '/fashion' : '/shop'
-  const fashionEmpty =
-    fashionHub && products.length === 0 && !errorMessage && !params.q && !params.brand
+  const fashionStockCount = fashionHub
+    ? (deptCategories ?? []).reduce((sum, c) => sum + (categoryCount[c] ?? 0), 0)
+    : 0
+  // True empty department (no fashion SKUs in catalog), not just "filters matched nothing".
+  const fashionDeptEmpty = fashionHub && fashionStockCount === 0 && !errorMessage
+  const fashionFilterEmpty =
+    fashionHub &&
+    !fashionDeptEmpty &&
+    products.length === 0 &&
+    !errorMessage
 
   return (
     <>
@@ -117,7 +125,9 @@ export async function ShopCatalog({
                   {title}
                 </h1>
                 <p className="mt-1.5 text-base font-semibold tabular-nums text-earth-900">
-                  {subtitle}
+                  {fashionDeptEmpty
+                    ? 'Coming soon'
+                    : subtitle}
                 </p>
                 {fashionHub && (
                   <p className="mt-2 text-sm text-earth-600">
@@ -131,13 +141,15 @@ export async function ShopCatalog({
                   </p>
                 )}
               </div>
-              <div className="hidden lg:block">
-                <Suspense fallback={null}>
-                  <SortMenu />
-                </Suspense>
-              </div>
+              {!fashionDeptEmpty && (
+                <div className="hidden lg:block">
+                  <Suspense fallback={null}>
+                    <SortMenu />
+                  </Suspense>
+                </div>
+              )}
             </div>
-            {fashionHub && (
+            {fashionHub && !fashionDeptEmpty && (
               <div className="mt-6">
                 <FashionDeptStrip
                   activeCategory={category ?? null}
@@ -149,6 +161,20 @@ export async function ShopCatalog({
         </div>
 
         <div className="store-container py-6 sm:py-8 lg:py-10">
+          {fashionDeptEmpty ? (
+            <div className="rounded-xl border border-dashed border-earth-300 bg-earth-50 px-6 py-16 text-center">
+              <p className="text-base font-semibold text-earth-900">Fashion coming soon</p>
+              <p className="mt-1 text-sm text-earth-600">
+                Prints, lace, ready-to-wear &amp; hair will show here when in stock.
+              </p>
+              <Link
+                href="/shop"
+                className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white no-underline hover:bg-brand-700"
+              >
+                Shop groceries
+              </Link>
+            </div>
+          ) : (
           <div className="md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
             <aside className="hidden md:block">
               <div className="sticky top-24">
@@ -179,39 +205,18 @@ export async function ShopCatalog({
 
               {products.length === 0 && !errorMessage ? (
                 <div className="mt-8 rounded-xl border border-dashed border-earth-300 bg-earth-50 px-6 py-16 text-center">
-                  <p className="text-base font-semibold text-earth-900">
-                    {fashionEmpty ? 'Fashion catalog is empty' : 'No products found'}
-                  </p>
+                  <p className="text-base font-semibold text-earth-900">No products found</p>
                   <p className="mt-1 text-sm text-earth-600">
-                    {fashionEmpty
-                      ? 'Add African Prints, Lace, Ready-to-wear, or Hair & Braiding in admin — they show here automatically.'
+                    {fashionFilterEmpty
+                      ? 'Try another fashion category or clear filters.'
                       : 'Try a different category or remove some filters.'}
                   </p>
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                    {fashionEmpty ? (
-                      <>
-                        <Link
-                          href="/admin/products/fabrics/new"
-                          className="inline-flex min-h-11 items-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white no-underline hover:bg-brand-700"
-                        >
-                          Add fabric / lace
-                        </Link>
-                        <Link
-                          href="/shop"
-                          className="text-sm font-semibold text-brand-700 no-underline hover:underline"
-                        >
-                          Shop groceries →
-                        </Link>
-                      </>
-                    ) : (
-                      <Link
-                        href={clearHref}
-                        className="text-sm font-semibold text-brand-700 no-underline hover:underline"
-                      >
-                        Clear all filters →
-                      </Link>
-                    )}
-                  </div>
+                  <Link
+                    href={clearHref}
+                    className="mt-4 inline-block text-sm font-semibold text-brand-700 no-underline hover:underline"
+                  >
+                    Clear all filters →
+                  </Link>
                 </div>
               ) : (
                 <div className="mt-6 grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
@@ -222,6 +227,7 @@ export async function ShopCatalog({
               )}
             </div>
           </div>
+          )}
         </div>
       </div>
       <RecentlyViewed />

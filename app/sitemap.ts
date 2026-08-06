@@ -19,7 +19,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${baseUrl}/shop`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/fashion`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
     { url: `${baseUrl}/feedback`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
     { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
@@ -59,6 +58,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     visible.forEach((p) => {
       if (p.category) categories.add(p.category)
     })
+    const hasFashion = [...categories].some((c) => isFashionCategory(c))
+    if (hasFashion) {
+      productEntries.push({
+        url: `${baseUrl}/fashion`,
+        lastModified: now,
+        changeFrequency: 'daily',
+        priority: 0.85,
+      })
+    }
     for (const category of categories) {
       const url = isFashionCategory(category)
         ? `${baseUrl}/fashion?category=${encodeURIComponent(category)}`

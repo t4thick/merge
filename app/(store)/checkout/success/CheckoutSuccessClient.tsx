@@ -86,7 +86,10 @@ export function CheckoutSuccessClient() {
       }
 
       if (Date.now() - started > 60_000) {
-        setMessage('Payment received. Check your email or account orders.')
+        // Payment likely succeeded but order row is slow — clear cart so they
+        // don't accidentally pay twice. Order can still be found via email/account.
+        clearCart()
+        setMessage('Payment received. Check your email or Account → Orders for the receipt.')
         return
       }
 

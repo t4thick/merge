@@ -11,9 +11,15 @@ import { StoreMobileChrome } from '@/components/store/StoreMobileChrome'
 import { PwaRegister } from '@/components/store/PwaRegister'
 import { PwaInstallBanner } from '@/components/store/PwaInstallBanner'
 import { fetchAnnouncements } from '@/lib/supabase/announcements'
+import { fetchCategoryCounts } from '@/lib/supabase/products'
+import { FASHION_CATEGORIES } from '@/lib/constants/categories'
 
 export default async function StoreLayout({ children }: { children: ReactNode }) {
-  const announcements = await fetchAnnouncements()
+  const [announcements, categoryCount] = await Promise.all([
+    fetchAnnouncements(),
+    fetchCategoryCounts(),
+  ])
+  const showFashion = FASHION_CATEGORIES.some((c) => (categoryCount[c] ?? 0) > 0)
 
   return (
     <StoreMobileChrome>
@@ -21,10 +27,10 @@ export default async function StoreLayout({ children }: { children: ReactNode })
       <PwaRegister />
       <AnnouncementBar messages={announcements} />
       <Suspense fallback={<div className="h-14 border-b border-earth-200 bg-earth-50/95 sm:h-16" />}>
-        <Navbar />
+        <Navbar showFashion={showFashion} />
       </Suspense>
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer showFashion={showFashion} />
       <CartDrawer />
       <MobileCartBar />
       <MobileBottomNav />

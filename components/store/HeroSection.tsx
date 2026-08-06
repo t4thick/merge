@@ -16,10 +16,12 @@ export function HeroSection({
   inStockCount,
   departmentCount,
   categoryCount,
+  showFashion = false,
 }: {
   inStockCount: number
   departmentCount: number
   categoryCount: Record<string, number>
+  showFashion?: boolean
 }) {
   const stockLabel =
     inStockCount > 0 ? `${inStockCount.toLocaleString()} products in stock` : 'Products in stock'
@@ -69,11 +71,19 @@ export function HeroSection({
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>
             </Link>
-            <Link href="/fashion" className="w-full no-underline sm:w-auto">
-              <Button size="lg" variant="outline" className="h-12 w-full bg-white/80 px-7 sm:w-auto">
-                Shop fashion
-              </Button>
-            </Link>
+            {showFashion ? (
+              <Link href="/fashion" className="w-full no-underline sm:w-auto">
+                <Button size="lg" variant="outline" className="h-12 w-full bg-white/80 px-7 sm:w-auto">
+                  Shop fashion
+                </Button>
+              </Link>
+            ) : (
+              <Link href="#categories" className="w-full no-underline sm:w-auto">
+                <Button size="lg" variant="outline" className="h-12 w-full bg-white/80 px-7 sm:w-auto">
+                  Browse categories
+                </Button>
+              </Link>
+            )}
           </div>
 
           <ul className="mt-8 flex flex-col gap-2.5 text-sm text-earth-700 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2">

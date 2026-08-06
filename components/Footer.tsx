@@ -7,9 +7,8 @@ import { StorePhoneLinks } from '@/components/store/StorePhoneLinks'
 import { OrderByPhone } from '@/components/store/OrderByPhone'
 import { StoreLogo } from '@/components/ui/StoreLogo'
 
-const SHOP_LINKS = [
+const SHOP_LINKS_BASE = [
   { href: '/shop', label: 'All products' },
-  { href: '/fashion', label: 'Fashion' },
   { href: '/bundles', label: 'Bundles' },
   { href: '/#mobile-market', label: 'Mobile market' },
   { href: '/#services', label: 'Services' },
@@ -40,8 +39,15 @@ const LEGAL_LINKS = [
   { href: '/terms', label: 'Terms' },
 ] as const
 
-export function Footer() {
+export function Footer({ showFashion = false }: { showFashion?: boolean }) {
   const supportEmail = getSupportEmail()
+  const shopLinks = showFashion
+    ? [
+        SHOP_LINKS_BASE[0],
+        { href: '/fashion', label: 'Fashion' },
+        ...SHOP_LINKS_BASE.slice(1),
+      ]
+    : [...SHOP_LINKS_BASE]
   return (
     <footer className="mt-auto border-t border-earth-200 bg-white pb-[calc(4rem+env(safe-area-inset-bottom,0px))] text-earth-600 md:pb-0">
       <div className="store-container py-12 sm:py-16 lg:py-20">
@@ -68,7 +74,7 @@ export function Footer() {
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-earth-500">Shop</p>
             <ul className="mt-3 text-sm">
-              {SHOP_LINKS.map((link) => (
+              {shopLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}

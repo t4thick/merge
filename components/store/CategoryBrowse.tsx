@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { CategoryIcon } from '@/components/store/CategoryIcon'
 import { getCategoryImage } from '@/lib/constants/category-images'
-import { isFashionCategory, PRODUCT_CATEGORIES } from '@/lib/constants/categories'
+import { isFashionCategory } from '@/lib/constants/categories'
 
 type CategoryBrowseProps = {
   displayCategories: readonly string[]
@@ -27,10 +27,11 @@ export function CategoryBrowse({
             <h2 className="section-title">Shop by category</h2>
             <p className="section-subtitle">
               {(() => {
+                const stocked = Object.values(categoryCount).filter((n) => n > 0).length
                 const total = Object.values(categoryCount).reduce((a, b) => a + b, 0)
                 return total > 0
-                  ? `${PRODUCT_CATEGORIES.length} departments · ${total.toLocaleString()} products in stock`
-                  : `${PRODUCT_CATEGORIES.length} departments`
+                  ? `${stocked} departments · ${total.toLocaleString()} products in stock`
+                  : `${stocked} departments`
               })()}
             </p>
           </div>

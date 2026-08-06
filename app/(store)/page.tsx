@@ -63,6 +63,7 @@ export default async function Home() {
         inStockCount={inStockCount}
         departmentCount={withStock.length}
         categoryCount={categoryCount}
+        showFashion={fashionCount > 0}
       />
       <CategoryBrowse
         displayCategories={displayCategories}

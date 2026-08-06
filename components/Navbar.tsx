@@ -11,17 +11,15 @@ import { Button } from '@/components/ui/button'
 import { StoreLogo } from '@/components/ui/StoreLogo'
 import { cn } from '@/lib/utils'
 
-const NAV_LINKS = [
+const NAV_LINKS_BASE = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
-  { href: '/fashion', label: 'Fashion' },
   { href: '/#services', label: 'Services' },
   { href: '/track-order', label: 'Track order' },
   { href: '/account', label: 'Account' },
 ] as const
 
-const DEPARTMENT_SHORTCUTS = [
-  { href: '/fashion', label: 'Fashion' },
+const DEPARTMENT_SHORTCUTS_BASE = [
   { href: '/shop?category=Flours%20%26%20Rice', label: 'Rice & flour' },
   { href: '/shop?category=Spices', label: 'Spices' },
   { href: '/shop?category=Beverages', label: 'Drinks' },
@@ -48,7 +46,7 @@ function isActive(pathname: string, href: string, search: string) {
   return true
 }
 
-export function Navbar() {
+export function Navbar({ showFashion = false }: { showFashion?: boolean }) {
   const { totalItems, openCart } = useCart()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -56,6 +54,19 @@ export function Navbar() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [badgeKey, setBadgeKey] = useState(totalItems)
+
+  const navLinks = showFashion
+    ? [
+        NAV_LINKS_BASE[0],
+        NAV_LINKS_BASE[1],
+        { href: '/fashion', label: 'Fashion' },
+        ...NAV_LINKS_BASE.slice(2),
+      ]
+    : [...NAV_LINKS_BASE]
+
+  const departmentShortcuts = showFashion
+    ? [{ href: '/fashion', label: 'Fashion' }, ...DEPARTMENT_SHORTCUTS_BASE]
+    : [...DEPARTMENT_SHORTCUTS_BASE]
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4)
@@ -96,7 +107,7 @@ export function Navbar() {
             </div>
 
             <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main">
-              {NAV_LINKS.map(({ href, label }) => {
+              {navLinks.map(({ href, label }) => {
                 const active = isActive(pathname, href, search)
                 return (
                   <Link
@@ -201,7 +212,7 @@ export function Navbar() {
             </div>
 
             <div className="flex flex-col gap-1 overflow-y-auto p-3">
-              {NAV_LINKS.map(({ href, label }) => {
+              {navLinks.map(({ href, label }) => {
                 const active = isActive(pathname, href, search)
                 return (
                   <Link
@@ -224,7 +235,7 @@ export function Navbar() {
                   Shop by department
                 </p>
                 <div className="flex flex-col gap-0.5">
-                  {DEPARTMENT_SHORTCUTS.map((item) => (
+                  {departmentShortcuts.map((item) => (
                     <Link
                       key={item.href + item.label}
                       href={item.href}

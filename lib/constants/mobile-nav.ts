@@ -20,7 +20,7 @@ export function shouldShowMobileCartBar(pathname: string, totalItems: number): b
   if (totalItems <= 0) return false
   if (pathname.startsWith('/cart') || pathname.startsWith('/checkout')) return false
   if (pathname.startsWith('/products/')) return false
-  if (pathname === '/shop') return false
+  if (pathname === '/shop' || pathname === '/fashion') return false
   return true
 }
 

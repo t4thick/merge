@@ -10,9 +10,25 @@ type FashionDeptStripProps = {
 }
 
 export function FashionDeptStrip({ activeCategory, categoryCount }: FashionDeptStripProps) {
+  const cats = FASHION_CATEGORIES.filter(
+    (cat) => (categoryCount[cat] ?? 0) > 0 || activeCategory === cat
+  )
+  if (cats.length === 0) return null
+
   return (
-    <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
-      {FASHION_CATEGORIES.map((cat) => {
+    <ul
+      className={cn(
+        'grid gap-2.5 sm:gap-3',
+        cats.length === 1
+          ? 'grid-cols-1 sm:grid-cols-2'
+          : cats.length === 2
+            ? 'grid-cols-2'
+            : cats.length === 3
+              ? 'grid-cols-2 sm:grid-cols-3'
+              : 'grid-cols-2 sm:grid-cols-4'
+      )}
+    >
+      {cats.map((cat) => {
         const imageUrl = getCategoryImage(cat)
         const count = categoryCount[cat] ?? 0
         const active = activeCategory === cat
