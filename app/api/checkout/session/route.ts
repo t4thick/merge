@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sanitizeCartItems } from '@/lib/order-pricing'
 import {
   CHECKOUT_PRODUCT_SELECT,
+  CHECKOUT_PRODUCT_SELECT_LEGACY,
   computeCheckoutTotals,
   type ProductWithCategory,
 } from '@/lib/checkout-totals'
@@ -23,6 +24,7 @@ import type { CartItem } from '@/types'
 import { CHECKOUT_STRIPE_PAYMENT_METHOD_TYPES, getStripe } from '@/lib/stripe'
 import { getPublicSiteUrl } from '@/lib/site-url'
 import { assertSameOrigin } from '@/lib/security/same-origin'
+import { maxCartQuantity } from '@/lib/product-pricing'
 
 export const runtime = 'nodejs'
 
@@ -87,10 +89,17 @@ export async function POST(req: NextRequest) {
     }
 
     const candidateProductIds = Array.from(new Set(sanitizedItems.map((item) => item.productId)))
-    const { data: productRows, error: productError } = await supabaseAdmin
+    let { data: productRows, error: productError } = await supabaseAdmin
       .from('products')
       .select(CHECKOUT_PRODUCT_SELECT)
       .in('id', candidateProductIds)
+
+    if (productError && /stock_quantity|column/i.test(productError.message)) {
+      ;({ data: productRows, error: productError } = await supabaseAdmin
+        .from('products')
+        .select(CHECKOUT_PRODUCT_SELECT_LEGACY)
+        .in('id', candidateProductIds))
+    }
 
     if (productError) {
       console.error('Product lookup error:', productError)
@@ -116,6 +125,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: `These items are currently unavailable: ${unavailable.map((p) => p.name).join(', ')}.`,
+        },
+        { status: 400 }
+      )
+    }
+
+    const overStock = sanitizedItems
+      .map((item) => {
+        const product = productMap.get(item.productId)
+        if (!product) return null
+        const max = maxCartQuantity(product)
+        if (item.quantity <= max) return null
+        return { name: product.name, max }
+      })
+      .filter((row): row is { name: string; max: number } => row != null)
+
+    if (overStock.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Reduce quantity for: ${overStock
+            .map((r) => `${r.name} (max ${r.max})`)
+            .join(', ')}.`,
         },
         { status: 400 }
       )

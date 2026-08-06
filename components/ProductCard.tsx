@@ -24,7 +24,7 @@ export function ProductCard({ product, priority }: { product: Product; priority?
 
   useEffect(() => {
     if (!justAdded) return
-    const t = setTimeout(() => setJustAdded(false), 900)
+    const t = setTimeout(() => setJustAdded(false), 180)
     return () => clearTimeout(t)
   }, [justAdded])
 

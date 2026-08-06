@@ -10,6 +10,7 @@ import {
   ReactNode,
 } from 'react'
 import type { Product, CartItem } from '@/types'
+import { maxCartQuantity } from '@/lib/product-pricing'
 
 type CartContextType = {
   items: CartItem[]
@@ -39,6 +40,13 @@ function parseCart(raw: string | null): CartItem[] {
   }
 }
 
+function clampLineQuantity(product: Product, quantity: number): number {
+  const max = maxCartQuantity(product)
+  if (max <= 0) return 0
+  const n = Number.isInteger(quantity) ? quantity : 1
+  return Math.min(Math.max(n, 1), max)
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [cartOpen, setCartOpen] = useState(false)
@@ -64,13 +72,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback((product: Product, quantity = 1) => {
     setItems((prev) => {
-      const safeQuantity = Number.isInteger(quantity) ? Math.min(Math.max(quantity, 1), 99) : 1
+      const max = maxCartQuantity(product)
+      if (max <= 0) return prev
+      const addQty = clampLineQuantity(product, quantity)
       const existing = prev.find((i) => i.product.id === product.id)
       const next = existing
         ? prev.map((i) =>
-            i.product.id === product.id ? { ...i, quantity: i.quantity + safeQuantity } : i
+            i.product.id === product.id
+              ? { ...i, product, quantity: Math.min(i.quantity + addQty, max) }
+              : i
           )
-        : [...prev, { product, quantity: safeQuantity }]
+        : [...prev, { product, quantity: addQty }]
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
       } catch (e) {
@@ -106,9 +118,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (quantity <= 0) {
         next = prev.filter((i) => i.product.id !== id)
       } else {
-        next = prev.map((i) =>
-          i.product.id === id ? { ...i, quantity } : i
-        )
+        next = prev
+          .map((i) => {
+            if (i.product.id !== id) return i
+            const capped = clampLineQuantity(i.product, quantity)
+            if (capped <= 0) return null
+            return { ...i, quantity: capped }
+          })
+          .filter((i): i is CartItem => i != null)
       }
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next))

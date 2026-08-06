@@ -13,9 +13,13 @@ import {
 } from '@/lib/shipping'
 import { calculateSalesTax, type SalesTaxQuote, type TaxLineInput } from '@/lib/tax/sales-tax'
 
-export type ProductWithCategory = AuthoritativeProduct & { category: string }
+export type ProductWithCategory = AuthoritativeProduct & {
+  category: string
+  stock_quantity?: number | null
+}
 
-export const CHECKOUT_PRODUCT_SELECT = 'id,name,price,in_stock,category'
+export const CHECKOUT_PRODUCT_SELECT = 'id,name,price,in_stock,category,stock_quantity'
+export const CHECKOUT_PRODUCT_SELECT_LEGACY = 'id,name,price,in_stock,category'
 
 export type CheckoutTotals = {
   orderItems: ReturnType<typeof buildAuthoritativeOrderItems>['orderItems']

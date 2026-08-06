@@ -42,7 +42,7 @@ const HIDE_ON_PREFIXES = ['/checkout']
 
 export function MobileBottomNav() {
   const pathname = usePathname()
-  const { totalItems, openCart } = useCart()
+  const { totalItems } = useCart()
 
   if (HIDE_ON_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     return null
@@ -64,12 +64,12 @@ export function MobileBottomNav() {
           if (isCart) {
             return (
               <li key={href}>
-                <button
-                  type="button"
-                  onClick={openCart}
+                <Link
+                  href="/cart"
                   aria-label={`Cart, ${totalItems} item${totalItems === 1 ? '' : 's'}`}
+                  aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'group relative flex h-full w-full flex-col items-center justify-center gap-0.5 px-1 transition-colors duration-150',
+                    'group relative flex h-full w-full flex-col items-center justify-center gap-0.5 px-1 no-underline transition-colors duration-150',
                     active ? 'text-brand-700' : 'text-earth-500'
                   )}
                 >
@@ -87,7 +87,7 @@ export function MobileBottomNav() {
                   <span className={cn('text-[11px] font-medium leading-none tracking-tight', active && 'font-semibold')}>
                     {label}
                   </span>
-                </button>
+                </Link>
               </li>
             )
           }

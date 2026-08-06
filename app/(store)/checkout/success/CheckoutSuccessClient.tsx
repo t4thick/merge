@@ -90,6 +90,7 @@ export function CheckoutSuccessClient() {
         // don't accidentally pay twice. Order can still be found via email/account.
         clearCart()
         setMessage('Payment received. Check your email or Account → Orders for the receipt.')
+        setError('')
         return
       }
 

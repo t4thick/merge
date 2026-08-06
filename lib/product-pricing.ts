@@ -53,6 +53,18 @@ export function effectiveInStock(product: Pick<StoreProduct, 'in_stock' | 'stock
   return Boolean(product.in_stock)
 }
 
+/** Max units a shopper can put in cart (stock_quantity when tracked, else 99). */
+export function maxCartQuantity(
+  product: Pick<StoreProduct, 'in_stock' | 'stock_quantity'>
+): number {
+  if (!effectiveInStock(product)) return 0
+  const qty = product.stock_quantity
+  if (typeof qty === 'number' && Number.isFinite(qty) && qty >= 0) {
+    return Math.min(99, Math.max(0, Math.trunc(qty)))
+  }
+  return 99
+}
+
 export function lowStockCount(
   product: Pick<StoreProduct, 'stock_quantity' | 'in_stock'>
 ): number | null {

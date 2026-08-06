@@ -15,7 +15,7 @@ const COLLECTION_CATEGORY: Record<string, string> = {
 }
 
 export function FeaturedCollections({
-  showFashion = true,
+  showFashion = false,
 }: {
   showFashion?: boolean
 }) {

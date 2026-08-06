@@ -4,6 +4,7 @@ import { sendOrderSmsToMerchant } from '@/lib/notifications/send-order-sms'
 import type { SanitizedCartLine } from '@/lib/order-pricing'
 import {
   CHECKOUT_PRODUCT_SELECT,
+  CHECKOUT_PRODUCT_SELECT_LEGACY,
   computeCheckoutTotals,
   type ProductWithCategory,
 } from '@/lib/checkout-totals'
@@ -90,10 +91,17 @@ export async function fulfillOrderFromPaymentIntent(
   }
 
   const candidateProductIds = Array.from(new Set(sanitizedItems.map((i) => i.productId)))
-  const { data: productRows, error: productError } = await supabaseAdmin
+  let { data: productRows, error: productError } = await supabaseAdmin
     .from('products')
     .select(CHECKOUT_PRODUCT_SELECT)
     .in('id', candidateProductIds)
+
+  if (productError && /stock_quantity|column/i.test(productError.message)) {
+    ;({ data: productRows, error: productError } = await supabaseAdmin
+      .from('products')
+      .select(CHECKOUT_PRODUCT_SELECT_LEGACY)
+      .in('id', candidateProductIds))
+  }
 
   if (productError) {
     throw new Error(productError.message)
