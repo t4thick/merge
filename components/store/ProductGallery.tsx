@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { toStorefrontImageUrl } from '@/lib/product-image-url'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -11,13 +12,15 @@ type Props = {
 }
 
 export function ProductGallery({ mainImage, extraImages, productName }: Props) {
-  // Build full list: main image first, then extras
   const allImages = [
     ...(mainImage ? [mainImage] : []),
     ...((extraImages ?? []).filter((u) => u && u !== mainImage)),
   ]
+    .map((u) => toStorefrontImageUrl(u))
+    .filter((u): u is string => Boolean(u))
 
   const [active, setActive] = useState(0)
+  const [failed, setFailed] = useState<Record<number, boolean>>({})
 
   if (allImages.length === 0) {
     return (
@@ -26,6 +29,10 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
       </div>
     )
   }
+
+  const safeActive = Math.min(active, allImages.length - 1)
+  const activeSrc = allImages[safeActive]
+  const activeFailed = failed[safeActive]
 
   function prev() {
     setActive((i) => (i === 0 ? allImages.length - 1 : i - 1))
@@ -36,21 +43,27 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Main image */}
       <div className="relative overflow-hidden rounded-xl border border-earth-200 bg-earth-50 aspect-square">
-        {/* eslint-disable-next-line @next/next/no-img-element -- product CDN photos must bypass optimizer */}
-        <img
-          key={allImages[active]}
-          src={allImages[active]}
-          alt={`${productName} — photo ${active + 1}`}
-          className="absolute inset-0 h-full w-full object-contain p-2"
-          sizes="(max-width:1024px) 100vw, 50vw"
-          loading={active === 0 ? 'eager' : 'lazy'}
-          decoding="async"
-          fetchPriority={active === 0 ? 'high' : undefined}
-        />
+        {activeFailed ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-sm text-earth-400">Photo unavailable</p>
+          </div>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- product photos use same-origin proxy
+          <img
+            key={activeSrc}
+            src={activeSrc}
+            alt={`${productName} — photo ${safeActive + 1}`}
+            className="absolute inset-0 h-full w-full object-contain p-2"
+            sizes="(max-width:1024px) 100vw, 50vw"
+            loading={safeActive === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchPriority={safeActive === 0 ? 'high' : undefined}
+            referrerPolicy="no-referrer"
+            onError={() => setFailed((prev) => ({ ...prev, [safeActive]: true }))}
+          />
+        )}
 
-        {/* Arrows — only show if multiple images */}
         {allImages.length > 1 && (
           <>
             <button
@@ -70,7 +83,6 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
               <ChevronRight className="h-5 w-5 text-earth-700" />
             </button>
 
-            {/* Dot indicators */}
             <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-0.5">
               {allImages.map((_, i) => (
                 <button
@@ -83,7 +95,7 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
                   <span
                     className={cn(
                       'h-2 rounded-full transition-all',
-                      i === active ? 'w-5 bg-brand-700' : 'w-2 bg-earth-300'
+                      i === safeActive ? 'w-5 bg-brand-700' : 'w-2 bg-earth-300'
                     )}
                     aria-hidden
                   />
@@ -94,23 +106,22 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
         )}
       </div>
 
-      {/* Thumbnails — show if more than 1 image */}
       {allImages.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {allImages.map((src, i) => (
             <button
-              key={i}
+              key={src}
               type="button"
               onClick={() => setActive(i)}
               aria-label={`View photo ${i + 1}`}
               className={cn(
                 'relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors',
-                i === active
+                i === safeActive
                   ? 'border-brand-500'
                   : 'border-earth-200 hover:border-earth-300'
               )}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- product CDN photos must bypass optimizer */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- product photos use same-origin proxy */}
               <img
                 src={src}
                 alt=""
@@ -118,6 +129,7 @@ export function ProductGallery({ mainImage, extraImages, productName }: Props) {
                 sizes="64px"
                 loading="lazy"
                 decoding="async"
+                referrerPolicy="no-referrer"
               />
             </button>
           ))}

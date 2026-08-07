@@ -4,7 +4,7 @@
  * - Network-first for navigations; offline fallback only.
  * - Never caches checkout, cart, admin, APIs, or Stripe.
  */
-const VERSION = 'kam-pwa-v1'
+const VERSION = 'kam-pwa-v2'
 const SHELL_CACHE = `${VERSION}-shell`
 const OFFLINE_URL = '/offline'
 

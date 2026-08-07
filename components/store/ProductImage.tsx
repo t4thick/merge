@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { Package } from 'lucide-react'
+import { toStorefrontImageUrl } from '@/lib/product-image-url'
 import { cn } from '@/lib/utils'
 
 type ProductImageProps = {
@@ -16,8 +18,8 @@ type ProductImageProps = {
 }
 
 /**
- * Native <img> for product photos — avoids Vercel /_next/image quota and
- * INVALID_IMAGE_OPTIMIZE_REQUEST failures on large Supabase uploads.
+ * Native <img> for product photos — same-origin `/media/...` proxy so CSP
+ * never blocks Supabase storage URLs.
  */
 export function ProductImage({
   src,
@@ -29,7 +31,10 @@ export function ProductImage({
   hoverZoom = false,
   showPlaceholderHint = false,
 }: ProductImageProps) {
-  if (!src?.trim()) {
+  const resolved = toStorefrontImageUrl(src)
+  const [failed, setFailed] = useState(false)
+
+  if (!resolved || failed) {
     return (
       <div
         className={cn(
@@ -56,14 +61,16 @@ export function ProductImage({
         className
       )}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- product CDN photos must bypass optimizer */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- product photos use same-origin proxy */}
       <img
-        src={src}
+        src={resolved}
         alt={alt}
         sizes={sizes}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         fetchPriority={priority ? 'high' : undefined}
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
         className={cn(
           'absolute inset-0 h-full w-full object-contain p-3 sm:p-4',
           hoverZoom && 'transition-transform duration-150 ease-out group-hover:scale-[1.02]'
