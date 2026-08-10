@@ -108,7 +108,10 @@ export async function applyUspsLabelToOrder(
   let customerNotified = false
   if (fromStatus !== toStatus && order.customer_email) {
     try {
-      await sendOrderStatusEmail(
+      // `note` carries the postage we paid and the broker name — admin-only, so
+      // it stays on the status log. The customer email already states the
+      // tracking number in its body.
+      customerNotified = await sendOrderStatusEmail(
         {
           id: orderId,
           order_number: order.order_number ?? null,
@@ -119,9 +122,8 @@ export async function applyUspsLabelToOrder(
           shipping_method: order.shipping_method ?? null,
         },
         toStatus,
-        note
+        null
       )
-      customerNotified = true
     } catch (e) {
       console.error('[applyUspsLabel] status email failed:', e)
     }
