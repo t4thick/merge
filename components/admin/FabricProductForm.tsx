@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatMoney, cn } from '@/lib/utils'
+import { MAX_UPLOAD_BYTES, shrinkImageForUpload } from '@/lib/admin/shrink-image-upload'
 import {
   FABRIC_COMPOSITIONS,
   FABRIC_KINDS,
@@ -143,15 +144,20 @@ export function FabricProductForm() {
   const completenessPct = Math.round((completeness / 6) * 100)
 
   async function uploadFile(file: File): Promise<string | null> {
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be under 5 MB.')
+    const prepared = await shrinkImageForUpload(file)
+    if (prepared.size > MAX_UPLOAD_BYTES) {
+      setError(`"${file.name}" is too large to upload. Try a smaller photo.`)
       return null
     }
     const fd = new FormData()
-    fd.append('file', file)
+    fd.append('file', prepared)
     const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-    const data = await res.json()
-    return data.url ?? null
+    const data = await res.json().catch(() => ({}) as { url?: string; error?: string })
+    if (!res.ok || !data.url) {
+      setError(data.error || `Upload failed (${res.status}).`)
+      return null
+    }
+    return data.url
   }
 
   async function handlePrimaryUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -162,7 +168,6 @@ export function FabricProductForm() {
     try {
       const url = await uploadFile(file)
       if (url) update('image_url', url)
-      else if (!error) setError('Upload failed.')
     } catch {
       setError('Upload failed — check your connection.')
     } finally {
@@ -585,7 +590,7 @@ export function FabricProductForm() {
               )}
               <input
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
+                accept="image/*,.heic,.heif"
                 className="sr-only"
                 onChange={handlePrimaryUpload}
                 disabled={uploading}
@@ -593,7 +598,7 @@ export function FabricProductForm() {
             </label>
             <div className="min-w-0 flex-1 space-y-2 text-sm">
               <p className="font-medium text-earth-800">Primary image</p>
-              <p className="text-earth-500">PNG, JPEG, WebP — max 5 MB</p>
+              <p className="text-earth-500">Phone photos, PNG, JPEG, WebP, or HEIC</p>
               {form.image_url && (
                 <button
                   type="button"
@@ -634,7 +639,7 @@ export function FabricProductForm() {
             Add detail photos
             <input
               type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif"
+              accept="image/*,.heic,.heif"
               multiple
               className="sr-only"
               onChange={handleExtraUpload}

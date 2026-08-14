@@ -4,8 +4,18 @@ import { requireAdminApi } from '@/lib/auth/require-admin-api'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { assertSameOrigin } from '@/lib/security/same-origin'
 
-const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
-const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
+const ALLOWED_MIME = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/gif',
+  // iPhone camera default + AVIF — both converted to JPEG below.
+  'image/heic',
+  'image/heif',
+  'image/avif',
+])
+/** Below the ~4.5 MB serverless body cap, so oversized files fail with our message. */
+const MAX_BYTES = 4 * 1024 * 1024
 const EXT_BY_MIME: Record<string, string> = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
@@ -41,8 +51,19 @@ function detectMimeFromBytes(bytes: Uint8Array): string | null {
     return 'image/webp'
   }
 
+  // HEIC / HEIF / AVIF: ISO-BMFF box — bytes 4-7 = "ftyp", brand at 8-11.
+  const ascii = String.fromCharCode(...bytes.slice(4, 12))
+  if (ascii.startsWith('ftyp')) {
+    const brand = ascii.slice(4, 8)
+    if (['heic', 'heix', 'heim', 'heis', 'hevc', 'hevx'].includes(brand)) return 'image/heic'
+    if (['mif1', 'msf1'].includes(brand)) return 'image/heif'
+    if (['avif', 'avis'].includes(brand)) return 'image/avif'
+  }
+
   return null
 }
+
+class UnsupportedImageError extends Error {}
 
 /** Resize / re-encode so storefront can serve originals without multi‑MB phone photos. */
 async function prepareImageUpload(
@@ -80,6 +101,12 @@ async function prepareImageUpload(
     const out = await pipeline.jpeg({ quality: 82, mozjpeg: true }).toBuffer()
     return { buffer: out, mime: 'image/jpeg', ext: 'jpg' }
   } catch {
+    // HEIC has to be converted — storing the original would serve a file no browser renders.
+    if (detectedMime === 'image/heic' || detectedMime === 'image/heif') {
+      throw new UnsupportedImageError(
+        'iPhone HEIC photo could not be converted. On the iPhone: Settings → Camera → Formats → Most Compatible, then retake or re-export as JPEG.'
+      )
+    }
     return {
       buffer,
       mime: detectedMime,
@@ -103,10 +130,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided.' }, { status: 400 })
     }
 
-    // Check the browser-reported MIME type first (fast path).
-    if (!ALLOWED_MIME.has(file.type)) {
+    // Fast path on the browser-reported type. Phones often send an empty or
+    // vendor-specific type for HEIC, so only reject types we know are wrong;
+    // magic bytes below are the real gate.
+    if (file.type && !ALLOWED_MIME.has(file.type) && !file.type.startsWith('image/')) {
       return NextResponse.json(
-        { error: 'Only PNG, JPEG, WebP, or GIF images are allowed.' },
+        { error: 'Only PNG, JPEG, WebP, GIF, or HEIC images are allowed.' },
         { status: 415 }
       )
     }
@@ -116,7 +145,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (file.size > MAX_BYTES) {
-      return NextResponse.json({ error: 'File exceeds 5 MB limit.' }, { status: 413 })
+      return NextResponse.json(
+        { error: 'Photo is over 4 MB. Pick a smaller photo or let the form resize it.' },
+        { status: 413 }
+      )
     }
 
     const bytes = await file.arrayBuffer()
@@ -127,7 +159,7 @@ export async function POST(req: NextRequest) {
     const detectedMime = detectMimeFromBytes(headerBytes)
     if (!detectedMime || !ALLOWED_MIME.has(detectedMime)) {
       return NextResponse.json(
-        { error: 'File content does not match an allowed image type.' },
+        { error: 'That file is not a PNG, JPEG, WebP, GIF, or HEIC photo.' },
         { status: 415 }
       )
     }
@@ -147,7 +179,7 @@ export async function POST(req: NextRequest) {
       })
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: `Storage rejected the photo: ${error.message}` }, { status: 500 })
     }
 
     const {
@@ -156,6 +188,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: publicUrl })
   } catch (err) {
+    if (err instanceof UnsupportedImageError) {
+      return NextResponse.json({ error: err.message }, { status: 415 })
+    }
     console.error('Upload error:', err)
     return NextResponse.json({ error: 'Upload failed.' }, { status: 500 })
   }

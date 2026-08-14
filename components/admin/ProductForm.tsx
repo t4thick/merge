@@ -8,6 +8,7 @@ import { ExternalLink, ImagePlus, Loader2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PRODUCT_CATEGORIES } from '@/lib/constants/categories'
+import { MAX_UPLOAD_BYTES, shrinkImageForUpload } from '@/lib/admin/shrink-image-upload'
 
 const CATEGORIES = [...PRODUCT_CATEGORIES].sort()
 
@@ -48,15 +49,20 @@ export function ProductForm({ initialData, productId }: Props) {
   }
 
   async function uploadFile(file: File): Promise<string | null> {
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be under 5 MB.')
+    const prepared = await shrinkImageForUpload(file)
+    if (prepared.size > MAX_UPLOAD_BYTES) {
+      setError(`"${file.name}" is too large to upload. Try a smaller photo.`)
       return null
     }
     const fd = new FormData()
-    fd.append('file', file)
+    fd.append('file', prepared)
     const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-    const data = await res.json()
-    return data.url ?? null
+    const data = await res.json().catch(() => ({}) as { url?: string; error?: string })
+    if (!res.ok || !data.url) {
+      setError(data.error || `Upload failed (${res.status}).`)
+      return null
+    }
+    return data.url
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -67,11 +73,12 @@ export function ProductForm({ initialData, productId }: Props) {
     try {
       const url = await uploadFile(file)
       if (url) update('image_url', url)
-      else if (!error) setError('Upload failed.')
     } catch {
       setError('Upload failed — check your connection.')
     } finally {
       setUploading(false)
+      // Reset input so the same file can be re-picked after a failure.
+      e.target.value = ''
     }
   }
 
@@ -251,7 +258,7 @@ export function ProductForm({ initialData, productId }: Props) {
             )}
             <input
               type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif"
+              accept="image/*,.heic,.heif"
               className="sr-only"
               onChange={handleImageUpload}
               disabled={uploading}
@@ -323,7 +330,7 @@ export function ProductForm({ initialData, productId }: Props) {
             )}
             <input
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/*,.heic,.heif"
               multiple
               className="sr-only"
               onChange={handleExtraImageUpload}
