@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { FASHION_CATEGORIES } from '@/lib/constants/categories'
 import { getCategoryImage } from '@/lib/constants/category-images'
+import { CategoryTilePhoto } from '@/components/store/CategoryTilePhoto'
 import { cn } from '@/lib/utils'
 
 type FashionDeptStripProps = {
@@ -48,14 +49,10 @@ export function FashionDeptStrip({ activeCategory, categoryCount }: FashionDeptS
             >
               <span className="relative block aspect-[5/3] bg-accent-50 sm:aspect-[4/3]">
                 {imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- avoid optimizer for remote category photos
-                  <img
+                  <CategoryTilePhoto
                     src={imageUrl}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-                    loading="lazy"
-                    decoding="async"
-                    aria-hidden
                   />
                 ) : null}
                 <span className="absolute inset-x-0 top-0 flex h-1.5" aria-hidden>

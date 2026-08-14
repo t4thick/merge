@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { CategoryIcon } from '@/components/store/CategoryIcon'
+import { CategoryTilePhoto } from '@/components/store/CategoryTilePhoto'
 import { getCategoryImage } from '@/lib/constants/category-images'
 import { isFashionCategory } from '@/lib/constants/categories'
 
@@ -52,14 +53,10 @@ export function CategoryBrowse({
               <span className="h-full w-full bg-[linear-gradient(180deg,var(--color-brand-600)_0%,var(--color-accent-500)_35%,var(--color-earth-800)_70%,var(--color-brand-700)_100%)]" />
             </span>
             {fashionImage && (
-              // eslint-disable-next-line @next/next/no-img-element -- category remote photo; avoid optimizer
-              <img
+              <CategoryTilePhoto
                 src={fashionImage}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover object-center opacity-25 transition-transform duration-200 group-hover:scale-[1.02]"
-                loading="lazy"
-                decoding="async"
-                aria-hidden
               />
             )}
             <span className="relative flex w-full items-end justify-between gap-4 p-5 pl-6 sm:p-6 sm:pl-7">
@@ -99,14 +96,16 @@ export function CategoryBrowse({
                 >
                   <div className="relative aspect-square overflow-hidden bg-earth-50">
                     {imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- mix of local + remote category photos
-                      <img
+                      <CategoryTilePhoto
                         src={imageUrl}
                         alt={cat}
-                        className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-200 group-hover:scale-[1.02]"
                         loading={cat === 'Beverages' || cat === 'Bread' ? 'eager' : 'lazy'}
-                        decoding="async"
-                      />
+                        className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-200 group-hover:scale-[1.02]"
+                      >
+                        <span className="absolute inset-0 flex items-center justify-center bg-earth-100">
+                          <CategoryIcon category={cat} className="h-10 w-10 text-earth-500" />
+                        </span>
+                      </CategoryTilePhoto>
                     ) : (
                       <span className="absolute inset-0 flex items-center justify-center bg-earth-100">
                         <CategoryIcon category={cat} className="h-10 w-10 text-earth-500" />

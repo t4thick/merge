@@ -24,6 +24,8 @@ const CATEGORY_LOCAL: Partial<Record<string, string>> = {
   'Non food': LOCAL('non-food.png'),
   Snack: LOCAL('snack.jpg'),
   Spices: LOCAL('spices.jpg'),
+  'African Prints': LOCAL('african-prints.jpg'),
+  Wax: LOCAL('african-prints.jpg'),
 }
 
 /** Remote fallbacks when no local asset is listed above */
