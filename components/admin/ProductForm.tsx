@@ -8,7 +8,7 @@ import { ExternalLink, ImagePlus, Loader2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PRODUCT_CATEGORIES } from '@/lib/constants/categories'
-import { MAX_UPLOAD_BYTES, shrinkImageForUpload } from '@/lib/admin/shrink-image-upload'
+import { MAX_UPLOAD_BYTES, shrinkImageForUpload, ImagePrepareError } from '@/lib/admin/shrink-image-upload'
 
 const CATEGORIES = [...PRODUCT_CATEGORIES].sort()
 
@@ -49,7 +49,13 @@ export function ProductForm({ initialData, productId }: Props) {
   }
 
   async function uploadFile(file: File): Promise<string | null> {
-    const prepared = await shrinkImageForUpload(file)
+    let prepared: File
+    try {
+      prepared = await shrinkImageForUpload(file)
+    } catch (err) {
+      setError(err instanceof ImagePrepareError ? err.message : `"${file.name}" could not be prepared.`)
+      return null
+    }
     if (prepared.size > MAX_UPLOAD_BYTES) {
       setError(`"${file.name}" is too large to upload. Try a smaller photo.`)
       return null
@@ -89,11 +95,19 @@ export function ProductForm({ initialData, productId }: Props) {
     setError('')
     try {
       const urls: string[] = []
+      const failed: string[] = []
       for (const file of files) {
         const url = await uploadFile(file)
         if (url) urls.push(url)
+        else failed.push(file.name)
       }
-      update('image_urls', [...form.image_urls, ...urls])
+      if (urls.length) {
+        setForm((prev) => ({ ...prev, image_urls: [...prev.image_urls, ...urls] }))
+        setSaved(false)
+      }
+      if (failed.length && urls.length) {
+        setError(`${failed.length} of ${files.length} photos failed.`)
+      }
     } catch {
       setError('Upload failed.')
     } finally {
@@ -239,7 +253,7 @@ export function ProductForm({ initialData, productId }: Props) {
       <div className="space-y-1.5">
         <label className="form-label">
           Product image
-          <span className="ml-1.5 font-normal text-earth-400">(PNG, JPEG, WebP — max 5 MB)</span>
+          <span className="ml-1.5 font-normal text-earth-400">(phone photos, PNG, JPEG, WebP, or HEIC)</span>
         </label>
         <div className="flex items-start gap-4">
           <label className={`flex h-28 w-28 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed transition-colors ${uploading ? 'border-earth-200 bg-earth-50' : 'border-earth-300 bg-earth-50 hover:border-brand-400 hover:bg-brand-50/30'}`}>

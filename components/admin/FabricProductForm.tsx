@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatMoney, cn } from '@/lib/utils'
-import { MAX_UPLOAD_BYTES, shrinkImageForUpload } from '@/lib/admin/shrink-image-upload'
+import { MAX_UPLOAD_BYTES, shrinkImageForUpload, ImagePrepareError } from '@/lib/admin/shrink-image-upload'
 import {
   FABRIC_COMPOSITIONS,
   FABRIC_KINDS,
@@ -144,7 +144,13 @@ export function FabricProductForm() {
   const completenessPct = Math.round((completeness / 6) * 100)
 
   async function uploadFile(file: File): Promise<string | null> {
-    const prepared = await shrinkImageForUpload(file)
+    let prepared: File
+    try {
+      prepared = await shrinkImageForUpload(file)
+    } catch (err) {
+      setError(err instanceof ImagePrepareError ? err.message : `"${file.name}" could not be prepared.`)
+      return null
+    }
     if (prepared.size > MAX_UPLOAD_BYTES) {
       setError(`"${file.name}" is too large to upload. Try a smaller photo.`)
       return null
@@ -183,11 +189,18 @@ export function FabricProductForm() {
     setError('')
     try {
       const urls: string[] = []
+      const failed: string[] = []
       for (const file of files) {
         const url = await uploadFile(file)
         if (url) urls.push(url)
+        else failed.push(file.name)
       }
-      update('image_urls', [...form.image_urls, ...urls])
+      if (urls.length) {
+        setForm((prev) => ({ ...prev, image_urls: [...prev.image_urls, ...urls] }))
+      }
+      if (failed.length && urls.length) {
+        setError(`${failed.length} of ${files.length} photos failed.`)
+      }
     } catch {
       setError('Upload failed.')
     } finally {

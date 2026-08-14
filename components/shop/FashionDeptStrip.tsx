@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { FASHION_CATEGORIES } from '@/lib/constants/categories'
 import { getCategoryImage } from '@/lib/constants/category-images'
+import { CategoryIcon } from '@/components/store/CategoryIcon'
 import { CategoryTilePhoto } from '@/components/store/CategoryTilePhoto'
 import { cn } from '@/lib/utils'
 
@@ -53,8 +54,16 @@ export function FashionDeptStrip({ activeCategory, categoryCount }: FashionDeptS
                     src={imageUrl}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-                  />
-                ) : null}
+                  >
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <CategoryIcon category={cat} className="h-10 w-10 text-earth-400" />
+                    </span>
+                  </CategoryTilePhoto>
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <CategoryIcon category={cat} className="h-10 w-10 text-earth-400" />
+                  </span>
+                )}
                 <span className="absolute inset-x-0 top-0 flex h-1.5" aria-hidden>
                   <span className="flex-1 bg-brand-600" />
                   <span className="flex-1 bg-accent-500" />

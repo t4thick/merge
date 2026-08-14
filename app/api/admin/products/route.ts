@@ -40,8 +40,26 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) {
-      // Older DBs without grocery-ops columns — retry core fields only
+      // Older DBs without grocery-ops columns — retry core fields only when
+      // the staff did not send extra photos / fabric fields that would be dropped.
       if (/column|does not exist/i.test(error.message)) {
+        const wouldDrop =
+          (row.image_urls?.length ?? 0) > 0 ||
+          Boolean(row.brand) ||
+          Boolean(row.pack_label) ||
+          row.unit_amount != null ||
+          Boolean(row.unit_of_measure) ||
+          row.stock_quantity != null ||
+          Boolean(row.variant_group)
+        if (wouldDrop) {
+          return NextResponse.json(
+            {
+              error:
+                'This catalog is missing newer product columns, so extra photos, brand, yardage, and stock were not saved. Run grocery-ops.sql, then try again.',
+            },
+            { status: 500 }
+          )
+        }
         const { data: fallback, error: fallbackError } = await supabaseAdmin
           .from('products')
           .insert({

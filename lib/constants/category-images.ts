@@ -28,10 +28,8 @@ const CATEGORY_LOCAL: Partial<Record<string, string>> = {
   Wax: LOCAL('african-prints.jpg'),
 }
 
-/** Remote fallbacks when no local asset is listed above */
+/** Remote fallbacks when no local asset is listed above. Omit known-dead Unsplash IDs. */
 const CATEGORY_REMOTE: Record<string, string> = {
-  'African Prints': U('photo-1586495777744-4413f21067fa'),
-  Wax: U('photo-1586495777744-4413f21067fa'),
   Alcohol: U('photo-1510812431401-41d2bd2722f3'),
   Beverages: U('photo-1755752919046-a6543db419cc'),
   Bread: U('photo-1725297952102-ab28892a31ab'),
@@ -43,7 +41,6 @@ const CATEGORY_REMOTE: Record<string, string> = {
   'Flours & Rice': U('photo-1686820740687-426a7b9b2043'),
   'Fresh Produce': U('photo-1607349913338-fca6f7fc42d0'),
   'Frozen foods': U('photo-1601599967100-f16100982063'),
-  'Hair & Braiding': U('photo-1605497788044-2834a0b2e6b5'),
   Headtie: U('photo-1594938298603-c8148c4dae35'),
   Kente: U('photo-1610030469983-98e550d6193c'),
   Lace: U('photo-1594633313593-bab3825d0caf'),

@@ -16,12 +16,6 @@ const ALLOWED_MIME = new Set([
 ])
 /** Below the ~4.5 MB serverless body cap, so oversized files fail with our message. */
 const MAX_BYTES = 4 * 1024 * 1024
-const EXT_BY_MIME: Record<string, string> = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-}
 
 // ---------------------------------------------------------------------------
 // Magic-byte signatures — validate actual file content, not just browser MIME.
@@ -52,12 +46,14 @@ function detectMimeFromBytes(bytes: Uint8Array): string | null {
   }
 
   // HEIC / HEIF / AVIF: ISO-BMFF box — bytes 4-7 = "ftyp", brand at 8-11.
-  const ascii = String.fromCharCode(...bytes.slice(4, 12))
-  if (ascii.startsWith('ftyp')) {
-    const brand = ascii.slice(4, 8)
-    if (['heic', 'heix', 'heim', 'heis', 'hevc', 'hevx'].includes(brand)) return 'image/heic'
-    if (['mif1', 'msf1'].includes(brand)) return 'image/heif'
-    if (['avif', 'avis'].includes(brand)) return 'image/avif'
+  // Compatible brands can sit after the major brand; scan the first 32 bytes.
+  const header = String.fromCharCode(...bytes.slice(0, Math.min(bytes.length, 32)))
+  const ftypAt = header.indexOf('ftyp')
+  if (ftypAt >= 0) {
+    const brands = header.slice(ftypAt + 4)
+    if (/heic|heix|heim|heis|hevc|hevx|heif/i.test(brands)) return 'image/heic'
+    if (/avif|avis/i.test(brands)) return 'image/avif'
+    if (/mif1|msf1/i.test(brands)) return 'image/heif'
   }
 
   return null
@@ -101,17 +97,18 @@ async function prepareImageUpload(
     const out = await pipeline.jpeg({ quality: 82, mozjpeg: true }).toBuffer()
     return { buffer: out, mime: 'image/jpeg', ext: 'jpg' }
   } catch {
-    // HEIC has to be converted — storing the original would serve a file no browser renders.
-    if (detectedMime === 'image/heic' || detectedMime === 'image/heif') {
+    // HEIC / AVIF have to be converted — storing the original would serve a file
+    // no browser (or a `.bin` object) can render.
+    if (
+      detectedMime === 'image/heic' ||
+      detectedMime === 'image/heif' ||
+      detectedMime === 'image/avif'
+    ) {
       throw new UnsupportedImageError(
-        'iPhone HEIC photo could not be converted. On the iPhone: Settings → Camera → Formats → Most Compatible, then retake or re-export as JPEG.'
+        'This photo could not be converted. On an iPhone: Settings → Camera → Formats → Most Compatible, then retake — or export as JPEG first.'
       )
     }
-    return {
-      buffer,
-      mime: detectedMime,
-      ext: EXT_BY_MIME[detectedMime] ?? 'bin',
-    }
+    throw new UnsupportedImageError('That photo could not be processed. Try a JPEG or PNG.')
   }
 }
 
